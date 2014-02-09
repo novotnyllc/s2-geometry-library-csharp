@@ -374,14 +374,14 @@ namespace Google.Common.Geometry
             var centroidSum = new S2Point(0, 0, 0);
             for (var i = 0; i < numLoops(); ++i)
             {
-                var areaCentroid = doCentroid ? loop(i).getAreaAndCentroid() : null;
-                var loopArea = doCentroid ? areaCentroid.getArea() : loop(i).getArea();
+                var areaCentroid = doCentroid ? (S2AreaCentroid?) loop(i).getAreaAndCentroid() : null;
+                var loopArea = doCentroid ? areaCentroid.Value.Area : loop(i).getArea();
 
                 var loopSign = loop(i).sign();
                 areaSum += loopSign*loopArea;
                 if (doCentroid)
                 {
-                    var currentCentroid = areaCentroid.getCentroid().Value;
+                    var currentCentroid = areaCentroid.Value.Centroid.Value;
                     centroidSum =
                         new S2Point(centroidSum.X + loopSign*currentCentroid.X,
                                     centroidSum.Y + loopSign*currentCentroid.Y,
@@ -412,7 +412,7 @@ namespace Google.Common.Geometry
 
         public double getArea()
         {
-            return getAreaCentroid(false).getArea();
+            return getAreaCentroid(false).Area;
         }
 
         /**
@@ -423,7 +423,7 @@ namespace Google.Common.Geometry
 
         public S2Point? getCentroid()
         {
-            return getAreaCentroid(true).getCentroid();
+            return getAreaCentroid(true).Centroid;
         }
 
         /**

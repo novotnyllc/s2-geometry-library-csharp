@@ -338,8 +338,8 @@ namespace S2Geometry.Tests
                 var area = loop.getArea();
                 var centroid = loop.getCentroid();
                 var expectedArea = 2*S2.Pi*height;
-                assertTrue(areaCentroid.getArea() == area);
-                assertTrue(centroid.Equals(areaCentroid.getCentroid()));
+                assertTrue(areaCentroid.Area == area);
+                assertTrue(centroid.Equals(areaCentroid.Centroid));
                 assertTrue(Math.Abs(area - expectedArea) <= 2*S2.Pi*kMaxDist);
 
                 // high probability

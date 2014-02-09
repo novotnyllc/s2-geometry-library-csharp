@@ -438,7 +438,7 @@ namespace Google.Common.Geometry
 
         public double getArea()
         {
-            return getAreaCentroid(false).getArea();
+            return getAreaCentroid(false).Area;
         }
 
         /**
@@ -449,7 +449,7 @@ namespace Google.Common.Geometry
 
         public S2Point? getCentroid()
         {
-            return getAreaCentroid(true).getCentroid();
+            return getAreaCentroid(true).Centroid;
         }
 
         // The following are the possible relationships between two loops A and B:

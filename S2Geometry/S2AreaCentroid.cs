@@ -16,25 +16,25 @@ namespace Google.Common.Geometry
  * @author dbentley@google.com (Daniel Bentley)
  */
 
-    public class S2AreaCentroid
+    public struct S2AreaCentroid
     {
-        private readonly double area;
-        private readonly S2Point? centroid;
+        private readonly double _area;
+        private readonly S2Point? _centroid;
 
         public S2AreaCentroid(double area, S2Point? centroid = null)
         {
-            this.area = area;
-            this.centroid = centroid;
+            this._area = area;
+            this._centroid = centroid;
         }
 
-        public double getArea()
+        public double Area
         {
-            return area;
+            get { return _area; }
         }
 
-        public S2Point? getCentroid()
+        public S2Point? Centroid
         {
-            return centroid;
+            get { return _centroid; }
         }
     }
 }
