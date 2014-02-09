@@ -53,6 +53,11 @@ namespace Google.Common.Geometry
             }
         }
 
+        public double Norm2
+        {
+            get { return (_x*_x) + (_y*_y); }
+        }
+
         public bool Equals(R2Vector other)
         {
             return _y.Equals(other._y) && _x.Equals(other._x);
@@ -96,11 +101,6 @@ namespace Google.Common.Geometry
         public static R2Vector operator *(R2Vector p, double m)
         {
             return new R2Vector(m*p._x, m*p._y);
-        }
-
-        public double Norm2()
-        {
-            return (_x*_x) + (_y*_y);
         }
 
         public static double DotProd(R2Vector p1, R2Vector p2)

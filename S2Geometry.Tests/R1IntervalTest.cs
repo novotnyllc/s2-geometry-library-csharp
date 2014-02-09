@@ -25,7 +25,7 @@ namespace S2Geometry.Tests
             JavaAssert.Equal(x.InteriorIntersects(y), expectedRelation[3] == 'T');
 
             JavaAssert.Equal(x.Contains(y), x.Union(y).Equals(x));
-            JavaAssert.Equal(x.Intersects(y), !x.Intersection(y).IsEmpty());
+            JavaAssert.Equal(x.Intersects(y), !x.Intersection(y).IsEmpty);
         }
 
         [Test]
@@ -41,10 +41,10 @@ namespace S2Geometry.Tests
 
             // is_empty()
             var half = new R1Interval(0.5, 0.5);
-            Assert.True(!unit.IsEmpty());
-            Assert.True(!half.IsEmpty());
+            Assert.True(!unit.IsEmpty);
+            Assert.True(!half.IsEmpty);
             var empty = R1Interval.Empty;
-            Assert.True(empty.IsEmpty());
+            Assert.True(empty.IsEmpty);
 
             // GetCenter(), GetLength()
             JavaAssert.Equal(unit.Center, 0.5);
@@ -93,17 +93,17 @@ namespace S2Geometry.Tests
             // union(), intersection()
             Assert.True(new R1Interval(99, 100).Union(empty).Equals(new R1Interval(99, 100)));
             Assert.True(empty.Union(new R1Interval(99, 100)).Equals(new R1Interval(99, 100)));
-            Assert.True(new R1Interval(5, 3).Union(new R1Interval(0, -2)).IsEmpty());
-            Assert.True(new R1Interval(0, -2).Union(new R1Interval(5, 3)).IsEmpty());
+            Assert.True(new R1Interval(5, 3).Union(new R1Interval(0, -2)).IsEmpty);
+            Assert.True(new R1Interval(0, -2).Union(new R1Interval(5, 3)).IsEmpty);
             Assert.True(unit.Union(unit).Equals(unit));
             Assert.True(unit.Union(negunit).Equals(new R1Interval(-1, 1)));
             Assert.True(negunit.Union(unit).Equals(new R1Interval(-1, 1)));
             Assert.True(half.Union(unit).Equals(unit));
             Assert.True(unit.Intersection(half).Equals(half));
             Assert.True(unit.Intersection(negunit).Equals(new R1Interval(0, 0)));
-            Assert.True(negunit.Intersection(half).IsEmpty());
-            Assert.True(unit.Intersection(empty).IsEmpty());
-            Assert.True(empty.Intersection(unit).IsEmpty());
+            Assert.True(negunit.Intersection(half).IsEmpty);
+            Assert.True(unit.Intersection(empty).IsEmpty);
+            Assert.True(empty.Intersection(unit).IsEmpty);
         }
     }
 }

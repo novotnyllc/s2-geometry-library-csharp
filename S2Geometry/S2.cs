@@ -646,8 +646,8 @@ namespace Google.Common.Geometry
             // Return +1 if the edge AB is CCW around the origin, etc.
             double sab = (a.DotProd(b) > 0) ? -1 : 1;
             var vab = a + (b*sab);
-            var da = a.Norm2();
-            var db = b.Norm2();
+            var da = a.Norm2;
+            var db = b.Norm2;
             double sign;
             if (da < db || (da == db && a < b))
             {

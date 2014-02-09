@@ -52,9 +52,14 @@ namespace Google.Common.Geometry
             get { return Hi - Lo; }
         }
 
+        public bool IsEmpty
+        {
+            get { return Lo > Hi; }
+        }
+
         public bool Equals(R1Interval other)
         {
-            return (_hi.Equals(other._hi) && _lo.Equals(other._lo)) || (IsEmpty() && other.IsEmpty());
+            return (_hi.Equals(other._hi) && _lo.Equals(other._lo)) || (IsEmpty && other.IsEmpty);
         }
 
         public override bool Equals(object obj)
@@ -113,11 +118,6 @@ namespace Google.Common.Geometry
    * Return true if the interval is empty, i.e. it contains no points.
    */
 
-        public bool IsEmpty()
-        {
-            return Lo > Hi;
-        }
-
         /**
    * Return the center of the interval. For empty intervals, the result is
    * arbitrary.
@@ -137,7 +137,7 @@ namespace Google.Common.Geometry
 
         public bool Contains(R1Interval y)
         {
-            if (y.IsEmpty())
+            if (y.IsEmpty)
             {
                 return true;
             }
@@ -151,7 +151,7 @@ namespace Google.Common.Geometry
 
         public bool InteriorContains(R1Interval y)
         {
-            if (y.IsEmpty())
+            if (y.IsEmpty)
             {
                 return true;
             }
@@ -189,7 +189,7 @@ namespace Google.Common.Geometry
 
         public R1Interval AddPoint(double p)
         {
-            if (IsEmpty())
+            if (IsEmpty)
             {
                 return FromPoint(p);
             }
@@ -216,7 +216,7 @@ namespace Google.Common.Geometry
         public R1Interval Expanded(double radius)
         {
             // assert (radius >= 0);
-            if (IsEmpty())
+            if (IsEmpty)
             {
                 return this;
             }
@@ -230,11 +230,11 @@ namespace Google.Common.Geometry
 
         public R1Interval Union(R1Interval y)
         {
-            if (IsEmpty())
+            if (IsEmpty)
             {
                 return y;
             }
-            if (y.IsEmpty())
+            if (y.IsEmpty)
             {
                 return this;
             }
@@ -264,11 +264,11 @@ namespace Google.Common.Geometry
 
         public bool ApproxEquals(R1Interval y, double maxError)
         {
-            if (IsEmpty())
+            if (IsEmpty)
             {
                 return y.Length <= maxError;
             }
-            if (y.IsEmpty())
+            if (y.IsEmpty)
             {
                 return Length <= maxError;
             }

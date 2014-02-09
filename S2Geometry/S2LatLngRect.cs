@@ -271,7 +271,7 @@ namespace Google.Common.Geometry
         {
             // The lat/lng ranges must either be both empty or both non-empty.
             return (Math.Abs(lat.Lo) <= S2.PiOver2 && Math.Abs(lat.Hi) <= S2.PiOver2
-                    && lng.IsValid && lat.IsEmpty() == lng.IsEmpty);
+                    && lng.IsValid && lat.IsEmpty == lng.IsEmpty);
         }
 
         // Accessor methods.
@@ -311,7 +311,7 @@ namespace Google.Common.Geometry
 
         public bool isEmpty()
         {
-            return lat.IsEmpty();
+            return lat.IsEmpty;
         }
 
         // Return true if the rectangle is full, i.e. it contains all points.
@@ -698,7 +698,7 @@ namespace Google.Common.Geometry
         {
             var intersectLat = lat.Intersection(other.lat);
             var intersectLng = lng.Intersection(other.lng);
-            if (intersectLat.IsEmpty() || intersectLng.IsEmpty)
+            if (intersectLat.IsEmpty || intersectLng.IsEmpty)
             {
                 // The lat/lng ranges must either be both empty or both non-empty.
                 return empty();
