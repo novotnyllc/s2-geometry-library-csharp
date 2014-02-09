@@ -288,7 +288,7 @@ namespace S2Geometry.Tests
                 var p = line.vertex(i);
                 // (p[0]*x + p[1]*y + p[2]*z).Normalize()
                 var axis = S2Point.Normalize(((x * p.X) + (y * p.Y)) + (z * p.Z));
-                var cap = S2Cap.fromAxisAngle(axis, S1Angle.FromRadians(maxPerturbation));
+                var cap = S2Cap.FromAxisAngle(axis, S1Angle.FromRadians(maxPerturbation));
                 vertices.Add(samplePoint(cap));
             }
         }

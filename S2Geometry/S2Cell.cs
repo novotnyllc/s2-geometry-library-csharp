@@ -89,10 +89,10 @@ namespace Google.Common.Geometry
 
                 var u = 0.5*(_uv[0][0] + _uv[0][1]);
                 var v = 0.5*(_uv[1][0] + _uv[1][1]);
-                var cap = S2Cap.fromAxisHeight(S2Point.Normalize(S2Projections.faceUvToXyz(_face, u, v)), 0);
+                var cap = S2Cap.FromAxisHeight(S2Point.Normalize(S2Projections.faceUvToXyz(_face, u, v)), 0);
                 for (var k = 0; k < 4; ++k)
                 {
-                    cap = cap.addPoint(getVertex(k));
+                    cap = cap.AddPoint(getVertex(k));
                 }
                 return cap;
             }

@@ -137,7 +137,7 @@ namespace S2Geometry.Tests
                 var maxArea = Math.Min(4*S2.Pi, 1000*S2Cell.averageArea(level));
                 var cap = getRandomCap(0.1*S2Cell.averageArea(kMaxLevel), maxArea);
                 var covering = new List<S2CellId>();
-                S2RegionCoverer.getSimpleCovering(cap, cap.axis(), level, covering);
+                S2RegionCoverer.getSimpleCovering(cap, cap.Axis, level, covering);
                 checkCovering(coverer, cap, covering, false);
             }
         }

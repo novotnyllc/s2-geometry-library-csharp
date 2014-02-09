@@ -187,16 +187,16 @@ namespace S2Geometry.Tests
                 }
                 var childCap = children[i].CapBound;
                 var childRect = children[i].RectBound;
-                Assert.True(childCap.contains(children[i].getCenter()));
+                Assert.True(childCap.Contains(children[i].getCenter()));
                 Assert.True(childRect.contains(children[i].getCenterRaw()));
-                Assert.True(parentCap.contains(children[i].getCenter()));
+                Assert.True(parentCap.Contains(children[i].getCenter()));
                 Assert.True(parentRect.contains(children[i].getCenterRaw()));
                 for (var j = 0; j < 4; ++j)
                 {
-                    Assert.True(childCap.contains(children[i].getVertex(j)));
+                    Assert.True(childCap.Contains(children[i].getVertex(j)));
                     Assert.True(childRect.contains(children[i].getVertex(j)));
                     Assert.True(childRect.contains(children[i].getVertexRaw(j)));
-                    Assert.True(parentCap.contains(children[i].getVertex(j)));
+                    Assert.True(parentCap.Contains(children[i].getVertex(j)));
                     if (!parentRect.contains(children[i].getVertex(j)))
                     {
                         Console.WriteLine("cell: " + cell + " i: " + i + " j: " + j);
@@ -225,7 +225,7 @@ namespace S2Geometry.Tests
                         var rectCount = 0;
                         for (var k = 0; k < 4; ++k)
                         {
-                            if (childCap.contains(children[j].getVertex(k)))
+                            if (childCap.Contains(children[j].getVertex(k)))
                             {
                                 ++capCount;
                             }

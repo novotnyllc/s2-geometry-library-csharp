@@ -63,7 +63,7 @@ namespace Google.Common.Geometry
 
                 if (isEmpty())
                 {
-                    return S2Cap.empty();
+                    return S2Cap.Empty;
                 }
 
                 double poleZ, poleAngle;
@@ -78,7 +78,7 @@ namespace Google.Common.Geometry
                     poleZ = 1;
                     poleAngle = S2.PiOver2 - lat.Lo;
                 }
-                var poleCap = S2Cap.fromAxisAngle(new S2Point(0, 0, poleZ), S1Angle
+                var poleCap = S2Cap.FromAxisAngle(new S2Point(0, 0, poleZ), S1Angle
                                                                                 .FromRadians(poleAngle));
 
                 // For bounding rectangles that span 180 degrees or less in longitude, the
@@ -90,13 +90,13 @@ namespace Google.Common.Geometry
                 {
                     if (lngSpan < 2*S2.Pi)
                     {
-                        var midCap = S2Cap.fromAxisAngle(getCenter().toPoint(), S1Angle
+                        var midCap = S2Cap.FromAxisAngle(getCenter().toPoint(), S1Angle
                                                                                     .FromRadians(0));
                         for (var k = 0; k < 4; ++k)
                         {
-                            midCap = midCap.addPoint(getVertex(k).toPoint());
+                            midCap = midCap.AddPoint(getVertex(k).toPoint());
                         }
-                        if (midCap.height() < poleCap.height())
+                        if (midCap.Height < poleCap.Height)
                         {
                             return midCap;
                         }
@@ -721,13 +721,12 @@ namespace Google.Common.Geometry
             // original rectangle; this is necessary for very large rectangles).
 
             // Optimization: convert the angle to a height exactly once.
-            var cap = S2Cap.fromAxisAngle(new S2Point(1, 0, 0), angle);
+            var cap = S2Cap.FromAxisAngle(new S2Point(1, 0, 0), angle);
 
             var r = this;
             for (var k = 0; k < 4; ++k)
             {
-                var vertexCap = S2Cap.fromAxisHeight(getVertex(k).toPoint(), cap
-                                                                                 .height());
+                var vertexCap = S2Cap.FromAxisHeight(getVertex(k).toPoint(), cap.Height);
                 r = r.union(vertexCap.RectBound);
             }
             return r;

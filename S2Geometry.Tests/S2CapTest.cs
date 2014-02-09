@@ -21,8 +21,8 @@ namespace S2Geometry.Tests
         public void testRectBound()
         {
             // Empty and full caps.
-            Assert.True(S2Cap.empty().RectBound.isEmpty());
-            Assert.True(S2Cap.full().RectBound.isFull());
+            Assert.True(S2Cap.Empty.RectBound.isEmpty());
+            Assert.True(S2Cap.Full.RectBound.isFull());
 
             var kDegreeEps = 1e-13;
             // Maximum allowable error for latitudes and longitudes measured in
@@ -30,39 +30,39 @@ namespace S2Geometry.Tests
 
             // Cap that includes the south pole.
             var rect =
-                S2Cap.fromAxisAngle(getLatLngPoint(-45, 57), S1Angle.FromDegrees(50)).RectBound;
+                S2Cap.FromAxisAngle(getLatLngPoint(-45, 57), S1Angle.FromDegrees(50)).RectBound;
             assertDoubleNear(rect.latLo().Degrees, -90, kDegreeEps);
             assertDoubleNear(rect.latHi().Degrees, 5, kDegreeEps);
             Assert.True(rect.Lng.IsFull);
 
             // Cap that is tangent to the north pole.
-            rect = S2Cap.fromAxisAngle(S2Point.Normalize(new S2Point(1, 0, 1)), S1Angle.FromRadians(S2.PiOver4)).RectBound;
+            rect = S2Cap.FromAxisAngle(S2Point.Normalize(new S2Point(1, 0, 1)), S1Angle.FromRadians(S2.PiOver4)).RectBound;
             assertDoubleNear(rect.Lat.Lo, 0);
             assertDoubleNear(rect.Lat.Hi, S2.PiOver2);
             Assert.True(rect.Lng.IsFull);
 
             rect = S2Cap
-                .fromAxisAngle(S2Point.Normalize(new S2Point(1, 0, 1)), S1Angle.FromDegrees(45)).RectBound;
+                .FromAxisAngle(S2Point.Normalize(new S2Point(1, 0, 1)), S1Angle.FromDegrees(45)).RectBound;
             assertDoubleNear(rect.latLo().Degrees, 0, kDegreeEps);
             assertDoubleNear(rect.latHi().Degrees, 90, kDegreeEps);
             Assert.True(rect.Lng.IsFull);
 
             // The eastern hemisphere.
             rect = S2Cap
-                .fromAxisAngle(new S2Point(0, 1, 0), S1Angle.FromRadians(S2.PiOver2 + 5e-16)).RectBound;
+                .FromAxisAngle(new S2Point(0, 1, 0), S1Angle.FromRadians(S2.PiOver2 + 5e-16)).RectBound;
             assertDoubleNear(rect.latLo().Degrees, -90, kDegreeEps);
             assertDoubleNear(rect.latHi().Degrees, 90, kDegreeEps);
             Assert.True(rect.Lng.IsFull);
 
             // A cap centered on the equator.
-            rect = S2Cap.fromAxisAngle(getLatLngPoint(0, 50), S1Angle.FromDegrees(20)).RectBound;
+            rect = S2Cap.FromAxisAngle(getLatLngPoint(0, 50), S1Angle.FromDegrees(20)).RectBound;
             assertDoubleNear(rect.latLo().Degrees, -20, kDegreeEps);
             assertDoubleNear(rect.latHi().Degrees, 20, kDegreeEps);
             assertDoubleNear(rect.lngLo().Degrees, 30, kDegreeEps);
             assertDoubleNear(rect.lngHi().Degrees, 70, kDegreeEps);
 
             // A cap centered on the north pole.
-            rect = S2Cap.fromAxisAngle(getLatLngPoint(90, 123), S1Angle.FromDegrees(10)).RectBound;
+            rect = S2Cap.FromAxisAngle(getLatLngPoint(90, 123), S1Angle.FromDegrees(10)).RectBound;
             assertDoubleNear(rect.latLo().Degrees, 80, kDegreeEps);
             assertDoubleNear(rect.latHi().Degrees, 90, kDegreeEps);
             Assert.True(rect.Lng.IsFull);
@@ -89,8 +89,8 @@ namespace S2Geometry.Tests
                 var cornerCell = new S2Cell(S2Projections.faceUvToXyz(face, 1 - EPS, 1 - EPS));
 
                 // Quick check for full and empty caps.
-                Assert.True(S2Cap.full().Contains(rootCell));
-                Assert.True(!S2Cap.empty().MayIntersect(rootCell));
+                Assert.True(S2Cap.Full.Contains(rootCell));
+                Assert.True(!S2Cap.Empty.MayIntersect(rootCell));
 
                 // Check intersections with the bounding caps of the leaf cells that are
                 // adjacent to 'corner_cell' along the Hilbert curve. Because this corner
@@ -110,7 +110,7 @@ namespace S2Geometry.Tests
                 {
                     // A cap that barely contains all of 'cap_face'.
                     var center = S2Projections.getNorm(capFace);
-                    var covering = S2Cap.fromAxisAngle(center, S1Angle.FromRadians(kFaceRadius + EPS));
+                    var covering = S2Cap.FromAxisAngle(center, S1Angle.FromRadians(kFaceRadius + EPS));
                     JavaAssert.Equal(covering.Contains(rootCell), capFace == face);
                     JavaAssert.Equal(covering.MayIntersect(rootCell), capFace != antiFace);
                     JavaAssert.Equal(covering.Contains(edgeCell), center.DotProd(edgeCell.getCenter()) > 0.1);
@@ -120,7 +120,7 @@ namespace S2Geometry.Tests
                         covering.MayIntersect(cornerCell), center.DotProd(cornerCell.getCenter()) > 0);
 
                     // A cap that barely intersects the edges of 'cap_face'.
-                    var bulging = S2Cap.fromAxisAngle(center, S1Angle.FromRadians(S2.PiOver4 + EPS));
+                    var bulging = S2Cap.FromAxisAngle(center, S1Angle.FromRadians(S2.PiOver4 + EPS));
                     Assert.True(!bulging.Contains(rootCell));
                     JavaAssert.Equal(bulging.MayIntersect(rootCell), capFace != antiFace);
                     JavaAssert.Equal(bulging.Contains(edgeCell), capFace == face);
@@ -129,7 +129,7 @@ namespace S2Geometry.Tests
                     Assert.True(!bulging.MayIntersect(cornerCell));
 
                     // A singleton cap.
-                    var singleton = S2Cap.fromAxisAngle(center, S1Angle.FromRadians(0));
+                    var singleton = S2Cap.FromAxisAngle(center, S1Angle.FromRadians(0));
                     JavaAssert.Equal(singleton.MayIntersect(rootCell), capFace == face);
                     Assert.True(!singleton.MayIntersect(edgeCell));
                     Assert.True(!singleton.MayIntersect(cornerCell));
@@ -141,92 +141,92 @@ namespace S2Geometry.Tests
         public void S2CapBasicTest()
         {
             // Test basic properties of empty and full caps.
-            var empty = S2Cap.empty();
-            var full = S2Cap.full();
-            Assert.True(empty.isValid());
-            Assert.True(empty.isEmpty());
-            Assert.True(empty.complement().isFull());
-            Assert.True(full.isValid());
-            Assert.True(full.isFull());
-            Assert.True(full.complement().isEmpty());
-            JavaAssert.Equal(full.height(), 2.0);
-            assertDoubleNear(full.angle().Degrees, 180);
+            var empty = S2Cap.Empty;
+            var full = S2Cap.Full;
+            Assert.True(empty.IsValid);
+            Assert.True(empty.IsEmpty);
+            Assert.True(empty.Complement.IsFull);
+            Assert.True(full.IsValid);
+            Assert.True(full.IsFull);
+            Assert.True(full.Complement.IsEmpty);
+            JavaAssert.Equal(full.Height, 2.0);
+            assertDoubleNear(full.Angle.Degrees, 180);
 
             // Containment and intersection of empty and full caps.
-            Assert.True(empty.contains(empty));
-            Assert.True(full.contains(empty));
-            Assert.True(full.contains(full));
-            Assert.True(!empty.interiorIntersects(empty));
-            Assert.True(full.interiorIntersects(full));
-            Assert.True(!full.interiorIntersects(empty));
+            Assert.True(empty.Contains(empty));
+            Assert.True(full.Contains(empty));
+            Assert.True(full.Contains(full));
+            Assert.True(!empty.InteriorIntersects(empty));
+            Assert.True(full.InteriorIntersects(full));
+            Assert.True(!full.InteriorIntersects(empty));
 
             // Singleton cap containing the x-axis.
-            var xaxis = S2Cap.fromAxisHeight(new S2Point(1, 0, 0), 0);
-            Assert.True(xaxis.contains(new S2Point(1, 0, 0)));
-            Assert.True(!xaxis.contains(new S2Point(1, 1e-20, 0)));
-            JavaAssert.Equal(xaxis.angle().Radians, 0.0);
+            var xaxis = S2Cap.FromAxisHeight(new S2Point(1, 0, 0), 0);
+            Assert.True(xaxis.Contains(new S2Point(1, 0, 0)));
+            Assert.True(!xaxis.Contains(new S2Point(1, 1e-20, 0)));
+            JavaAssert.Equal(xaxis.Angle.Radians, 0.0);
 
             // Singleton cap containing the y-axis.
-            var yaxis = S2Cap.fromAxisAngle(new S2Point(0, 1, 0), S1Angle.FromRadians(0));
-            Assert.True(!yaxis.contains(xaxis.axis()));
-            JavaAssert.Equal(xaxis.height(), 0.0);
+            var yaxis = S2Cap.FromAxisAngle(new S2Point(0, 1, 0), S1Angle.FromRadians(0));
+            Assert.True(!yaxis.Contains(xaxis.Axis));
+            JavaAssert.Equal(xaxis.Height, 0.0);
 
             // Check that the complement of a singleton cap is the full cap.
-            var xcomp = xaxis.complement();
-            Assert.True(xcomp.isValid());
-            Assert.True(xcomp.isFull());
-            Assert.True(xcomp.contains(xaxis.axis()));
+            var xcomp = xaxis.Complement;
+            Assert.True(xcomp.IsValid);
+            Assert.True(xcomp.IsFull);
+            Assert.True(xcomp.Contains(xaxis.Axis));
 
             // Check that the complement of the complement is *not* the original.
-            Assert.True(xcomp.complement().isValid());
-            Assert.True(xcomp.complement().isEmpty());
-            Assert.True(!xcomp.complement().contains(xaxis.axis()));
+            Assert.True(xcomp.Complement.IsValid);
+            Assert.True(xcomp.Complement.IsEmpty);
+            Assert.True(!xcomp.Complement.Contains(xaxis.Axis));
 
             // Check that very small caps can be represented accurately.
             // Here "kTinyRad" is small enough that unit vectors perturbed by this
             // amount along a tangent do not need to be renormalized.
             var kTinyRad = 1e-10;
             var tiny =
-                S2Cap.fromAxisAngle(S2Point.Normalize(new S2Point(1, 2, 3)), S1Angle.FromRadians(kTinyRad));
-            var tangent = S2Point.Normalize(S2Point.CrossProd(tiny.axis(), new S2Point(3, 2, 1)));
-            Assert.True(tiny.contains(tiny.axis() + (tangent* 0.99*kTinyRad)));
-            Assert.True(!tiny.contains(tiny.axis() + (tangent* 1.01*kTinyRad)));
+                S2Cap.FromAxisAngle(S2Point.Normalize(new S2Point(1, 2, 3)), S1Angle.FromRadians(kTinyRad));
+            var tangent = S2Point.Normalize(S2Point.CrossProd(tiny.Axis, new S2Point(3, 2, 1)));
+            Assert.True(tiny.Contains(tiny.Axis + (tangent* 0.99*kTinyRad)));
+            Assert.True(!tiny.Contains(tiny.Axis + (tangent* 1.01*kTinyRad)));
 
             // Basic tests on a hemispherical cap.
-            var hemi = S2Cap.fromAxisHeight(S2Point.Normalize(new S2Point(1, 0, 1)), 1);
-            JavaAssert.Equal(hemi.complement().axis(), -hemi.axis());
-            JavaAssert.Equal(hemi.complement().height(), 1.0);
-            Assert.True(hemi.contains(new S2Point(1, 0, 0)));
-            Assert.True(!hemi.complement().contains(new S2Point(1, 0, 0)));
-            Assert.True(hemi.contains(S2Point.Normalize(new S2Point(1, 0, -(1 - EPS)))));
-            Assert.True(!hemi.interiorContains(S2Point.Normalize(new S2Point(1, 0, -(1 + EPS)))));
+            var hemi = S2Cap.FromAxisHeight(S2Point.Normalize(new S2Point(1, 0, 1)), 1);
+            JavaAssert.Equal(hemi.Complement.Axis, -hemi.Axis);
+            JavaAssert.Equal(hemi.Complement.Height, 1.0);
+            Assert.True(hemi.Contains(new S2Point(1, 0, 0)));
+            Assert.True(!hemi.Complement.Contains(new S2Point(1, 0, 0)));
+            Assert.True(hemi.Contains(S2Point.Normalize(new S2Point(1, 0, -(1 - EPS)))));
+            Assert.True(!hemi.InteriorContains(S2Point.Normalize(new S2Point(1, 0, -(1 + EPS)))));
 
             // A concave cap.
-            var concave = S2Cap.fromAxisAngle(getLatLngPoint(80, 10), S1Angle.FromDegrees(150));
-            Assert.True(concave.contains(getLatLngPoint(-70*(1 - EPS), 10)));
-            Assert.True(!concave.contains(getLatLngPoint(-70*(1 + EPS), 10)));
-            Assert.True(concave.contains(getLatLngPoint(-50*(1 - EPS), -170)));
-            Assert.True(!concave.contains(getLatLngPoint(-50*(1 + EPS), -170)));
+            var concave = S2Cap.FromAxisAngle(getLatLngPoint(80, 10), S1Angle.FromDegrees(150));
+            Assert.True(concave.Contains(getLatLngPoint(-70*(1 - EPS), 10)));
+            Assert.True(!concave.Contains(getLatLngPoint(-70*(1 + EPS), 10)));
+            Assert.True(concave.Contains(getLatLngPoint(-50*(1 - EPS), -170)));
+            Assert.True(!concave.Contains(getLatLngPoint(-50*(1 + EPS), -170)));
 
             // Cap containment tests.
-            Assert.True(!empty.contains(xaxis));
-            Assert.True(!empty.interiorIntersects(xaxis));
-            Assert.True(full.contains(xaxis));
-            Assert.True(full.interiorIntersects(xaxis));
-            Assert.True(!xaxis.contains(full));
-            Assert.True(!xaxis.interiorIntersects(full));
-            Assert.True(xaxis.contains(xaxis));
-            Assert.True(!xaxis.interiorIntersects(xaxis));
-            Assert.True(xaxis.contains(empty));
-            Assert.True(!xaxis.interiorIntersects(empty));
-            Assert.True(hemi.contains(tiny));
-            Assert.True(hemi.contains(
-                S2Cap.fromAxisAngle(new S2Point(1, 0, 0), S1Angle.FromRadians(S2.PiOver4 - EPS))));
-            Assert.True(!hemi.contains(
-                S2Cap.fromAxisAngle(new S2Point(1, 0, 0), S1Angle.FromRadians(S2.PiOver4 + EPS))));
-            Assert.True(concave.contains(hemi));
-            Assert.True(concave.interiorIntersects(hemi.complement()));
-            Assert.True(!concave.contains(S2Cap.fromAxisHeight(-concave.axis(), 0.1)));
+            Assert.True(!empty.Contains(xaxis));
+            Assert.True(!empty.InteriorIntersects(xaxis));
+            Assert.True(full.Contains(xaxis));
+            Assert.True(full.InteriorIntersects(xaxis));
+            Assert.True(!xaxis.Contains(full));
+            Assert.True(!xaxis.InteriorIntersects(full));
+            Assert.True(xaxis.Contains(xaxis));
+            Assert.True(!xaxis.InteriorIntersects(xaxis));
+            Assert.True(xaxis.Contains(empty));
+            Assert.True(!xaxis.InteriorIntersects(empty));
+            Assert.True(hemi.Contains(tiny));
+            Assert.True(hemi.Contains(
+                S2Cap.FromAxisAngle(new S2Point(1, 0, 0), S1Angle.FromRadians(S2.PiOver4 - EPS))));
+            Assert.True(!hemi.Contains(
+                S2Cap.FromAxisAngle(new S2Point(1, 0, 0), S1Angle.FromRadians(S2.PiOver4 + EPS))));
+            Assert.True(concave.Contains(hemi));
+            Assert.True(concave.InteriorIntersects(hemi.Complement));
+            Assert.True(!concave.Contains(S2Cap.FromAxisHeight(-concave.Axis, 0.1)));
         }
     }
 }

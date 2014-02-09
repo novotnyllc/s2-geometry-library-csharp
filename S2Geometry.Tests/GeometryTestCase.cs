@@ -160,7 +160,7 @@ namespace S2Geometry.Tests
             Assert.True(capArea >= minArea && capArea <= maxArea);
 
             // The surface area of a cap is 2*Pi times its height.
-            return S2Cap.fromAxisArea(randomPoint(), capArea);
+            return S2Cap.FromAxisArea(randomPoint(), capArea);
         }
 
         protected S2Point samplePoint(S2Cap cap)
@@ -168,7 +168,7 @@ namespace S2Geometry.Tests
             // We consider the cap axis to be the "z" axis. We choose two other axes to
             // complete the coordinate frame.
 
-            var z = cap.axis();
+            var z = cap.Axis;
             var x = z.Ortho;
             var y = S2Point.CrossProd(z, x);
 
@@ -176,7 +176,7 @@ namespace S2Geometry.Tests
             // height. First we choose a random height, and then we choose a random
             // point along the circle at that height.
 
-            var h = rand.NextDouble()*cap.height();
+            var h = rand.NextDouble()*cap.Height;
             var theta = 2*S2.Pi*rand.NextDouble();
             var r = Math.Sqrt(h*(2 - h)); // Radius of circle.
 

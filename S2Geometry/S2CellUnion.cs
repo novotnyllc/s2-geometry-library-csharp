@@ -58,7 +58,7 @@ namespace Google.Common.Geometry
                 // bounding cap of minimal area, but it should be close enough.
                 if (_cellIds.Count == 0)
                 {
-                    return S2Cap.empty();
+                    return S2Cap.Empty;
                 }
                 var centroid = new S2Point(0, 0, 0);
                 foreach (var id in this)
@@ -79,10 +79,10 @@ namespace Google.Common.Geometry
                 // contains the bounding caps of all the individual cells. Note that it is
                 // *not* sufficient to just bound all the cell vertices because the bounding
                 // cap may be concave (i.e. cover more than one hemisphere).
-                var cap = S2Cap.fromAxisHeight(centroid, 0);
+                var cap = S2Cap.FromAxisHeight(centroid, 0);
                 foreach (var id in this)
                 {
-                    cap = cap.addCap(new S2Cell(id).CapBound);
+                    cap = cap.AddCap(new S2Cell(id).CapBound);
                 }
                 return cap;
             }

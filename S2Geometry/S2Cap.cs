@@ -21,25 +21,30 @@ namespace Google.Common.Geometry
  *
  */
 
-    public class S2Cap : IS2Region, IEquatable<S2Cap>
+    public struct S2Cap : IS2Region, IEquatable<S2Cap>
     {
         /**
    * Multiply a positive number by this constant to ensure that the result of a
    * floating point operation is at least as large as the true
    * infinite-precision result.
    */
-        private const double ROUND_UP = 1.0 + 1.0/(1L << 52);
+        private const double RoundUp = 1.0 + 1.0/(1L << 52);
+        public static readonly S2Cap Empty = new S2Cap(new S2Point(1, 0, 0), -1);
+
+        /** Return a full cap, i.e. a cap that contains all points. */
+
+        public static readonly S2Cap Full = new S2Cap(new S2Point(1, 0, 0), 2);
 
         private readonly S2Point _axis;
         private readonly double _height;
 
         // Caps may be constructed from either an axis and a height, or an axis and
         // an angle. To avoid ambiguity, there are no public constructors
-        private S2Cap()
-        {
-            _axis = new S2Point();
-            _height = 0;
-        }
+        //private S2Cap()
+        //{
+        //    _axis = new S2Point();
+        //    _height = 0;
+        //}
 
         private S2Cap(S2Point axis, double height)
         {
@@ -48,12 +53,87 @@ namespace Google.Common.Geometry
             // assert (isValid());
         }
 
+        public S2Point Axis
+        {
+            get { return _axis; }
+        }
+
+        public double Height
+        {
+            get { return _height; }
+        }
+
+        public double Area
+        {
+            get { return 2*S2.Pi*Math.Max(0.0, _height); }
+        }
+
+        /**
+   * Return the cap opening angle in radians, or a negative number for empty
+   * caps.
+   */
+
+        public S1Angle Angle
+        {
+            get
+            {
+                // This could also be computed as acos(1 - height_), but the following
+                // formula is much more accurate when the cap height is small. It
+                // follows from the relationship h = 1 - cos(theta) = 2 sin^2(theta/2).
+                if (IsEmpty)
+                {
+                    return S1Angle.FromRadians(-1);
+                }
+                return S1Angle.FromRadians(2*Math.Asin(Math.Sqrt(0.5*_height)));
+            }
+        }
+
+        /**
+   * We allow negative heights (to represent empty caps) but not heights greater
+   * than 2.
+   */
+
+        public bool IsValid
+        {
+            get { return S2.IsUnitLength(_axis) && _height <= 2; }
+        }
+
+        /** Return true if the cap is empty, i.e. it contains no points. */
+
+        public bool IsEmpty
+        {
+            get { return _height < 0; }
+        }
+
+        /** Return true if the cap is full, i.e. it contains all points. */
+
+        public bool IsFull
+        {
+            get { return _height >= 2; }
+        }
+
+        /**
+   * Return the complement of the interior of the cap. A cap and its complement
+   * have the same boundary but do not share any interior points. The complement
+   * operator is not a bijection, since the complement of a singleton cap
+   * (containing a single point) is the same as the complement of an empty cap.
+   */
+
+        public S2Cap Complement
+        {
+            get
+            {
+                // The complement of a full cap is an empty cap, not a singleton.
+                // Also make sure that the complement of an empty cap has height 2.
+                var cHeight = IsFull ? -1 : 2 - Math.Max(_height, 0.0);
+                return FromAxisHeight(-_axis, cHeight);
+            }
+        }
+
         public bool Equals(S2Cap other)
         {
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
             return (_axis.Equals(other._axis) && _height.Equals(other._height))
-                   || (isEmpty() && other.isEmpty()) || (isFull() && other.isFull());
+                   || (IsEmpty && other.IsEmpty) || (IsFull && other.IsFull);
         }
 
         public S2Cap CapBound
@@ -65,14 +145,14 @@ namespace Google.Common.Geometry
         {
             get
             {
-                if (isEmpty())
+                if (IsEmpty)
                 {
                     return S2LatLngRect.empty();
                 }
 
                 // Convert the axis to a (lat,lng) pair, and compute the cap angle.
                 var axisLatLng = new S2LatLng(_axis);
-                var capAngle = angle().Radians;
+                var capAngle = Angle.Radians;
 
                 var allLongitudes = false;
                 double[] lat = new double[2], lng = new double[2];
@@ -132,7 +212,7 @@ namespace Google.Common.Geometry
             for (var k = 0; k < 4; ++k)
             {
                 vertices[k] = cell.getVertex(k);
-                if (!contains(vertices[k]))
+                if (!Contains(vertices[k]))
                 {
                     return false;
                 }
@@ -140,7 +220,7 @@ namespace Google.Common.Geometry
             // Otherwise, return true if the complement of the cap does not intersect
             // the cell. (This test is slightly conservative, because technically we
             // want Complement().InteriorIntersects() here.)
-            return !complement().intersects(cell, vertices);
+            return !Complement.Intersects(cell, vertices);
         }
 
         public bool MayIntersect(S2Cell cell)
@@ -150,29 +230,27 @@ namespace Google.Common.Geometry
             for (var k = 0; k < 4; ++k)
             {
                 vertices[k] = cell.getVertex(k);
-                if (contains(vertices[k]))
+                if (Contains(vertices[k]))
                 {
                     return true;
                 }
             }
-            return intersects(cell, vertices);
+            return Intersects(cell, vertices);
         }
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != GetType()) return false;
             return Equals((S2Cap)obj);
         }
 
         public override int GetHashCode()
         {
-            if (isFull())
+            if (IsFull)
             {
                 return 17;
             }
-            else if (isEmpty())
+            else if (IsEmpty)
             {
                 return 37;
             }
@@ -198,7 +276,7 @@ namespace Google.Common.Geometry
    * unit-length vector.
    */
 
-        public static S2Cap fromAxisHeight(S2Point axis, double height)
+        public static S2Cap FromAxisHeight(S2Point axis, double height)
         {
             // assert (S2.isUnitLength(axis));
             return new S2Cap(axis, height);
@@ -210,7 +288,7 @@ namespace Google.Common.Geometry
    * vector, and 'angle' should be between 0 and 180 degrees.
    */
 
-        public static S2Cap fromAxisAngle(S2Point axis, S1Angle angle)
+        public static S2Cap FromAxisAngle(S2Point axis, S1Angle angle)
         {
             // The height of the cap can be computed as 1-cos(angle), but this isn't
             // very accurate for angles close to zero (where cos(angle) is almost 1).
@@ -226,7 +304,7 @@ namespace Google.Common.Geometry
    * unit-length vector, and 'area' should be between 0 and 4 * M_PI.
    */
 
-        public static S2Cap fromAxisArea(S2Point axis, double area)
+        public static S2Cap FromAxisArea(S2Point axis, double area)
         {
             // assert (S2.isUnitLength(axis));
             return new S2Cap(axis, area/(2*S2.Pi));
@@ -234,104 +312,19 @@ namespace Google.Common.Geometry
 
         /** Return an empty cap, i.e. a cap that contains no points. */
 
-        public static S2Cap empty()
-        {
-            return new S2Cap(new S2Point(1, 0, 0), -1);
-        }
-
-        /** Return a full cap, i.e. a cap that contains all points. */
-
-        public static S2Cap full()
-        {
-            return new S2Cap(new S2Point(1, 0, 0), 2);
-        }
-
-
-        // Accessor methods.
-        public S2Point axis()
-        {
-            return _axis;
-        }
-
-        public double height()
-        {
-            return _height;
-        }
-
-        public double area()
-        {
-            return 2*S2.Pi*Math.Max(0.0, _height);
-        }
-
-        /**
-   * Return the cap opening angle in radians, or a negative number for empty
-   * caps.
-   */
-
-        public S1Angle angle()
-        {
-            // This could also be computed as acos(1 - height_), but the following
-            // formula is much more accurate when the cap height is small. It
-            // follows from the relationship h = 1 - cos(theta) = 2 sin^2(theta/2).
-            if (isEmpty())
-            {
-                return S1Angle.FromRadians(-1);
-            }
-            return S1Angle.FromRadians(2*Math.Asin(Math.Sqrt(0.5*_height)));
-        }
-
-        /**
-   * We allow negative heights (to represent empty caps) but not heights greater
-   * than 2.
-   */
-
-        public bool isValid()
-        {
-            return S2.IsUnitLength(_axis) && _height <= 2;
-        }
-
-        /** Return true if the cap is empty, i.e. it contains no points. */
-
-        public bool isEmpty()
-        {
-            return _height < 0;
-        }
-
-        /** Return true if the cap is full, i.e. it contains all points. */
-
-        public bool isFull()
-        {
-            return _height >= 2;
-        }
-
-        /**
-   * Return the complement of the interior of the cap. A cap and its complement
-   * have the same boundary but do not share any interior points. The complement
-   * operator is not a bijection, since the complement of a singleton cap
-   * (containing a single point) is the same as the complement of an empty cap.
-   */
-
-        public S2Cap complement()
-        {
-            // The complement of a full cap is an empty cap, not a singleton.
-            // Also make sure that the complement of an empty cap has height 2.
-            var cHeight = isFull() ? -1 : 2 - Math.Max(_height, 0.0);
-            return fromAxisHeight(-_axis, cHeight);
-        }
-
         /**
    * Return true if and only if this cap contains the given other cap (in a set
    * containment sense, e.g. every cap contains the empty cap).
    */
 
-        public bool contains(S2Cap other)
+        public bool Contains(S2Cap other)
         {
-            if (isFull() || other.isEmpty())
+            if (IsFull || other.IsEmpty)
             {
                 return true;
             }
-            return angle().Radians >= _axis.Angle(other._axis)
-                   + other.angle().Radians;
+            return Angle.Radians >= _axis.Angle(other._axis)
+                   + other.Angle.Radians;
         }
 
         /**
@@ -340,11 +333,11 @@ namespace Google.Common.Geometry
    * this cap is used.)
    */
 
-        public bool interiorIntersects(S2Cap other)
+        public bool InteriorIntersects(S2Cap other)
         {
             // Interior(X) intersects Y if and only if Complement(Interior(X))
             // does not contain Y.
-            return !complement().contains(other);
+            return !Complement.Contains(other);
         }
 
         /**
@@ -353,10 +346,10 @@ namespace Google.Common.Geometry
    * unit-length vector.
    */
 
-        public bool interiorContains(S2Point p)
+        public bool InteriorContains(S2Point p)
         {
             // assert (S2.isUnitLength(p));
-            return isFull() || (_axis - p).Norm2 < 2*_height;
+            return IsFull || (_axis - p).Norm2 < 2*_height;
         }
 
         /**
@@ -365,11 +358,11 @@ namespace Google.Common.Geometry
    * unchanged. 'p' should be a unit-length vector.
    */
 
-        public S2Cap addPoint(S2Point p)
+        public S2Cap AddPoint(S2Point p)
         {
             // Compute the squared chord length, then convert it into a height.
             // assert (S2.isUnitLength(p));
-            if (isEmpty())
+            if (IsEmpty)
             {
                 return new S2Cap(p, 0);
             }
@@ -379,16 +372,16 @@ namespace Google.Common.Geometry
                 // we need to round up the distance calculation. That is, after
                 // calling cap.AddPoint(p), cap.Contains(p) should be true.
                 var dist2 = (_axis - p).Norm2;
-                var newHeight = Math.Max(_height, ROUND_UP*0.5*dist2);
+                var newHeight = Math.Max(_height, RoundUp*0.5*dist2);
                 return new S2Cap(_axis, newHeight);
             }
         }
 
         // Increase the cap height if necessary to include "other". If the current
         // cap is empty it is set to the given other cap.
-        public S2Cap addCap(S2Cap other)
+        public S2Cap AddCap(S2Cap other)
         {
-            if (isEmpty())
+            if (IsEmpty)
             {
                 return new S2Cap(other._axis, other._height);
             }
@@ -397,7 +390,7 @@ namespace Google.Common.Geometry
                 // See comments for FromAxisAngle() and AddPoint(). This could be
                 // optimized by doing the calculation in terms of cap heights rather
                 // than cap opening angles.
-                var angle = _axis.Angle(other._axis) + other.angle().Radians;
+                var angle = _axis.Angle(other._axis) + other.Angle.Radians;
                 if (angle >= S2.Pi)
                 {
                     return new S2Cap(_axis, 2); //Full cap
@@ -405,7 +398,7 @@ namespace Google.Common.Geometry
                 else
                 {
                     var d = Math.Sin(0.5*angle);
-                    var newHeight = Math.Max(_height, ROUND_UP*2*d*d);
+                    var newHeight = Math.Max(_height, RoundUp*2*d*d);
                     return new S2Cap(_axis, newHeight);
                 }
             }
@@ -419,7 +412,7 @@ namespace Google.Common.Geometry
    * alrady been checked.
    */
 
-        public bool intersects(S2Cell cell, S2Point[] vertices)
+        public bool Intersects(S2Cell cell, IReadOnlyList<S2Point> vertices)
         {
             // Return true if this cap intersects any point of 'cell' excluding its
             // vertices (which are assumed to already have been checked).
@@ -433,7 +426,7 @@ namespace Google.Common.Geometry
             }
 
             // We need to check for empty caps due to the axis check just below.
-            if (isEmpty())
+            if (IsEmpty)
             {
                 return false;
             }
@@ -480,7 +473,7 @@ namespace Google.Common.Geometry
             return false;
         }
 
-        public bool contains(S2Point p)
+        public bool Contains(S2Point p)
         {
             // The point 'p' should be a unit-length vector.
             // assert (S2.isUnitLength(p));
@@ -497,18 +490,18 @@ namespace Google.Common.Geometry
    * the given cap "other".
    */
 
-        internal bool approxEquals(S2Cap other, double maxError)
+        internal bool ApproxEquals(S2Cap other, double maxError)
         {
             return (_axis.Aequal(other._axis, maxError) && Math.Abs(_height - other._height) <= maxError)
-                   || (isEmpty() && other._height <= maxError)
-                   || (other.isEmpty() && _height <= maxError)
-                   || (isFull() && other._height >= 2 - maxError)
-                   || (other.isFull() && _height >= 2 - maxError);
+                   || (IsEmpty && other._height <= maxError)
+                   || (other.IsEmpty && _height <= maxError)
+                   || (IsFull && other._height >= 2 - maxError)
+                   || (other.IsFull && _height >= 2 - maxError);
         }
 
-        internal bool approxEquals(S2Cap other)
+        internal bool ApproxEquals(S2Cap other)
         {
-            return approxEquals(other, 1e-14);
+            return ApproxEquals(other, 1e-14);
         }
 
 

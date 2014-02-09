@@ -455,7 +455,7 @@ namespace Google.Common.Geometry
                 // Find the maximum level such that the bounding cap contains at most one
                 // cell vertex at that level.
                 var cap = region.CapBound;
-                var level = Math.Min(S2Projections.MIN_WIDTH.GetMaxLevel(2*cap.angle().Radians),
+                var level = Math.Min(S2Projections.MIN_WIDTH.GetMaxLevel(2*cap.Angle.Radians),
                                      Math.Min(maxLevel(), S2CellId.MAX_LEVEL - 1));
                 if (levelMod() > 1 && level > minLevel())
                 {
@@ -468,7 +468,7 @@ namespace Google.Common.Geometry
                     // Find the leaf cell containing the cap axis, and determine which
                     // subcell of the parent cell contains it.
                     var @base = new List<S2CellId>(4);
-                    var id = S2CellId.fromPoint(cap.axis());
+                    var id = S2CellId.fromPoint(cap.Axis);
                     id.getVertexNeighbors(level, @base);
                     for (var i = 0; i < @base.Count; ++i)
                     {
