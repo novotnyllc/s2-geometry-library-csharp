@@ -94,7 +94,7 @@ namespace S2Geometry.Tests
       // Check that GetCovering is deterministic.
       List<S2CellId> covering2 = new List<S2CellId>();
       coverer.getCovering(cap, covering2);
-      assertTrue(covering.Equals(covering2));
+      assertTrue(covering.SequenceEqual(covering2));
 
       // Also check S2CellUnion.denormalize(). The denormalized covering
       // may still be different and smaller than "covering" because

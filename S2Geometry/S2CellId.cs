@@ -1139,7 +1139,7 @@ namespace Google.Common.Geometry
 
         public override string ToString()
         {
-            return "(face=" + face() + ", pos=" + pos().ToString("X") + ", level="
+            return "(face=" + face() + ", pos=" + pos().ToString("x") + ", level="
                    + level() + ")";
         }
 

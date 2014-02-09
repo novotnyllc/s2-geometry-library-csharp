@@ -143,7 +143,8 @@ namespace S2Geometry.Tests
                 // intersects id because we may discover that the region does not actually
                 // intersect upon further subdivision. (MayIntersect is not exact.)
                 Assert.True(!region.contains(new S2Cell(id)));
-                Assert.True(!id.isLeaf());
+                var result = !id.isLeaf();
+                Assert.True(result);
                 var end = id.childEnd();
                 for (var child = id.childBegin(); !child.Equals(end); child = child.next())
                 {

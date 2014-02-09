@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using C5;
+using Google.Common.Geometry.DataStructures;
 
 namespace Google.Common.Geometry
 {
@@ -88,7 +90,8 @@ namespace Google.Common.Geometry
     // elements.
   }
 
-  class QueueEntry {
+  class QueueEntry : IComparable<QueueEntry>
+  {
     public int id;
     public Candidate candidate;
 
@@ -96,6 +99,11 @@ namespace Google.Common.Geometry
       this.id = id;
       this.candidate = candidate;
     }
+
+      public int CompareTo(QueueEntry other)
+      {
+          return id < other.id ? 1 : (id > other.id ? -1 : 0);
+      }
   }
 
   /**
@@ -117,7 +125,7 @@ namespace Google.Common.Geometry
    * queue entries since for some reason priority_queue<> uses a deque by
    * default.
    */
-  private SortedSet<QueueEntry> candidateQueue;
+  private PriorityQueue<QueueEntry> candidateQueue;
 
   /**
    * Default constructor, sets all fields to default values.
@@ -131,7 +139,7 @@ namespace Google.Common.Geometry
     result = new List<S2CellId>();
     // TODO(kirilll?): 10 is a completely random number, work out a better
     // estimate
-    candidateQueue = new SortedSet<QueueEntry>(new QueueEntriesComparator());
+    candidateQueue = new PriorityQueue<QueueEntry>();
   }
 
   // Set the minimum and maximum cell level to be used. The default is to use
@@ -184,7 +192,7 @@ namespace Google.Common.Geometry
    * of 4, 16, and 64 respectively.
    */
   public void setLevelMod(int levelMod) {
-    // assert (levelMod >= 1 && levelMod <= 3);
+     Debug.Assert (levelMod >= 1 && levelMod <= 3);
       this._levelMod = Math.Max(1, Math.Min(3, levelMod));
   }
 
@@ -389,7 +397,7 @@ namespace Google.Common.Geometry
       int priority = -((((candidate.cell.level() << maxChildrenShift()) + candidate.numChildren)
           << maxChildrenShift()) + numTerminals);
         var entry = new QueueEntry(priority, candidate);
-      candidateQueue.Add(entry);
+      candidateQueue.Enqueue(entry);
       // logger.info("Push: " + candidate.cell.id() + " (" + priority + ") ");
     }
   }
@@ -486,8 +494,7 @@ namespace Google.Common.Geometry
     getInitialCandidates();
     while (candidateQueue.Count != 0 && (!interiorCovering || result.Count < _maxCells))
     {
-        var qe = candidateQueue.Min;
-        candidateQueue.Remove(qe);
+        var qe = candidateQueue.Dequeue();
         Candidate candidate = qe.candidate;
       // logger.info("Pop: " + candidate.cell.id());
       if (candidate.cell.level() < _minLevel || candidate.numChildren == 1

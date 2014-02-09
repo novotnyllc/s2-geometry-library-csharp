@@ -38,6 +38,7 @@
     <!-- A reference to the entire .NET Framework is automatically included -->
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataStructures\PriorityQueue.cs" />
     <Compile Include="FpUtils.cs" />
     <Compile Include="IS2Region.cs" />
     <Compile Include="DataStructures\IMultiMap.cs" />
