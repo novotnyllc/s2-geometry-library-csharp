@@ -201,7 +201,7 @@ namespace Google.Common.Geometry
             for (var i = 1; i < n; ++i)
             {
                 if (vertices[i - 1].Equals(vertices[i])
-                    || vertices[i - 1].Equals(S2Point.neg(vertices[i])))
+                    || vertices[i - 1].Equals(-vertices[i]))
                 {
                     Debug.WriteLine("Vertices " + (i - 1) + " and " + i + " are identical or antipodal");
                     return false;
@@ -232,7 +232,7 @@ namespace Google.Common.Geometry
             double lengthSum = 0;
             for (var i = 1; i < numVertices(); ++i)
             {
-                lengthSum += vertex(i - 1).angle(vertex(i));
+                lengthSum += vertex(i - 1).Angle(vertex(i));
             }
             return S1Angle.FromRadians(lengthSum);
         }
@@ -257,19 +257,18 @@ namespace Google.Common.Geometry
             double lengthSum = 0;
             for (var i = 1; i < numVertices(); ++i)
             {
-                lengthSum += vertex(i - 1).angle(vertex(i));
+                lengthSum += vertex(i - 1).Angle(vertex(i));
             }
             var target = fraction*lengthSum;
             for (var i = 1; i < numVertices(); ++i)
             {
-                var length = vertex(i - 1).angle(vertex(i));
+                var length = vertex(i - 1).Angle(vertex(i));
                 if (target < length)
                 {
                     // This code interpolates with respect to arc length rather than
                     // straight-line distance, and produces a unit-length result.
                     var f = Math.Sin(target)/Math.Sin(length);
-                    return S2Point.add(S2Point.mul(vertex(i - 1), (Math.Cos(target) - f*Math.Cos(length))),
-                                       S2Point.mul(vertex(i), f));
+                    return (vertex(i - 1) * (Math.Cos(target) - f*Math.Cos(length))) + (vertex(i)* f);
                 }
                 target -= length;
             }

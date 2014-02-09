@@ -245,7 +245,7 @@ namespace S2Geometry.Tests
 
             // A non-vertex point on an edge should be distance 0
             assertEquals(0d, rect.getDistance(
-                S2Point.normalize(S2Point.add(rect.loop(0).vertex(0), rect.loop(0).vertex(1)))).Radians,
+                S2Point.Normalize(rect.loop(0).vertex(0) + rect.loop(0).vertex(1))).Radians,
                          epsilon);
 
             var origin = S2LatLng.fromDegrees(0, 0).toPoint();

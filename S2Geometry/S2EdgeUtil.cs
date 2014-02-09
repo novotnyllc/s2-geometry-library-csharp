@@ -51,17 +51,17 @@ namespace Google.Common.Geometry
             // since we need to exclude pairs of line segments that would
             // otherwise "intersect" by crossing two antipodal points.
 
-            var ab = S2Point.crossProd(a, b);
-            var acb = -(ab.dotProd(c));
-            var bda = ab.dotProd(d);
+            var ab = S2Point.CrossProd(a, b);
+            var acb = -(ab.DotProd(c));
+            var bda = ab.DotProd(d);
             if (acb*bda <= 0)
             {
                 return false;
             }
 
-            var cd = S2Point.crossProd(c, d);
-            var cbd = -(cd.dotProd(b));
-            var dac = cd.dotProd(a);
+            var cd = S2Point.CrossProd(c, d);
+            var cbd = -(cd.DotProd(b));
+            var dac = cd.DotProd(a);
             return (acb*cbd > 0) && (acb*dac > 0);
         }
 
@@ -92,7 +92,7 @@ namespace Google.Common.Geometry
             // Recall that when the arguments to robustCCW are permuted, the sign of the
             // result changes according to the sign of the permutation. Thus ACB and
             // ABC are oppositely oriented, while BDA and ABD are the same.
-            var aCrossB = S2Point.crossProd(a, b);
+            var aCrossB = S2Point.CrossProd(a, b);
             var acb = -S2.RobustCcw(a, b, c, aCrossB);
             var bda = S2.RobustCcw(a, b, d, aCrossB);
 
@@ -111,7 +111,7 @@ namespace Google.Common.Geometry
 
             // Otherwise we compute the orientations of CBD and DAC, and check whether
             // their orientations are compatible with the other two triangles.
-            var cCrossD = S2Point.crossProd(c, d);
+            var cCrossD = S2Point.CrossProd(c, d);
             var cbd = -S2.RobustCcw(c, d, b, cCrossD);
             if (cbd != acb)
             {
@@ -222,18 +222,18 @@ namespace Google.Common.Geometry
 
             // We use robustCrossProd() to get accurate results even when two endpoints
             // are close together, or when the two line segments are nearly parallel.
-            var aNorm = S2Point.normalize(S2.RobustCrossProd(a0, a1));
-            var bNorm = S2Point.normalize(S2.RobustCrossProd(b0, b1));
-            var x = S2Point.normalize(S2.RobustCrossProd(aNorm, bNorm));
+            var aNorm = S2Point.Normalize(S2.RobustCrossProd(a0, a1));
+            var bNorm = S2Point.Normalize(S2.RobustCrossProd(b0, b1));
+            var x = S2Point.Normalize(S2.RobustCrossProd(aNorm, bNorm));
 
             // Make sure the intersection point is on the correct side of the sphere.
             // Since all vertices are unit length, and edges are less than 180 degrees,
             // (a0 + a1) and (b0 + b1) both have positive dot product with the
             // intersection point. We use the sum of all vertices to make sure that the
             // result is unchanged when the edges are reversed or exchanged.
-            if (x.dotProd(S2Point.add(S2Point.add(a0, a1), S2Point.add(b0, b1))) < 0)
+            if (x.DotProd(a0 + a1 + b0 + b1) < 0)
             {
-                x = S2Point.neg(x);
+                x = -x;
             }
 
             // The calculation above is sufficient to ensure that "x" is within
@@ -281,8 +281,8 @@ namespace Google.Common.Geometry
         public static double getDistanceFraction(S2Point x, S2Point a0, S2Point a1)
         {
             Preconditions.CheckArgument(!a0.Equals(a1));
-            var d0 = x.angle(a0);
-            var d1 = x.angle(a1);
+            var d0 = x.Angle(a0);
+            var d1 = x.Angle(a1);
             return d0/(d0 + d1);
         }
 
@@ -324,7 +324,7 @@ namespace Google.Common.Geometry
                 // to the corresponding great circle. The result is accurate for small
                 // distances but not necessarily for large distances (approaching Pi/2).
 
-                var sinDist = Math.Abs(x.dotProd(aCrossB))/aCrossB.norm();
+                var sinDist = Math.Abs(x.DotProd(aCrossB))/aCrossB.Norm;
                 return S1Angle.FromRadians(Math.Asin(Math.Min(1.0, sinDist)));
             }
 
@@ -333,7 +333,7 @@ namespace Google.Common.Geometry
             // distances and convert the result to an angle. Again, this method is
             // accurate for small but not large distances (approaching Pi).
 
-            var linearDist2 = Math.Min(S2Point.minus(x, a).norm2(), S2Point.minus(x, b).norm2());
+            var linearDist2 = Math.Min((x - a).Norm2, (x - b).Norm2);
             return S1Angle.FromRadians(2*Math.Asin(Math.Min(1.0, 0.5*Math.Sqrt(linearDist2))));
         }
 
@@ -351,15 +351,15 @@ namespace Google.Common.Geometry
 
             var crossProd = S2.RobustCrossProd(a, b);
             // Find the closest point to X along the great circle through AB.
-            var p = S2Point.minus(x, S2Point.mul(crossProd, x.dotProd(crossProd)/crossProd.norm2()));
+            var p = x - (crossProd * x.DotProd(crossProd)/crossProd.Norm2);
 
             // If p is on the edge AB, then it's the closest point.
             if (S2.SimpleCcw(crossProd, a, p) && S2.SimpleCcw(p, b, crossProd))
             {
-                return S2Point.normalize(p);
+                return S2Point.Normalize(p);
             }
             // Otherwise, the closest point is either A or B.
-            return S2Point.minus(x, a).norm2() <= S2Point.minus(x, b).norm2() ? a : b;
+            return (x - a).Norm2 <= (x - b).Norm2 ? a : b;
         }
 
         private class CloserResult
@@ -387,8 +387,8 @@ namespace Google.Common.Geometry
             {
                 // If the squared distance from x to y is less than dmin2, then replace
                 // vmin by y and update dmin2 accordingly.
-                var d2 = S2Point.minus(x, y).norm2();
-                if (d2 < dmin2 || (d2 == dmin2 && y.lessThan(vmin)))
+                var d2 = (x - y).Norm2;
+                if (d2 < dmin2 || (d2 == dmin2 && y < vmin))
                 {
                     dmin2 = d2;
                     vmin = y;
@@ -421,7 +421,7 @@ namespace Google.Common.Geometry
             {
                 this.a = a;
                 this.b = b;
-                aCrossB = S2Point.crossProd(a, b);
+                aCrossB = S2Point.CrossProd(a, b);
                 restartAt(c);
             }
 
@@ -491,7 +491,7 @@ namespace Google.Common.Geometry
             public bool edgeOrVertexCrossing(S2Point d)
             {
                 // We need to copy c since it is clobbered by robustCrossing().
-                var c2 = new S2Point(c.get(0), c.get(1), c.get(2));
+                var c2 = new S2Point(c[0], c[1], c[2]);
 
                 var crossing = robustCrossing(d);
                 if (crossing < 0)
@@ -514,7 +514,7 @@ namespace Google.Common.Geometry
             {
                 // ACB and BDA have the appropriate orientations, so now we check the
                 // triangles CBD and DAC.
-                var cCrossD = S2Point.crossProd(c, d);
+                var cCrossD = S2Point.CrossProd(c, d);
                 var cbd = -S2.RobustCcw(c, d, b, cCrossD);
                 if (cbd != acb)
                 {
@@ -607,15 +607,15 @@ namespace Google.Common.Geometry
                     // RobustCrossProd to ensure that the edge normal is accurate even
                     // when the two points are very close together.
                     var aCrossB = S2.RobustCrossProd(a, b);
-                    var dir = S2Point.crossProd(aCrossB, new S2Point(0, 0, 1));
-                    var da = dir.dotProd(a);
-                    var db = dir.dotProd(b);
+                    var dir = S2Point.CrossProd(aCrossB, new S2Point(0, 0, 1));
+                    var da = dir.DotProd(a);
+                    var db = dir.DotProd(b);
 
                     if (da*db < 0)
                     {
                         // Minimum/maximum latitude occurs in the edge interior. This affects
                         // the latitude bounds but not the longitude bounds.
-                        var absLat = Math.Acos(Math.Abs(aCrossB.get(2)/aCrossB.norm()));
+                        var absLat = Math.Acos(Math.Abs(aCrossB[2]/aCrossB.Norm));
                         var lat = bound.Lat;
                         if (da < 0)
                         {
@@ -795,16 +795,16 @@ namespace Google.Common.Geometry
                 if (!boundSet)
                 {
                     boundSet = true;
-                    xmin = xmax = from.x;
-                    ymin = ymax = from.y;
-                    zmin = zmax = from.z;
+                    xmin = xmax = @from.X;
+                    ymin = ymax = @from.Y;
+                    zmin = zmax = @from.Z;
                 }
-                xmin = Math.Min(xmin, Math.Min(to.x, from.x));
-                ymin = Math.Min(ymin, Math.Min(to.y, from.y));
-                zmin = Math.Min(zmin, Math.Min(to.z, from.z));
-                xmax = Math.Max(xmax, Math.Max(to.x, from.x));
-                ymax = Math.Max(ymax, Math.Max(to.y, from.y));
-                zmax = Math.Max(zmax, Math.Max(to.z, from.z));
+                xmin = Math.Min(xmin, Math.Min(to.X, @from.X));
+                ymin = Math.Min(ymin, Math.Min(to.Y, @from.Y));
+                zmin = Math.Min(zmin, Math.Min(to.Z, @from.Z));
+                xmax = Math.Max(xmax, Math.Max(to.X, @from.X));
+                ymax = Math.Max(ymax, Math.Max(to.Y, @from.Y));
+                zmax = Math.Max(zmax, Math.Max(to.Z, @from.Z));
 
                 // Because our arcs are really geodesics on the surface of the earth
                 // an edge can have intermediate points outside the xyz bounds implicit
@@ -814,7 +814,7 @@ namespace Google.Common.Geometry
                 // (1N,90E) the path can be wildly deformed.  I did a bunch of
                 // experiments with geodesics to get safe bounds for the deformation.
                 var approxArcLen =
-                    Math.Abs(from.x - to.x) + Math.Abs(from.y - to.y) + Math.Abs(from.z - to.z);
+                    Math.Abs(@from.X - to.X) + Math.Abs(@from.Y - to.Y) + Math.Abs(@from.Z - to.Z);
                 if (approxArcLen < 0.025)
                 {
                     // less than 2 degrees
@@ -853,15 +853,15 @@ namespace Google.Common.Geometry
             {
                 var result = true;
 
-                if ((v1.x < xmin && lastVertex.x < xmin) || (v1.x > xmax && lastVertex.x > xmax))
+                if ((v1.X < xmin && lastVertex.X < xmin) || (v1.X > xmax && lastVertex.X > xmax))
                 {
                     result = false;
                 }
-                else if ((v1.y < ymin && lastVertex.y < ymin) || (v1.y > ymax && lastVertex.y > ymax))
+                else if ((v1.Y < ymin && lastVertex.Y < ymin) || (v1.Y > ymax && lastVertex.Y > ymax))
                 {
                     result = false;
                 }
-                else if ((v1.z < zmin && lastVertex.z < zmin) || (v1.z > zmax && lastVertex.z > zmax))
+                else if ((v1.Z < zmin && lastVertex.Z < zmin) || (v1.Z > zmax && lastVertex.Z > zmax))
                 {
                     result = false;
                 }

@@ -36,13 +36,13 @@ namespace S2Geometry.Tests
             Assert.True(rect.Lng.IsFull);
 
             // Cap that is tangent to the north pole.
-            rect = S2Cap.fromAxisAngle(S2Point.normalize(new S2Point(1, 0, 1)), S1Angle.FromRadians(S2.PiOver4)).RectBound;
+            rect = S2Cap.fromAxisAngle(S2Point.Normalize(new S2Point(1, 0, 1)), S1Angle.FromRadians(S2.PiOver4)).RectBound;
             assertDoubleNear(rect.Lat.Lo, 0);
             assertDoubleNear(rect.Lat.Hi, S2.PiOver2);
             Assert.True(rect.Lng.IsFull);
 
             rect = S2Cap
-                .fromAxisAngle(S2Point.normalize(new S2Point(1, 0, 1)), S1Angle.FromDegrees(45)).RectBound;
+                .fromAxisAngle(S2Point.Normalize(new S2Point(1, 0, 1)), S1Angle.FromDegrees(45)).RectBound;
             assertDoubleNear(rect.latLo().Degrees, 0, kDegreeEps);
             assertDoubleNear(rect.latHi().Degrees, 90, kDegreeEps);
             Assert.True(rect.Lng.IsFull);
@@ -113,18 +113,18 @@ namespace S2Geometry.Tests
                     var covering = S2Cap.fromAxisAngle(center, S1Angle.FromRadians(kFaceRadius + EPS));
                     JavaAssert.Equal(covering.Contains(rootCell), capFace == face);
                     JavaAssert.Equal(covering.MayIntersect(rootCell), capFace != antiFace);
-                    JavaAssert.Equal(covering.Contains(edgeCell), center.dotProd(edgeCell.getCenter()) > 0.1);
+                    JavaAssert.Equal(covering.Contains(edgeCell), center.DotProd(edgeCell.getCenter()) > 0.1);
                     JavaAssert.Equal(covering.Contains(edgeCell), covering.MayIntersect(edgeCell));
                     JavaAssert.Equal(covering.Contains(cornerCell), capFace == face);
                     JavaAssert.Equal(
-                        covering.MayIntersect(cornerCell), center.dotProd(cornerCell.getCenter()) > 0);
+                        covering.MayIntersect(cornerCell), center.DotProd(cornerCell.getCenter()) > 0);
 
                     // A cap that barely intersects the edges of 'cap_face'.
                     var bulging = S2Cap.fromAxisAngle(center, S1Angle.FromRadians(S2.PiOver4 + EPS));
                     Assert.True(!bulging.Contains(rootCell));
                     JavaAssert.Equal(bulging.MayIntersect(rootCell), capFace != antiFace);
                     JavaAssert.Equal(bulging.Contains(edgeCell), capFace == face);
-                    JavaAssert.Equal(bulging.MayIntersect(edgeCell), center.dotProd(edgeCell.getCenter()) > 0.1);
+                    JavaAssert.Equal(bulging.MayIntersect(edgeCell), center.DotProd(edgeCell.getCenter()) > 0.1);
                     Assert.True(!bulging.Contains(cornerCell));
                     Assert.True(!bulging.MayIntersect(cornerCell));
 
@@ -187,19 +187,19 @@ namespace S2Geometry.Tests
             // amount along a tangent do not need to be renormalized.
             var kTinyRad = 1e-10;
             var tiny =
-                S2Cap.fromAxisAngle(S2Point.normalize(new S2Point(1, 2, 3)), S1Angle.FromRadians(kTinyRad));
-            var tangent = S2Point.normalize(S2Point.crossProd(tiny.axis(), new S2Point(3, 2, 1)));
-            Assert.True(tiny.contains(S2Point.add(tiny.axis(), S2Point.mul(tangent, 0.99*kTinyRad))));
-            Assert.True(!tiny.contains(S2Point.add(tiny.axis(), S2Point.mul(tangent, 1.01*kTinyRad))));
+                S2Cap.fromAxisAngle(S2Point.Normalize(new S2Point(1, 2, 3)), S1Angle.FromRadians(kTinyRad));
+            var tangent = S2Point.Normalize(S2Point.CrossProd(tiny.axis(), new S2Point(3, 2, 1)));
+            Assert.True(tiny.contains(tiny.axis() + (tangent* 0.99*kTinyRad)));
+            Assert.True(!tiny.contains(tiny.axis() + (tangent* 1.01*kTinyRad)));
 
             // Basic tests on a hemispherical cap.
-            var hemi = S2Cap.fromAxisHeight(S2Point.normalize(new S2Point(1, 0, 1)), 1);
-            JavaAssert.Equal(hemi.complement().axis(), S2Point.neg(hemi.axis()));
+            var hemi = S2Cap.fromAxisHeight(S2Point.Normalize(new S2Point(1, 0, 1)), 1);
+            JavaAssert.Equal(hemi.complement().axis(), -hemi.axis());
             JavaAssert.Equal(hemi.complement().height(), 1.0);
             Assert.True(hemi.contains(new S2Point(1, 0, 0)));
             Assert.True(!hemi.complement().contains(new S2Point(1, 0, 0)));
-            Assert.True(hemi.contains(S2Point.normalize(new S2Point(1, 0, -(1 - EPS)))));
-            Assert.True(!hemi.interiorContains(S2Point.normalize(new S2Point(1, 0, -(1 + EPS)))));
+            Assert.True(hemi.contains(S2Point.Normalize(new S2Point(1, 0, -(1 - EPS)))));
+            Assert.True(!hemi.interiorContains(S2Point.Normalize(new S2Point(1, 0, -(1 + EPS)))));
 
             // A concave cap.
             var concave = S2Cap.fromAxisAngle(getLatLngPoint(80, 10), S1Angle.FromDegrees(150));
@@ -226,7 +226,7 @@ namespace S2Geometry.Tests
                 S2Cap.fromAxisAngle(new S2Point(1, 0, 0), S1Angle.FromRadians(S2.PiOver4 + EPS))));
             Assert.True(concave.contains(hemi));
             Assert.True(concave.interiorIntersects(hemi.complement()));
-            Assert.True(!concave.contains(S2Cap.fromAxisHeight(S2Point.neg(concave.axis()), 0.1)));
+            Assert.True(!concave.contains(S2Cap.fromAxisHeight(-concave.axis(), 0.1)));
         }
     }
 }

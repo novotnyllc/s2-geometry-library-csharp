@@ -25,7 +25,7 @@ namespace Google.Common.Geometry
         /// <param name="y"></param>
         public S1Angle(S2Point x, S2Point y)
         {
-            _radians = x.angle(y);
+            _radians = x.Angle(y);
         }
 
         public double Radians

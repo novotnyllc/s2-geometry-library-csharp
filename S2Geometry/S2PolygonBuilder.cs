@@ -451,7 +451,7 @@ namespace Google.Common.Geometry
                     if (mergeMap.ContainsKey(v0) || mergeMap.ContainsKey(v1))
                     {
                         // We only need to modify one copy of each undirected edge.
-                        if (!_options.getUndirectedEdges() || v0.lessThan(v1))
+                        if (!_options.getUndirectedEdges() || v0 < v1)
                         {
                             edgesCopy.Add(new S2Edge(v0, v1));
                         }
@@ -811,7 +811,7 @@ namespace Google.Common.Geometry
                         }
                         var p = mp.getPoint();
 
-                        if (center.angle(p) <= searchRadius)
+                        if (center.Angle(p) <= searchRadius)
                         {
                             output.Add(p);
                             mp.mark();

@@ -19,9 +19,9 @@ namespace Google.Common.Geometry
     public class S2AreaCentroid
     {
         private readonly double area;
-        private readonly S2Point centroid;
+        private readonly S2Point? centroid;
 
-        public S2AreaCentroid(double area, S2Point centroid)
+        public S2AreaCentroid(double area, S2Point? centroid = null)
         {
             this.area = area;
             this.centroid = centroid;
@@ -32,7 +32,7 @@ namespace Google.Common.Geometry
             return area;
         }
 
-        public S2Point getCentroid()
+        public S2Point? getCentroid()
         {
             return centroid;
         }

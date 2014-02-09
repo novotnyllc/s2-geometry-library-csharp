@@ -381,15 +381,15 @@ namespace Google.Common.Geometry
                 areaSum += loopSign*loopArea;
                 if (doCentroid)
                 {
-                    var currentCentroid = areaCentroid.getCentroid();
+                    var currentCentroid = areaCentroid.getCentroid().Value;
                     centroidSum =
-                        new S2Point(centroidSum.x + loopSign*currentCentroid.x,
-                                    centroidSum.y + loopSign*currentCentroid.y,
-                                    centroidSum.z + loopSign*currentCentroid.z);
+                        new S2Point(centroidSum.X + loopSign*currentCentroid.X,
+                                    centroidSum.Y + loopSign*currentCentroid.Y,
+                                    centroidSum.Z + loopSign*currentCentroid.Z);
                 }
             }
 
-            return new S2AreaCentroid(areaSum, doCentroid ? centroidSum : null);
+            return new S2AreaCentroid(areaSum, doCentroid ? (S2Point?)centroidSum : null);
         }
 
         /**
@@ -421,7 +421,7 @@ namespace Google.Common.Geometry
    * be contained by the polygon.
    */
 
-        public S2Point getCentroid()
+        public S2Point? getCentroid()
         {
             return getAreaCentroid(true).getCentroid();
         }
@@ -1145,7 +1145,7 @@ namespace Google.Common.Geometry
                 for (var v = 0; v < s2Loop.numVertices(); ++v)
                 {
                     var s2Point = s2Loop.vertex(v);
-                    sb.Append(s2Point.toDegreesString());
+                    sb.Append(s2Point.ToDegreesString());
                     sb.Append("\n"); // end of vertex
                 }
                 sb.Append(">\n"); // end of loop
@@ -1392,7 +1392,7 @@ namespace Google.Common.Geometry
             public override String ToString()
             {
                 return String.Format("Edge: ({0} <-> {1})\n   or [{2} <-> {3}]",
-                                     a.toDegreesString(), b.toDegreesString(), a, b);
+                                     a.ToDegreesString(), b.ToDegreesString(), a, b);
             }
         }
     }

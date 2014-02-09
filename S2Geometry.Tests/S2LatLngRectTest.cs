@@ -155,7 +155,7 @@ namespace S2Geometry.Tests
                                                  double z2)
         {
             return S2LatLngRect.fromEdge(
-                S2Point.normalize(new S2Point(x1, y1, z1)), S2Point.normalize(new S2Point(x2, y2, z2)));
+                S2Point.Normalize(new S2Point(x1, y1, z1)), S2Point.Normalize(new S2Point(x2, y2, z2)));
         }
 
         private static S2LatLngRect pointRectFromDegrees(double lat, double lng)

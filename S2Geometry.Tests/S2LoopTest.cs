@@ -175,9 +175,9 @@ namespace S2Geometry.Tests
                 Console.WriteLine("Vertex {0}: [%.17g, %.17g, %.17g], "
                                   + "%d%dR=%d, %d%d%d=%d, R%d%d=%d, inside: %b\n",
                                   i,
-                                  loop.vertex(i).x,
-                                  loop.vertex(i).y,
-                                  loop.vertex(i).z,
+                                  loop.vertex(i).X,
+                                  loop.vertex(i).Y,
+                                  loop.vertex(i).Z,
                                   i - 1,
                                   i,
                                   S2.RobustCcw(b, o, a),
@@ -302,8 +302,8 @@ namespace S2Geometry.Tests
             {
                 // Choose a coordinate frame for the spherical cap.
                 var x = randomPoint();
-                var y = S2Point.normalize(S2Point.crossProd(x, randomPoint()));
-                var z = S2Point.normalize(S2Point.crossProd(x, y));
+                var y = S2Point.Normalize(S2Point.CrossProd(x, randomPoint()));
+                var z = S2Point.Normalize(S2Point.CrossProd(x, y));
 
                 // Given two points at latitude phi and whose longitudes differ by dtheta,
                 // the geodesic between the two points has a maximum latitude of
@@ -323,11 +323,11 @@ namespace S2Geometry.Tests
                 var vertices = new List<S2Point>();
                 for (double theta = 0; theta < 2*S2.Pi; theta += rand.NextDouble()*maxDtheta)
                 {
-                    var xCosThetaCosPhi = S2Point.mul(x, (Math.Cos(theta)*Math.Cos(phi)));
-                    var ySinThetaCosPhi = S2Point.mul(y, (Math.Sin(theta)*Math.Cos(phi)));
-                    var zSinPhi = S2Point.mul(z, Math.Sin(phi));
+                    var xCosThetaCosPhi = x * (Math.Cos(theta)*Math.Cos(phi));
+                    var ySinThetaCosPhi = y * (Math.Sin(theta)*Math.Cos(phi));
+                    var zSinPhi = z * Math.Sin(phi);
 
-                    var sum = S2Point.add(S2Point.add(xCosThetaCosPhi, ySinThetaCosPhi), zSinPhi);
+                    var sum = xCosThetaCosPhi + ySinThetaCosPhi + zSinPhi;
 
                     vertices.Add(sum);
                 }
@@ -345,9 +345,9 @@ namespace S2Geometry.Tests
                 // high probability
                 assertTrue(Math.Abs(area - expectedArea) >= 0.01*kMaxDist);
 
-                var expectedCentroid = S2Point.mul(z, expectedArea*(1 - 0.5*height));
+                var expectedCentroid = z*expectedArea*(1 - 0.5*height);
 
-                assertTrue(S2Point.sub(centroid, expectedCentroid).norm() <= 2*kMaxDist);
+                assertTrue((centroid.Value - expectedCentroid).Norm <= 2*kMaxDist);
             }
         }
 
@@ -365,7 +365,7 @@ namespace S2Geometry.Tests
 
             arctic80.invert();
             // The highest latitude of each edge is attained at its midpoint.
-            var mid = S2Point.mul(S2Point.add(arctic80.vertex(0), arctic80.vertex(1)), 0.5);
+            var mid = (arctic80.vertex(0) + arctic80.vertex(1)) * 0.5;
             assertDoubleNear(arctic80.RectBound.latHi().Radians, new S2LatLng(mid).lat().Radians);
             arctic80.invert();
 

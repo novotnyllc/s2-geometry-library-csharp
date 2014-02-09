@@ -82,22 +82,21 @@ namespace S2Geometry.Tests
             double minAngleSpan = 100, maxAngleSpan = 0;
             for (var i = 0; i < 4; ++i)
             {
-                var edge = cell.getVertexRaw(i).angle(cell.getVertexRaw((i + 1) & 3));
+                var edge = cell.getVertexRaw(i).Angle(cell.getVertexRaw((i + 1) & 3));
                 minEdge = Math.Min(edge, minEdge);
                 maxEdge = Math.Max(edge, maxEdge);
                 avgEdge += 0.25*edge;
-                var mid = S2Point.add(cell.getVertexRaw(i), cell
-                                                                .getVertexRaw((i + 1) & 3));
-                var width = S2.PiOver2 - mid.angle(cell.getEdgeRaw(i ^ 2));
+                var mid = cell.getVertexRaw(i) + cell.getVertexRaw((i + 1) & 3);
+                var width = S2.PiOver2 - mid.Angle(cell.getEdgeRaw(i ^ 2));
                 minWidth = Math.Min(width, minWidth);
                 maxWidth = Math.Max(width, maxWidth);
                 if (i < 2)
                 {
-                    var diag = cell.getVertexRaw(i).angle(cell.getVertexRaw(i ^ 2));
+                    var diag = cell.getVertexRaw(i).Angle(cell.getVertexRaw(i ^ 2));
                     minDiag = Math.Min(diag, minDiag);
                     maxDiag = Math.Max(diag, maxDiag);
-                    var angleSpan = cell.getEdgeRaw(i).angle(
-                        S2Point.neg(cell.getEdgeRaw(i ^ 2)));
+                    var angleSpan = cell.getEdgeRaw(i).Angle(
+                        -cell.getEdgeRaw(i ^ 2));
                     minAngleSpan = Math.Min(angleSpan, minAngleSpan);
                     maxAngleSpan = Math.Max(angleSpan, maxAngleSpan);
                 }
@@ -151,7 +150,7 @@ namespace S2Geometry.Tests
 
                 // Check that the child geometry is consistent with its cell id.
                 JavaAssert.Equal(children[i].id(), childId);
-                Assert.True(children[i].getCenter().aequal(childId.toPoint(), 1e-15));
+                Assert.True(children[i].getCenter().Aequal(childId.toPoint(), 1e-15));
                 var direct = new S2Cell(childId);
                 JavaAssert.Equal(children[i].face(), direct.face());
                 JavaAssert.Equal(children[i].level(), direct.level());
@@ -251,8 +250,8 @@ namespace S2Geometry.Tests
                 // so that we have a better chance of sample the minimum metric values.
                 var forceSubdivide = false;
                 var center = S2Projections.getNorm(children[i].face());
-                var edge = S2Point.add(center, S2Projections.getUAxis(children[i].face()));
-                var corner = S2Point.add(edge, S2Projections.getVAxis(children[i].face()));
+                var edge = center + S2Projections.getUAxis(children[i].face());
+                var corner = edge + S2Projections.getVAxis(children[i].face());
                 for (var j = 0; j < 4; ++j)
                 {
                     var p = children[i].getVertexRaw(j);
@@ -394,12 +393,12 @@ namespace S2Geometry.Tests
                     {
                         vertexCounts[cell.getVertexRaw(k)] = 1;
                     }
-                    assertDoubleNear(cell.getVertexRaw(k).dotProd(cell.getEdgeRaw(k)), 0);
-                    assertDoubleNear(cell.getVertexRaw((k + 1) & 3).dotProd(
+                    assertDoubleNear(cell.getVertexRaw(k).DotProd(cell.getEdgeRaw(k)), 0);
+                    assertDoubleNear(cell.getVertexRaw((k + 1) & 3).DotProd(
                         cell.getEdgeRaw(k)), 0);
-                    assertDoubleNear(S2Point.normalize(
-                        S2Point.crossProd(cell.getVertexRaw(k), cell
-                                                                    .getVertexRaw((k + 1) & 3))).dotProd(cell.getEdge(k)), 1.0);
+                    assertDoubleNear(S2Point.Normalize(
+                        S2Point.CrossProd(cell.getVertexRaw(k), cell
+                                                                    .getVertexRaw((k + 1) & 3))).DotProd(cell.getEdge(k)), 1.0);
                 }
             }
             // Check that edges have multiplicity 2 and vertices have multiplicity 3.

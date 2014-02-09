@@ -316,7 +316,7 @@ namespace Google.Common.Geometry
             // The complement of a full cap is an empty cap, not a singleton.
             // Also make sure that the complement of an empty cap has height 2.
             var cHeight = isFull() ? -1 : 2 - Math.Max(_height, 0.0);
-            return fromAxisHeight(S2Point.neg(_axis), cHeight);
+            return fromAxisHeight(-_axis, cHeight);
         }
 
         /**
@@ -330,7 +330,7 @@ namespace Google.Common.Geometry
             {
                 return true;
             }
-            return angle().Radians >= _axis.angle(other._axis)
+            return angle().Radians >= _axis.Angle(other._axis)
                    + other.angle().Radians;
         }
 
@@ -356,7 +356,7 @@ namespace Google.Common.Geometry
         public bool interiorContains(S2Point p)
         {
             // assert (S2.isUnitLength(p));
-            return isFull() || S2Point.sub(_axis, p).norm2() < 2*_height;
+            return isFull() || (_axis - p).Norm2 < 2*_height;
         }
 
         /**
@@ -378,7 +378,7 @@ namespace Google.Common.Geometry
                 // To make sure that the resulting cap actually includes this point,
                 // we need to round up the distance calculation. That is, after
                 // calling cap.AddPoint(p), cap.Contains(p) should be true.
-                var dist2 = S2Point.sub(_axis, p).norm2();
+                var dist2 = (_axis - p).Norm2;
                 var newHeight = Math.Max(_height, ROUND_UP*0.5*dist2);
                 return new S2Cap(_axis, newHeight);
             }
@@ -397,7 +397,7 @@ namespace Google.Common.Geometry
                 // See comments for FromAxisAngle() and AddPoint(). This could be
                 // optimized by doing the calculation in terms of cap heights rather
                 // than cap opening angles.
-                var angle = _axis.angle(other._axis) + other.angle().Radians;
+                var angle = _axis.Angle(other._axis) + other.angle().Radians;
                 if (angle >= S2.Pi)
                 {
                     return new S2Cap(_axis, 2); //Full cap
@@ -453,7 +453,7 @@ namespace Google.Common.Geometry
             for (var k = 0; k < 4; ++k)
             {
                 var edge = cell.getEdgeRaw(k);
-                var dot = _axis.dotProd(edge);
+                var dot = _axis.DotProd(edge);
                 if (dot > 0)
                 {
                     // The axis is in the interior half-space defined by the edge. We don't
@@ -463,16 +463,16 @@ namespace Google.Common.Geometry
                     continue;
                 }
                 // The Norm2() factor is necessary because "edge" is not normalized.
-                if (dot*dot > sin2Angle*edge.norm2())
+                if (dot*dot > sin2Angle*edge.Norm2)
                 {
                     return false; // Entire cap is on the exterior side of this edge.
                 }
                 // Otherwise, the great circle containing this edge intersects
                 // the interior of the cap. We just need to check whether the point
                 // of closest approach occurs between the two edge endpoints.
-                var dir = S2Point.crossProd(edge, _axis);
-                if (dir.dotProd(vertices[k]) < 0
-                    && dir.dotProd(vertices[(k + 1) & 3]) > 0)
+                var dir = S2Point.CrossProd(edge, _axis);
+                if (dir.DotProd(vertices[k]) < 0
+                    && dir.DotProd(vertices[(k + 1) & 3]) > 0)
                 {
                     return true;
                 }
@@ -484,7 +484,7 @@ namespace Google.Common.Geometry
         {
             // The point 'p' should be a unit-length vector.
             // assert (S2.isUnitLength(p));
-            return S2Point.sub(_axis, p).norm2() <= 2*_height;
+            return (_axis - p).Norm2 <= 2*_height;
         }
 
 
@@ -499,7 +499,7 @@ namespace Google.Common.Geometry
 
         internal bool approxEquals(S2Cap other, double maxError)
         {
-            return (_axis.aequal(other._axis, maxError) && Math.Abs(_height - other._height) <= maxError)
+            return (_axis.Aequal(other._axis, maxError) && Math.Abs(_height - other._height) <= maxError)
                    || (isEmpty() && other._height <= maxError)
                    || (other.isEmpty() && _height <= maxError)
                    || (isFull() && other._height >= 2 - maxError)

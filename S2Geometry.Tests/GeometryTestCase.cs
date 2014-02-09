@@ -49,7 +49,7 @@ namespace S2Geometry.Tests
 
         public S2Point randomPoint()
         {
-            return S2Point.normalize(new S2Point(
+            return S2Point.Normalize(new S2Point(
                                          2*rand.NextDouble() - 1,
                                          2*rand.NextDouble() - 1,
                                          2*rand.NextDouble() - 1));
@@ -64,8 +64,8 @@ namespace S2Geometry.Tests
         public IReadOnlyList<S2Point> getRandomFrame()
         {
             var p0 = randomPoint();
-            var p1 = S2Point.normalize(S2Point.crossProd(p0, randomPoint()));
-            var p2 = S2Point.normalize(S2Point.crossProd(p0, p1));
+            var p1 = S2Point.Normalize(S2Point.CrossProd(p0, randomPoint()));
+            var p2 = S2Point.Normalize(S2Point.CrossProd(p0, p1));
             return new List<S2Point>(new[] {p0, p1, p2});
         }
 
@@ -169,8 +169,8 @@ namespace S2Geometry.Tests
             // complete the coordinate frame.
 
             var z = cap.axis();
-            var x = z.ortho();
-            var y = S2Point.crossProd(z, x);
+            var x = z.Ortho;
+            var y = S2Point.CrossProd(z, x);
 
             // The surface area of a spherical cap is directly proportional to its
             // height. First we choose a random height, and then we choose a random
@@ -181,9 +181,7 @@ namespace S2Geometry.Tests
             var r = Math.Sqrt(h*(2 - h)); // Radius of circle.
 
             // (cos(theta)*r*x + sin(theta)*r*y + (1-h)*z).Normalize()
-            return S2Point.normalize(S2Point.add(
-                S2Point.add(S2Point.mul(x, Math.Cos(theta)*r), S2Point.mul(y, Math.Sin(theta)*r)),
-                S2Point.mul(z, (1 - h))));
+            return S2Point.Normalize(((x * Math.Cos(theta)*r) + (y * Math.Sin(theta)*r)) + (z * (1 - h)));
         }
 
         private static void parseVertices(String str, List<S2Point> vertices)

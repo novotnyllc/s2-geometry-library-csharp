@@ -64,7 +64,7 @@ namespace Google.Common.Geometry
                 foreach (var id in this)
                 {
                     var area = S2Cell.averageArea(id.level());
-                    centroid = S2Point.add(centroid, S2Point.mul(id.toPoint(), area));
+                    centroid = centroid + (id.toPoint() * area);
                 }
                 if (centroid.Equals(new S2Point(0, 0, 0)))
                 {
@@ -72,7 +72,7 @@ namespace Google.Common.Geometry
                 }
                 else
                 {
-                    centroid = S2Point.normalize(centroid);
+                    centroid = S2Point.Normalize(centroid);
                 }
 
                 // Use the centroid as the cap axis, and expand the cap angle so that it

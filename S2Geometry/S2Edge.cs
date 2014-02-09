@@ -68,7 +68,7 @@ namespace Google.Common.Geometry
         public override String ToString()
         {
             return String.Format("Edge: ({0} -> {1})\n   or [{2} -> {3}]",
-                                 start.toDegreesString(), end.toDegreesString(), start, end);
+                                 start.ToDegreesString(), end.ToDegreesString(), start, end);
         }
     }
 }

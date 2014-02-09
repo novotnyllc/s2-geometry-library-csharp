@@ -89,7 +89,7 @@ namespace Google.Common.Geometry
 
                 var u = 0.5*(_uv[0][0] + _uv[0][1]);
                 var v = 0.5*(_uv[1][0] + _uv[1][1]);
-                var cap = S2Cap.fromAxisHeight(S2Point.normalize(S2Projections.faceUvToXyz(_face, u, v)), 0);
+                var cap = S2Cap.fromAxisHeight(S2Point.Normalize(S2Projections.faceUvToXyz(_face, u, v)), 0);
                 for (var k = 0; k < 4; ++k)
                 {
                     cap = cap.addPoint(getVertex(k));
@@ -117,8 +117,8 @@ namespace Google.Common.Geometry
                     // coordinate based on the axis direction and the cell's (u,v) quadrant.
                     var u = _uv[0][0] + _uv[0][1];
                     var v = _uv[1][0] + _uv[1][1];
-                    var i = S2Projections.getUAxis(_face).z == 0 ? (u < 0 ? 1 : 0) : (u > 0 ? 1 : 0);
-                    var j = S2Projections.getVAxis(_face).z == 0 ? (v < 0 ? 1 : 0) : (v > 0 ? 1 : 0);
+                    var i = S2Projections.getUAxis(_face).Z == 0 ? (u < 0 ? 1 : 0) : (u > 0 ? 1 : 0);
+                    var j = S2Projections.getVAxis(_face).Z == 0 ? (v < 0 ? 1 : 0) : (v > 0 ? 1 : 0);
 
 
                     var lat = R1Interval.FromPointPair(getLatitude(i, j), getLatitude(1 - i, 1 - j));
@@ -231,7 +231,7 @@ namespace Google.Common.Geometry
 
         public S2Point getVertex(int k)
         {
-            return S2Point.normalize(getVertexRaw(k));
+            return S2Point.Normalize(getVertexRaw(k));
         }
 
         /**
@@ -248,7 +248,7 @@ namespace Google.Common.Geometry
 
         public S2Point getEdge(int k)
         {
-            return S2Point.normalize(getEdgeRaw(k));
+            return S2Point.Normalize(getEdgeRaw(k));
         }
 
         public S2Point getEdgeRaw(int k)
@@ -260,9 +260,9 @@ namespace Google.Common.Geometry
                 case 1:
                     return S2Projections.getUNorm(_face, _uv[0][1]); // East
                 case 2:
-                    return S2Point.neg(S2Projections.getVNorm(_face, _uv[1][1])); // North
+                    return -S2Projections.getVNorm(_face, _uv[1][1]); // North
                 default:
-                    return S2Point.neg(S2Projections.getUNorm(_face, _uv[0][0])); // West
+                    return -S2Projections.getUNorm(_face, _uv[0][0]); // West
             }
         }
 
@@ -325,7 +325,7 @@ namespace Google.Common.Geometry
 
         public S2Point getCenter()
         {
-            return S2Point.normalize(getCenterRaw());
+            return S2Point.Normalize(getCenterRaw());
         }
 
         public S2Point getCenterRaw()
@@ -396,8 +396,8 @@ namespace Google.Common.Geometry
             // First, compute the approximate area of the cell when projected
             // perpendicular to its normal. The cross product of its diagonals gives
             // the normal, and the length of the normal is twice the projected area.
-            var flatArea = 0.5*S2Point.crossProd(
-                S2Point.sub(getVertex(2), getVertex(0)), S2Point.sub(getVertex(3), getVertex(1))).norm();
+            var flatArea = 0.5*S2Point.CrossProd(
+                getVertex(2) - getVertex(0), getVertex(3) - getVertex(1)).Norm;
 
             // Now, compensate for the curvature of the cell surface by pretending
             // that the cell is shaped like a spherical cap. The ratio of the
@@ -485,13 +485,13 @@ namespace Google.Common.Geometry
         private double getLatitude(int i, int j)
         {
             var p = S2Projections.faceUvToXyz(_face, _uv[0][i], _uv[1][j]);
-            return Math.Atan2(p.z, Math.Sqrt(p.x*p.x + p.y*p.y));
+            return Math.Atan2(p.Z, Math.Sqrt(p.X*p.X + p.Y*p.Y));
         }
 
         private double getLongitude(int i, int j)
         {
             var p = S2Projections.faceUvToXyz(_face, _uv[0][i], _uv[1][j]);
-            return Math.Atan2(p.y, p.x);
+            return Math.Atan2(p.Y, p.X);
         }
 
         // Return the latitude or longitude of the cell vertex given by (i,j),

@@ -331,7 +331,7 @@ namespace Google.Common.Geometry
             // the edge. We multiply the edge length by 2*THICKENING to guarantee the
             // thickening is honored (it's not a big deal if we honor it when we don't
             // request it) when doing the covering-by-cap trick.
-            var edgeLength = a.angle(b);
+            var edgeLength = a.Angle(b);
             var idealLevel = S2Projections.MIN_WIDTH.GetMaxLevel(edgeLength*(1 + 2*THICKENING));
 
             S2CellId containingCellId;
@@ -351,19 +351,16 @@ namespace Google.Common.Geometry
                 }
                 else
                 {
-                    var pq = S2Point.mul(S2Point.minus(b, a), THICKENING);
-                    var ortho =
-                        S2Point.mul(S2Point.normalize(S2Point.crossProd(pq, a)), edgeLength*THICKENING);
-                    var p = S2Point.minus(a, pq);
-                    var q = S2Point.add(b, pq);
+                    var pq = (b - a)*THICKENING;
+                    var ortho = (S2Point.Normalize(S2Point.CrossProd(pq, a)))*edgeLength*THICKENING;
+                    var p = a - pq;
+                    var q = b + pq;
                     // If p and q were antipodal, the edge wouldn't be lengthened,
                     // and it could even flip! This is not a problem because
                     // idealLevel != 0 here. The farther p and q can be is roughly
                     // a quarter Earth away from each other, so we remain
                     // Theta(THICKENING).
-                    containingCellId =
-                        containingCell(S2Point.minus(p, ortho), S2Point.add(p, ortho), S2Point.minus(q, ortho),
-                                       S2Point.add(q, ortho));
+                    containingCellId = containingCell(p - ortho, p + ortho, q - ortho, q + ortho);
                 }
             }
 
@@ -396,7 +393,7 @@ namespace Google.Common.Geometry
             // Cover the edge by a cap centered at the edge midpoint, then cover
             // the cap by four big-enough cells around the cell vertex closest to the
             // cap center.
-            var middle = S2Point.normalize(S2Point.div(S2Point.add(a, b), 2));
+            var middle = S2Point.Normalize((a + b) / 2);
             var actualLevel = Math.Min(idealLevel, S2CellId.MAX_LEVEL - 1);
             S2CellId.fromPoint(middle).getVertexNeighbors(actualLevel, edgeCovering);
             return actualLevel;
@@ -498,8 +495,8 @@ namespace Google.Common.Geometry
             // assert (S2.isUnitLength(b));
             // assert (S2.isUnitLength(c));
 
-            var acb = S2Point.crossProd(a, c).dotProd(b);
-            var bda = S2Point.crossProd(b, d).dotProd(a);
+            var acb = S2Point.CrossProd(a, c).DotProd(b);
+            var bda = S2Point.CrossProd(b, d).DotProd(a);
             if (Math.Abs(acb) < MAX_DET_ERROR || Math.Abs(bda) < MAX_DET_ERROR)
             {
                 return true;
@@ -508,8 +505,8 @@ namespace Google.Common.Geometry
             {
                 return false;
             }
-            var cbd = S2Point.crossProd(c, b).dotProd(d);
-            var dac = S2Point.crossProd(c, a).dotProd(c);
+            var cbd = S2Point.CrossProd(c, b).DotProd(d);
+            var dac = S2Point.CrossProd(c, a).DotProd(c);
             if (Math.Abs(cbd) < MAX_DET_ERROR || Math.Abs(dac) < MAX_DET_ERROR)
             {
                 return true;

@@ -352,11 +352,10 @@ namespace Google.Common.Geometry
 
         private S2AreaCentroid getAreaCentroid(bool doCentroid)
         {
-            S2Point centroid = null;
             // Don't crash even if loop is not well-defined.
             if (numVertices() < 3)
             {
-                return new S2AreaCentroid(0D, centroid);
+                return new S2AreaCentroid(0D);
             }
 
             // The triangle area calculation becomes numerically unstable as the length
@@ -376,12 +375,12 @@ namespace Google.Common.Geometry
             // using the E7 or S2CellId representation is only about 1cm.
 
             var origin = vertex(0);
-            var axis = (origin.largestAbsComponent() + 1)%3;
-            var slightlyDisplaced = origin.get(axis) + S2.E*1e-10;
+            var axis = (origin.LargestAbsComponent + 1)%3;
+            var slightlyDisplaced = origin[axis] + S2.E*1e-10;
             origin =
-                new S2Point((axis == 0) ? slightlyDisplaced : origin.x,
-                            (axis == 1) ? slightlyDisplaced : origin.y, (axis == 2) ? slightlyDisplaced : origin.z);
-            origin = S2Point.normalize(origin);
+                new S2Point((axis == 0) ? slightlyDisplaced : origin.X,
+                            (axis == 1) ? slightlyDisplaced : origin.Y, (axis == 2) ? slightlyDisplaced : origin.Z);
+            origin = S2Point.Normalize(origin);
 
             double areaSum = 0;
             var centroidSum = new S2Point(0, 0, 0);
@@ -392,7 +391,7 @@ namespace Google.Common.Geometry
                 {
                     // The true centroid is already premultiplied by the triangle area.
                     var trueCentroid = S2.TrueCentroid(origin, vertex(i - 1), vertex(i));
-                    centroidSum = S2Point.add(centroidSum, trueCentroid);
+                    centroidSum = centroidSum + trueCentroid;
                 }
             }
             // The calculated area at this point should be between -4*Pi and 4*Pi,
@@ -412,6 +411,7 @@ namespace Google.Common.Geometry
             }
             // The loop's sign() does not affect the return result and should be taken
             // into account by the caller.
+            S2Point? centroid = null; 
             if (doCentroid)
             {
                 centroid = centroidSum;
@@ -447,7 +447,7 @@ namespace Google.Common.Geometry
    * may not be contained by the polygon.
    */
 
-        public S2Point getCentroid()
+        public S2Point? getCentroid()
         {
             return getAreaCentroid(true).getCentroid();
         }
@@ -736,7 +736,7 @@ namespace Google.Common.Geometry
 
         public S1Angle getDistance(S2Point p)
         {
-            var normalized = S2Point.normalize(p);
+            var normalized = S2Point.Normalize(p);
 
             // The furthest point from p on the sphere is its antipode, which is an
             // angle of PI radians. This is an upper bound on the angle.

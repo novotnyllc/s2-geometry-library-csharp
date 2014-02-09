@@ -59,7 +59,7 @@ namespace S2Geometry.Tests
             var vertices = new List<S2Point>();
             vertices.Add(new S2Point(1, 0, 0));
             vertices.Add(new S2Point(0, 1, 0));
-            vertices.Add(S2Point.normalize(new S2Point(0, 1, 1)));
+            vertices.Add(S2Point.Normalize(new S2Point(0, 1, 1)));
             vertices.Add(new S2Point(0, 0, 1));
 
 
@@ -90,13 +90,13 @@ namespace S2Geometry.Tests
             {
                 // Choose a coordinate frame for the great circle.
                 var x = randomPoint();
-                var y = S2Point.normalize(S2Point.crossProd(x, randomPoint()));
-                var z = S2Point.normalize(S2Point.crossProd(x, y));
+                var y = S2Point.Normalize(S2Point.CrossProd(x, randomPoint()));
+                var z = S2Point.Normalize(S2Point.CrossProd(x, y));
 
                 var vertices = new List<S2Point>();
                 for (double theta = 0; theta < 2*S2.Pi; theta += Math.Pow(rand.NextDouble(), 10))
                 {
-                    var p = S2Point.add(S2Point.mul(x, Math.Cos(theta)), S2Point.mul(y, Math.Sin(theta)));
+                    var p = (x * Math.Cos(theta)) + (y * Math.Sin(theta));
                     if (vertices.Count == 0 || !p.Equals(vertices[vertices.Count - 1]))
                     {
                         vertices.Add(p);
@@ -116,14 +116,14 @@ namespace S2Geometry.Tests
             var vertices = new List<S2Point>();
             vertices.Add(new S2Point(1, 0, 0));
             vertices.Add(new S2Point(0, 1, 0));
-            vertices.Add(S2Point.normalize(new S2Point(0, 1, 1)));
+            vertices.Add(S2Point.Normalize(new S2Point(0, 1, 1)));
             vertices.Add(new S2Point(0, 0, 1));
             var line = new S2Polyline(vertices);
 
             assertEquals(line.interpolate(-0.1), vertices[0]);
             assertTrue(S2.ApproxEquals(
-                line.interpolate(0.1), S2Point.normalize(new S2Point(1, Math.Tan(0.2*S2.Pi/2), 0))));
-            assertTrue(S2.ApproxEquals(line.interpolate(0.25), S2Point.normalize(new S2Point(1, 1, 0))));
+                line.interpolate(0.1), S2Point.Normalize(new S2Point(1, Math.Tan(0.2*S2.Pi/2), 0))));
+            assertTrue(S2.ApproxEquals(line.interpolate(0.25), S2Point.Normalize(new S2Point(1, 1, 0))));
 
             assertEquals(line.interpolate(0.5), vertices[1]);
             assertEquals(line.interpolate(0.75), vertices[2]);
@@ -134,8 +134,8 @@ namespace S2Geometry.Tests
         public void testMayIntersect()
         {
             var vertices = new List<S2Point>();
-            vertices.Add(S2Point.normalize(new S2Point(1, -1.1, 0.8)));
-            vertices.Add(S2Point.normalize(new S2Point(1, -0.8, 1.1)));
+            vertices.Add(S2Point.Normalize(new S2Point(1, -1.1, 0.8)));
+            vertices.Add(S2Point.Normalize(new S2Point(1, -0.8, 1.1)));
             var line = new S2Polyline(vertices);
             for (var face = 0; face < 6; ++face)
             {
@@ -155,7 +155,7 @@ namespace S2Geometry.Tests
             var line = new S2Polyline(latLngs);
 
             var edgeIndex = -1;
-            S2Point testPoint = null;
+            S2Point testPoint = default(S2Point);
 
             testPoint = S2LatLng.fromDegrees(0.5, -0.5).toPoint();
             edgeIndex = line.getNearestEdgeIndex(testPoint);

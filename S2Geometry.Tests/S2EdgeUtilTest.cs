@@ -34,10 +34,10 @@ namespace S2Geometry.Tests
                                     bool edgeOrVertex,
                                     bool simple)
         {
-            a = S2Point.normalize(a);
-            b = S2Point.normalize(b);
-            c = S2Point.normalize(c);
-            d = S2Point.normalize(d);
+            a = S2Point.Normalize(a);
+            b = S2Point.Normalize(b);
+            c = S2Point.Normalize(c);
+            d = S2Point.Normalize(d);
 
             compareResult(S2EdgeUtil.robustCrossing(a, b, c, d), robust);
             if (simple)
@@ -79,8 +79,8 @@ namespace S2Geometry.Tests
                                           double z2)
         {
             var bounder = new S2EdgeUtil.RectBounder();
-            var p1 = S2Point.normalize(new S2Point(x1, y1, z1));
-            var p2 = S2Point.normalize(new S2Point(x2, y2, z2));
+            var p1 = S2Point.Normalize(new S2Point(x1, y1, z1));
+            var p2 = S2Point.Normalize(new S2Point(x2, y2, z2));
             bounder.addPoint(p1);
             bounder.addPoint(p2);
             return bounder.getBound();
@@ -89,7 +89,7 @@ namespace S2Geometry.Tests
         // Produce a normalized S2Point for testing.
         private S2Point S2NP(double x, double y, double z)
         {
-            return S2Point.normalize(new S2Point(x, y, z));
+            return S2Point.Normalize(new S2Point(x, y, z));
         }
 
         private void assertWedge(S2Point a0,
@@ -101,11 +101,11 @@ namespace S2Geometry.Tests
                                  bool intersects,
                                  bool crosses)
         {
-            a0 = S2Point.normalize(a0);
-            ab1 = S2Point.normalize(ab1);
-            a2 = S2Point.normalize(a2);
-            b0 = S2Point.normalize(b0);
-            b2 = S2Point.normalize(b2);
+            a0 = S2Point.Normalize(a0);
+            ab1 = S2Point.Normalize(ab1);
+            a2 = S2Point.Normalize(a2);
+            b0 = S2Point.Normalize(b0);
+            b2 = S2Point.Normalize(b2);
 
             assertEquals(new S2EdgeUtil.WedgeContains().test(a0, ab1, a2, b0, b2), contains ? 1 : 0);
             assertEquals(new S2EdgeUtil.WedgeIntersects().test(a0, ab1, a2, b0, b2), intersects ? -1 : 0);
@@ -121,10 +121,10 @@ namespace S2Geometry.Tests
             S2Point x, S2Point a, S2Point b, double distanceRadians, S2Point expectedClosest)
         {
             var kEpsilon = 1e-10;
-            x = S2Point.normalize(x);
-            a = S2Point.normalize(a);
-            b = S2Point.normalize(b);
-            expectedClosest = S2Point.normalize(expectedClosest);
+            x = S2Point.Normalize(x);
+            a = S2Point.Normalize(a);
+            b = S2Point.Normalize(b);
+            expectedClosest = S2Point.Normalize(expectedClosest);
 
             assertEquals(distanceRadians, S2EdgeUtil.getDistance(x, a, b).Radians, kEpsilon);
 
@@ -235,7 +235,7 @@ namespace S2Geometry.Tests
             var x = S2LatLng.fromDegrees(+0.1, 1).toPoint();
             var expectedClosestPoint = S2LatLng.fromDegrees(+0.1, 0).toPoint();
 
-            assertTrue(expectedClosestPoint.aequal(S2EdgeUtil.getClosestPoint(x, a, b), kMargin));
+            assertTrue(expectedClosestPoint.Aequal(S2EdgeUtil.getClosestPoint(x, a, b), kMargin));
         }
 
         [Test]
@@ -312,15 +312,11 @@ namespace S2Geometry.Tests
                 var d1 = points[1];
                 var d2 = points[2];
                 var slope = Math.Pow(1e-15, rand.NextDouble());
-                d2 = S2Point.add(d1, S2Point.mul(d2, slope));
-                var a = S2Point.normalize(
-                    S2Point.add(p, S2Point.mul(d1, Math.Pow(1e-15/slope, rand.NextDouble()))));
-                var b = S2Point.normalize(
-                    S2Point.sub(p, S2Point.mul(d1, Math.Pow(1e-15/slope, rand.NextDouble()))));
-                var c = S2Point.normalize(
-                    S2Point.add(p, S2Point.mul(d2, Math.Pow(1e-15/slope, rand.NextDouble()))));
-                var d = S2Point.normalize(
-                    S2Point.sub(p, S2Point.mul(d2, Math.Pow(1e-15/slope, rand.NextDouble()))));
+                d2 = d1 + (d2 * slope);
+                var a = S2Point.Normalize(p + (d1 * Math.Pow(1e-15/slope, rand.NextDouble())));
+                var b = S2Point.Normalize(p - (d1 * Math.Pow(1e-15/slope, rand.NextDouble())));
+                var c = S2Point.Normalize(p + (d2 * Math.Pow(1e-15/slope, rand.NextDouble())));
+                var d = S2Point.Normalize(p - (d2 * Math.Pow(1e-15/slope, rand.NextDouble())));
                 var x = S2EdgeUtil.getIntersection(a, b, c, d);
                 var distAb = S2EdgeUtil.getDistance(x, a, b);
                 var distCd = S2EdgeUtil.getDistance(x, c, d);
@@ -329,8 +325,8 @@ namespace S2Geometry.Tests
                 assertTrue(distCd < S2EdgeUtil.DEFAULT_INTERSECTION_TOLERANCE);
 
                 // test getIntersection() post conditions
-                assertTrue(S2.OrderedCcw(a, x, b, S2Point.normalize(S2.RobustCrossProd(a, b))));
-                assertTrue(S2.OrderedCcw(c, x, d, S2Point.normalize(S2.RobustCrossProd(c, d))));
+                assertTrue(S2.OrderedCcw(a, x, b, S2Point.Normalize(S2.RobustCrossProd(a, b))));
+                assertTrue(S2.OrderedCcw(c, x, d, S2Point.Normalize(S2.RobustCrossProd(c, d))));
 
                 maxEdgeDist = S1Angle.Max(maxEdgeDist, S1Angle.Max(distAb, distCd));
                 maxPointDist = S1Angle.Max(maxPointDist, new S1Angle(p, x));

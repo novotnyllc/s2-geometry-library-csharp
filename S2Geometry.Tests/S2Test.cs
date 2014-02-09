@@ -96,8 +96,8 @@ namespace S2Geometry.Tests
                 var p0 = randomPoint();
                 var d1 = randomPoint();
                 var d2 = randomPoint();
-                var p1 = S2Point.add(p0, S2Point.mul(d1, 1e-15));
-                var p2 = S2Point.add(p0, S2Point.mul(d2, 1e-15));
+                var p1 = p0 + (d1 * 1e-15);
+                var p2 = p0 + (d2 * 1e-15);
                 // The actual displacement can be as much as 1.2e-15 due to roundoff.
                 // This yields a maximum triangle area of about 0.7e-30.
                 assertTrue(S2.Area(p0, p1, p2) < 0.7e-30);
@@ -162,8 +162,8 @@ namespace S2Geometry.Tests
             {
                 var center = S2Projections.faceUvToXyz(face, 0, 0);
                 assertEquals(S2Projections.getNorm(face), center);
-                assertEquals(Math.Abs(center.get(center.largestAbsComponent())), 1.0);
-                sum = S2Point.add(sum, S2Point.fabs(center));
+                assertEquals(Math.Abs(center[center.LargestAbsComponent]), 1.0);
+                sum = sum + S2Point.Fabs(center);
             }
             assertEquals(sum, new S2Point(2, 2, 2));
 
@@ -171,7 +171,7 @@ namespace S2Geometry.Tests
             for (var face = 0; face < 6; ++face)
             {
                 assertEquals(
-                    S2Point.crossProd(S2Projections.getUAxis(face), S2Projections.getVAxis(face)).dotProd(
+                    S2Point.CrossProd(S2Projections.getUAxis(face), S2Projections.getVAxis(face)).DotProd(
                         S2Projections.faceUvToXyz(face, 0, 0)), 1.0);
             }
 
@@ -320,10 +320,10 @@ namespace S2Geometry.Tests
             // Check that axes are consistent with FaceUVtoXYZ.
             for (var face = 0; face < 6; ++face)
             {
-                assertEquals(S2Projections.getUAxis(face), S2Point.sub(
-                    S2Projections.faceUvToXyz(face, 1, 0), S2Projections.faceUvToXyz(face, 0, 0)));
-                assertEquals(S2Projections.getVAxis(face), S2Point.sub(
-                    S2Projections.faceUvToXyz(face, 0, 1), S2Projections.faceUvToXyz(face, 0, 0)));
+                assertEquals(S2Projections.getUAxis(face), 
+                    S2Projections.faceUvToXyz(face, 1, 0) - S2Projections.faceUvToXyz(face, 0, 0));
+                assertEquals(S2Projections.getVAxis(face), 
+                    S2Projections.faceUvToXyz(face, 0, 1) - S2Projections.faceUvToXyz(face, 0, 0));
             }
         }
 
@@ -337,13 +337,13 @@ namespace S2Geometry.Tests
                 for (double x = -1; x <= 1; x += 1/1024.0)
                 {
                     assertDoubleNear(
-                        S2Point.crossProd(
+                        S2Point.CrossProd(
                             S2Projections.faceUvToXyz(face, x, -1), S2Projections.faceUvToXyz(face, x, 1))
-                               .angle(S2Projections.getUNorm(face, x)), 0);
+                               .Angle(S2Projections.getUNorm(face, x)), 0);
                     assertDoubleNear(
-                        S2Point.crossProd(
+                        S2Point.CrossProd(
                             S2Projections.faceUvToXyz(face, -1, x), S2Projections.faceUvToXyz(face, 1, x))
-                               .angle(S2Projections.getVNorm(face, x)), 0);
+                               .Angle(S2Projections.getVNorm(face, x)), 0);
                 }
             }
         }

@@ -239,9 +239,9 @@ namespace Google.Common.Geometry
             // to ensure that the edge normal is accurate even when the two points are
             // very close together.
             var ab = S2.RobustCrossProd(a, b);
-            var dir = S2Point.crossProd(ab, new S2Point(0, 0, 1));
-            var da = dir.dotProd(a);
-            var db = dir.dotProd(b);
+            var dir = S2Point.CrossProd(ab, new S2Point(0, 0, 1));
+            var da = dir.DotProd(a);
+            var db = dir.DotProd(b);
             if (da*db >= 0)
             {
                 // Minimum and maximum latitude are attained at the vertices.
@@ -249,7 +249,7 @@ namespace Google.Common.Geometry
             }
             // Minimum/maximum latitude occurs in the edge interior. This affects the
             // latitude bounds but not the longitude bounds.
-            var absLat = Math.Acos(Math.Abs(ab.z/ab.norm()));
+            var absLat = Math.Acos(Math.Abs(ab.Z/ab.Norm));
             if (da < 0)
             {
                 return new S2LatLngRect(new R1Interval(r.Lat.Lo, absLat), r.Lng);
@@ -808,27 +808,27 @@ namespace Google.Common.Geometry
             // assert (S2.isUnitLength(a) && S2.isUnitLength(b));
 
             // First, compute the normal to the plane AB that points vaguely north.
-            var z = S2Point.normalize(S2.RobustCrossProd(a, b));
-            if (z.z < 0)
+            var z = S2Point.Normalize(S2.RobustCrossProd(a, b));
+            if (z.Z < 0)
             {
-                z = S2Point.neg(z);
+                z = -z;
             }
 
             // Extend this to an orthonormal frame (x,y,z) where x is the direction
             // where the great circle through AB achieves its maximium latitude.
-            var y = S2Point.normalize(S2.RobustCrossProd(z, new S2Point(0, 0, 1)));
-            var x = S2Point.crossProd(y, z);
+            var y = S2Point.Normalize(S2.RobustCrossProd(z, new S2Point(0, 0, 1)));
+            var x = S2Point.CrossProd(y, z);
             // assert (S2.isUnitLength(x) && x.z >= 0);
 
             // Compute the angle "theta" from the x-axis (in the x-y plane defined
             // above) where the great circle intersects the given line of latitude.
             var sinLat = Math.Sin(lat);
-            if (Math.Abs(sinLat) >= x.z)
+            if (Math.Abs(sinLat) >= x.Z)
             {
                 return false; // The great circle does not reach the given latitude.
             }
             // assert (x.z > 0);
-            var cosTheta = sinLat/x.z;
+            var cosTheta = sinLat/x.Z;
             var sinTheta = Math.Sqrt(1 - cosTheta*cosTheta);
             var theta = Math.Atan2(sinTheta, cosTheta);
 
@@ -839,14 +839,13 @@ namespace Google.Common.Geometry
 
             // Compute the range of theta values spanned by the edge AB.
             var abTheta = S1Interval.FromPointPair(Math.Atan2(
-                a.dotProd(y), a.dotProd(x)), Math.Atan2(b.dotProd(y), b.dotProd(x)));
+                a.DotProd(y), a.DotProd(x)), Math.Atan2(b.DotProd(y), b.DotProd(x)));
 
             if (abTheta.Contains(theta))
             {
                 // Check if the intersection point is also in the given "lng" interval.
-                var isect = S2Point.add(S2Point.mul(x, cosTheta), S2Point.mul(y,
-                                                                              sinTheta));
-                if (lng.Contains(Math.Atan2(isect.y, isect.x)))
+                var isect = (x * cosTheta) + (y * sinTheta);
+                if (lng.Contains(Math.Atan2(isect.Y, isect.X)))
                 {
                     return true;
                 }
@@ -854,8 +853,8 @@ namespace Google.Common.Geometry
             if (abTheta.Contains(-theta))
             {
                 // Check if the intersection point is also in the given "lng" interval.
-                var intersection = S2Point.sub(S2Point.mul(x, cosTheta), S2Point.mul(y, sinTheta));
-                if (lng.Contains(Math.Atan2(intersection.y, intersection.x)))
+                var intersection = (x * cosTheta) - (y * sinTheta);
+                if (lng.Contains(Math.Atan2(intersection.Y, intersection.X)))
                 {
                     return true;
                 }

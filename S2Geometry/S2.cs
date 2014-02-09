@@ -163,7 +163,7 @@ namespace Google.Common.Geometry
 
         public static bool IsUnitLength(S2Point p)
         {
-            return Math.Abs(p.norm2() - 1) <= 1e-15;
+            return Math.Abs(p.Norm2 - 1) <= 1e-15;
         }
 
         /**
@@ -183,12 +183,12 @@ namespace Google.Common.Geometry
             // since we need to exclude pairs of line segments that would
             // otherwise "intersect" by crossing two antipodal points.
 
-            var ab = S2Point.crossProd(a, b);
-            var cd = S2Point.crossProd(c, d);
-            var acb = -ab.dotProd(c);
-            var cbd = -cd.dotProd(b);
-            var bda = ab.dotProd(d);
-            var dac = cd.dotProd(a);
+            var ab = S2Point.CrossProd(a, b);
+            var cd = S2Point.CrossProd(c, d);
+            var acb = -ab.DotProd(c);
+            var cbd = -cd.DotProd(b);
+            var bda = ab.DotProd(d);
+            var dac = cd.DotProd(a);
 
             return (acb*cbd > 0) && (cbd*bda > 0) && (bda*dac > 0);
         }
@@ -218,7 +218,7 @@ namespace Google.Common.Geometry
             // "a" and "b" even if they differ only in the lowest bit of one component.
 
             // assert (isUnitLength(a) && isUnitLength(b));
-            var x = S2Point.crossProd(S2Point.add(b, a), S2Point.sub(b, a));
+            var x = S2Point.CrossProd(b + a, b - a);
             if (!x.Equals(new S2Point(0, 0, 0)))
             {
                 return x;
@@ -238,7 +238,7 @@ namespace Google.Common.Geometry
         {
             // The current implementation in S2Point has the property we need,
             // i.e. Ortho(-a) = -Ortho(a) for all a.
-            return a.ortho();
+            return a.Ortho;
         }
 
         /**
@@ -288,9 +288,9 @@ namespace Google.Common.Geometry
             // quantities to 64 bits. Otherwise it may compute a value of dmin > 0
             // simply because it chose to spill one of the intermediate values to
             // memory but not one of the others.
-            var sa = b.angle(c);
-            var sb = c.angle(a);
-            var sc = a.angle(b);
+            var sa = b.Angle(c);
+            var sb = c.Angle(a);
+            var sc = a.Angle(b);
             var s = 0.5*(sa + sb + sc);
             if (s >= 3e-4)
             {
@@ -328,10 +328,10 @@ namespace Google.Common.Geometry
             // more accurate, faster to compute, and handles a == b == c without
             // a special case.
 
-            var ab = S2Point.crossProd(a, b);
-            var bc = S2Point.crossProd(b, c);
-            var ac = S2Point.crossProd(a, c);
-            return Math.Max(0.0, ab.angle(ac) - ab.angle(bc) + bc.angle(ac));
+            var ab = S2Point.CrossProd(a, b);
+            var bc = S2Point.CrossProd(b, c);
+            var ac = S2Point.CrossProd(a, c);
+            return Math.Max(0.0, ab.Angle(ac) - ab.Angle(bc) + bc.Angle(ac));
         }
 
         /**
@@ -386,7 +386,7 @@ namespace Google.Common.Geometry
 
         public static S2Point PlanarCentroid(S2Point a, S2Point b, S2Point c)
         {
-            return new S2Point((a.x + b.x + c.x)/3.0, (a.y + b.y + c.y)/3.0, (a.z + b.z + c.z)/3.0);
+            return new S2Point((a.X + b.X + c.X)/3.0, (a.Y + b.Y + c.Y)/3.0, (a.Z + b.Z + c.Z)/3.0);
         }
 
         /**
@@ -404,20 +404,20 @@ namespace Google.Common.Geometry
             // formula which this margin is too narrow to contain :)
 
             // assert (isUnitLength(a) && isUnitLength(b) && isUnitLength(c));
-            var sina = S2Point.crossProd(b, c).norm();
-            var sinb = S2Point.crossProd(c, a).norm();
-            var sinc = S2Point.crossProd(a, b).norm();
+            var sina = S2Point.CrossProd(b, c).Norm;
+            var sinb = S2Point.CrossProd(c, a).Norm;
+            var sinc = S2Point.CrossProd(a, b).Norm;
             var ra = (sina == 0) ? 1 : (Math.Asin(sina)/sina);
             var rb = (sinb == 0) ? 1 : (Math.Asin(sinb)/sinb);
             var rc = (sinc == 0) ? 1 : (Math.Asin(sinc)/sinc);
 
             // Now compute a point M such that M.X = rX * det(ABC) / 2 for X in A,B,C.
-            var x = new S2Point(a.x, b.x, c.x);
-            var y = new S2Point(a.y, b.y, c.y);
-            var z = new S2Point(a.z, b.z, c.z);
+            var x = new S2Point(a.X, b.X, c.X);
+            var y = new S2Point(a.Y, b.Y, c.Y);
+            var z = new S2Point(a.Z, b.Z, c.Z);
             var r = new S2Point(ra, rb, rc);
-            return new S2Point(0.5*S2Point.crossProd(y, z).dotProd(r),
-                               0.5*S2Point.crossProd(z, x).dotProd(r), 0.5*S2Point.crossProd(x, y).dotProd(r));
+            return new S2Point(0.5*S2Point.CrossProd(y, z).DotProd(r),
+                               0.5*S2Point.CrossProd(z, x).DotProd(r), 0.5*S2Point.CrossProd(x, y).DotProd(r));
         }
 
         /**
@@ -445,7 +445,7 @@ namespace Google.Common.Geometry
             // (1) x.CrossProd(y) == -(y.CrossProd(x))
             // (2) (-x).DotProd(y) == -(x.DotProd(y))
 
-            return S2Point.crossProd(c, a).dotProd(b) > 0;
+            return S2Point.CrossProd(c, a).DotProd(b) > 0;
         }
 
         /**
@@ -478,7 +478,7 @@ namespace Google.Common.Geometry
 
         public static int RobustCcw(S2Point a, S2Point b, S2Point c)
         {
-            return RobustCcw(a, b, c, S2Point.crossProd(a, b));
+            return RobustCcw(a, b, c, S2Point.CrossProd(a, b));
         }
 
         /**
@@ -503,7 +503,7 @@ namespace Google.Common.Geometry
             // equivalent result but with potentially different rounding errors).
             const double kMinAbsValue = 1.6e-15; // 2 * 14 * 2**-54
 
-            var det = aCrossB.dotProd(c);
+            var det = aCrossB.DotProd(c);
 
             // Double-check borderline cases in debug mode.
             // assert ((Math.Abs(det) < kMinAbsValue) || (Math.Abs(det) > 1000 * kMinAbsValue)
@@ -563,45 +563,45 @@ namespace Google.Common.Geometry
 
             // We want to handle the case of nearby points and nearly antipodal points
             // accurately, so determine whether A+B or A-B is smaller in each case.
-            double sab = (a.dotProd(b) > 0) ? -1 : 1;
-            double sbc = (b.dotProd(c) > 0) ? -1 : 1;
-            double sca = (c.dotProd(a) > 0) ? -1 : 1;
-            var vab = S2Point.add(a, S2Point.mul(b, sab));
-            var vbc = S2Point.add(b, S2Point.mul(c, sbc));
-            var vca = S2Point.add(c, S2Point.mul(a, sca));
-            var dab = vab.norm2();
-            var dbc = vbc.norm2();
-            var dca = vca.norm2();
+            double sab = (a.DotProd(b) > 0) ? -1 : 1;
+            double sbc = (b.DotProd(c) > 0) ? -1 : 1;
+            double sca = (c.DotProd(a) > 0) ? -1 : 1;
+            var vab = a + (b * sab);
+            var vbc = b + (c * sbc);
+            var vca = c + (a * sca);
+            var dab = vab.Norm2;
+            var dbc = vbc.Norm2;
+            var dca = vca.Norm2;
 
             // Sort the difference vectors to find the longest edge, and use the
             // opposite vertex as the origin. If two difference vectors are the same
             // length, we break ties deterministically to ensure that the symmetry
             // properties guaranteed in the header file will be true.
             double sign;
-            if (dca < dbc || (dca == dbc && a.lessThan(b)))
+            if (dca < dbc || (dca == dbc && a < b))
             {
-                if (dab < dbc || (dab == dbc && a.lessThan(c)))
+                if (dab < dbc || (dab == dbc && a < c))
                 {
                     // The "sab" factor converts A +/- B into B +/- A.
-                    sign = S2Point.crossProd(vab, vca).dotProd(a)*sab; // BC is longest
+                    sign = S2Point.CrossProd(vab, vca).DotProd(a)*sab; // BC is longest
                     // edge
                 }
                 else
                 {
-                    sign = S2Point.crossProd(vca, vbc).dotProd(c)*sca; // AB is longest
+                    sign = S2Point.CrossProd(vca, vbc).DotProd(c)*sca; // AB is longest
                     // edge
                 }
             }
             else
             {
-                if (dab < dca || (dab == dca && b.lessThan(c)))
+                if (dab < dca || (dab == dca && b < c))
                 {
-                    sign = S2Point.crossProd(vbc, vab).dotProd(b)*sbc; // CA is longest
+                    sign = S2Point.CrossProd(vbc, vab).DotProd(b)*sbc; // CA is longest
                     // edge
                 }
                 else
                 {
-                    sign = S2Point.crossProd(vca, vbc).dotProd(c)*sca; // AB is longest
+                    sign = S2Point.CrossProd(vca, vbc).DotProd(c)*sca; // AB is longest
                     // edge
                 }
             }
@@ -625,15 +625,15 @@ namespace Google.Common.Geometry
             // the Y-Z plane, then in the Z-X plane, and then in the X-Y plane.
 
             var ccw =
-                PlanarOrderedCcw(new R2Vector(a.y, a.z), new R2Vector(b.y, b.z), new R2Vector(c.y, c.z));
+                PlanarOrderedCcw(new R2Vector(a.Y, a.Z), new R2Vector(b.Y, b.Z), new R2Vector(c.Y, c.Z));
             if (ccw == 0)
             {
                 ccw =
-                    PlanarOrderedCcw(new R2Vector(a.z, a.x), new R2Vector(b.z, b.x), new R2Vector(c.z, c.x));
+                    PlanarOrderedCcw(new R2Vector(a.Z, a.X), new R2Vector(b.Z, b.X), new R2Vector(c.Z, c.X));
                 if (ccw == 0)
                 {
                     ccw = PlanarOrderedCcw(
-                        new R2Vector(a.x, a.y), new R2Vector(b.x, b.y), new R2Vector(c.x, c.y));
+                        new R2Vector(a.X, a.Y), new R2Vector(b.X, b.Y), new R2Vector(c.X, c.Y));
                     // assert (ccw != 0);
                 }
             }
@@ -734,7 +734,7 @@ namespace Google.Common.Geometry
 
         public static double Angle(S2Point a, S2Point b, S2Point c)
         {
-            return S2Point.crossProd(a, b).angle(S2Point.crossProd(c, b));
+            return S2Point.CrossProd(a, b).Angle(S2Point.CrossProd(c, b));
         }
 
         /**
@@ -754,7 +754,7 @@ namespace Google.Common.Geometry
         {
             // This is a bit less efficient because we compute all 3 cross products, but
             // it ensures that turnAngle(a,b,c) == -turnAngle(c,b,a) for all a,b,c.
-            var outAngle = S2Point.crossProd(b, a).angle(S2Point.crossProd(c, b));
+            var outAngle = S2Point.CrossProd(b, a).Angle(S2Point.CrossProd(c, b));
             return (RobustCcw(a, b, c) > 0) ? outAngle : -outAngle;
         }
 
@@ -765,7 +765,7 @@ namespace Google.Common.Geometry
 
         public static bool ApproxEquals(S2Point a, S2Point b, double maxError)
         {
-            return a.angle(b) <= maxError;
+            return a.Angle(b) <= maxError;
         }
 
         public static bool ApproxEquals(S2Point a, S2Point b)

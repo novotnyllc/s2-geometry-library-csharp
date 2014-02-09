@@ -49,7 +49,7 @@ namespace Google.Common.Geometry
    * TODO(dbeaumont): Make this a static factory method (fromPoint() ?).
    */
 
-        public S2LatLng(S2Point p) : this(Math.Atan2(p.z, Math.Sqrt(p.x*p.x + p.y*p.y)), Math.Atan2(p.y, p.x))
+        public S2LatLng(S2Point p) : this(Math.Atan2(p.Z, Math.Sqrt(p.X*p.X + p.Y*p.Y)), Math.Atan2(p.Y, p.X))
         {
             // The latitude and longitude are already normalized. We use atan2 to
             // compute the latitude because the input vector is not necessarily unit
@@ -120,13 +120,13 @@ namespace Google.Common.Geometry
             // We use atan2 rather than asin because the input vector is not necessarily
             // unit length, and atan2 is much more accurate than asin near the poles.
             return S1Angle.FromRadians(
-                Math.Atan2(p.get(2), Math.Sqrt(p.get(0)*p.get(0) + p.get(1)*p.get(1))));
+                Math.Atan2(p[2], Math.Sqrt(p[0]*p[0] + p[1]*p[1])));
         }
 
         public static S1Angle longitude(S2Point p)
         {
             // Note that atan2(0, 0) is defined to be zero.
-            return S1Angle.FromRadians(Math.Atan2(p.get(1), p.get(0)));
+            return S1Angle.FromRadians(Math.Atan2(p[1], p[0]));
         }
 
         /** This is internal to avoid ambiguity about which units are expected. */

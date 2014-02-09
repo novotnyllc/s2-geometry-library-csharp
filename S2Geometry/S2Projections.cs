@@ -308,28 +308,28 @@ namespace Google.Common.Geometry
             switch (face)
             {
                 case 0:
-                    pu = p.y/p.x;
-                    pv = p.z/p.x;
+                    pu = p.Y/p.X;
+                    pv = p.Z/p.X;
                     break;
                 case 1:
-                    pu = -p.x/p.y;
-                    pv = p.z/p.y;
+                    pu = -p.X/p.Y;
+                    pv = p.Z/p.Y;
                     break;
                 case 2:
-                    pu = -p.x/p.z;
-                    pv = -p.y/p.z;
+                    pu = -p.X/p.Z;
+                    pv = -p.Y/p.Z;
                     break;
                 case 3:
-                    pu = p.z/p.x;
-                    pv = p.y/p.x;
+                    pu = p.Z/p.X;
+                    pv = p.Y/p.X;
                     break;
                 case 4:
-                    pu = p.z/p.y;
-                    pv = -p.x/p.y;
+                    pu = p.Z/p.Y;
+                    pv = -p.X/p.Y;
                     break;
                 default:
-                    pu = -p.y/p.z;
-                    pv = -p.x/p.z;
+                    pu = -p.Y/p.Z;
+                    pv = -p.X/p.Z;
                     break;
             }
             return new R2Vector(pu, pv);
@@ -337,8 +337,8 @@ namespace Google.Common.Geometry
 
         public static int xyzToFace(S2Point p)
         {
-            var face = p.largestAbsComponent();
-            if (p.get(face) < 0)
+            var face = p.LargestAbsComponent;
+            if (p[face] < 0)
             {
                 face += 3;
             }
@@ -349,14 +349,14 @@ namespace Google.Common.Geometry
         {
             if (face < 3)
             {
-                if (p.get(face) <= 0)
+                if (p[face] <= 0)
                 {
                     return null;
                 }
             }
             else
             {
-                if (p.get(face - 3) >= 0)
+                if (p[face - 3] >= 0)
                 {
                     return null;
                 }

@@ -235,7 +235,7 @@ namespace Google.Common.Geometry
 
         public S2Point toPoint()
         {
-            return S2Point.normalize(toPointRaw());
+            return S2Point.Normalize(toPointRaw());
         }
 
         /**

@@ -195,7 +195,7 @@ namespace S2Geometry.Tests
             var id = S2CellId.begin(MAX_WALK_LEVEL);
             for (; !id.Equals(end); id = id.next())
             {
-                Assert.True(id.toPointRaw().angle(id.nextWrap().toPointRaw()) <= maxDist);
+                Assert.True(id.toPointRaw().Angle(id.nextWrap().toPointRaw()) <= maxDist);
 
                 // Check that the ToPointRaw() returns the center of each cell
                 // in (s,t) coordinates.
@@ -227,11 +227,11 @@ namespace S2Geometry.Tests
                 var p = new S2Point(0.37861576725894824, 0.2772406863275093, 0.8830558887338725);
                 var q = S2CellId.fromPoint(p).toPointRaw();
 
-                Assert.True(p.angle(q) <= maxDist);
+                Assert.True(p.Angle(q) <= maxDist);
             }
         }
 
-        [Test]
+        //[Test]
         [Ignore("Not necessrily valid values. Fails on Java too.")]
         public void testNeighborLevel29()
         {

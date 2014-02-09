@@ -6,40 +6,117 @@ using System.Threading.Tasks;
 
 namespace Google.Common.Geometry
 {
-    public sealed class S2Point : IEquatable<S2Point>, IComparable<S2Point>
+    public struct S2Point : IEquatable<S2Point>, IComparable<S2Point>
     {
 // coordinates of the points
-        public readonly double x;
-        public readonly double y;
-        public readonly double z;
+        private readonly double _x;
+        private readonly double _y;
+        private readonly double _z;
 
-        public S2Point()
-        {
-        }
 
         public S2Point(double x, double y, double z)
         {
-            this.x = x;
-            this.y = y;
-            this.z = z;
+            _x = x;
+            _y = y;
+            _z = z;
+        }
+
+        public double X
+        {
+            get { return _x; }
+        }
+
+        public double Y
+        {
+            get { return _y; }
+        }
+
+        public double Z
+        {
+            get { return _z; }
+        }
+
+        public double Norm2
+        {
+            get { return _x*_x + _y*_y + _z*_z; }
+        }
+
+        public double Norm
+        {
+            get { return Math.Sqrt(Norm2); }
+        }
+
+        public S2Point Ortho
+        {
+            get
+            {
+                var k = LargestAbsComponent;
+                S2Point temp;
+                if (k == 1)
+                {
+                    temp = new S2Point(1, 0, 0);
+                }
+                else if (k == 2)
+                {
+                    temp = new S2Point(0, 1, 0);
+                }
+                else
+                {
+                    temp = new S2Point(0, 0, 1);
+                }
+                return Normalize(CrossProd(this, temp));
+            }
+        }
+
+        /** Return the index of the largest component fabs */
+
+        public int LargestAbsComponent
+        {
+            get
+            {
+                var temp = Fabs(this);
+                if (temp._x > temp._y)
+                {
+                    if (temp._x > temp._z)
+                    {
+                        return 0;
+                    }
+                    else
+                    {
+                        return 2;
+                    }
+                }
+                else
+                {
+                    if (temp._y > temp._z)
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        return 2;
+                    }
+                }
+            }
+        }
+
+        public double this[int axis]
+        {
+            get { return (axis == 0) ? _x : (axis == 1) ? _y : _z; }
         }
 
         public int CompareTo(S2Point other)
         {
-            return (lessThan(other) ? -1 : (Equals(other) ? 0 : 1));
+            return this < other ? -1 : (Equals(other) ? 0 : 1);
         }
 
         public bool Equals(S2Point other)
         {
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return x.Equals(other.x) && y.Equals(other.y) && z.Equals(other.z);
+            return _x.Equals(other._x) && _y.Equals(other._y) && _z.Equals(other._z);
         }
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != GetType()) return false;
             return Equals((S2Point)obj);
         }
@@ -53,9 +130,9 @@ namespace Google.Common.Geometry
         {
             unchecked
             {
-                var hashCode = Math.Abs(x).GetHashCode();
-                hashCode = (hashCode*397) ^ Math.Abs(y).GetHashCode();
-                hashCode = (hashCode*397) ^ Math.Abs(z).GetHashCode();
+                var hashCode = Math.Abs(_x).GetHashCode();
+                hashCode = (hashCode*397) ^ Math.Abs(_y).GetHashCode();
+                hashCode = (hashCode*397) ^ Math.Abs(_z).GetHashCode();
                 return hashCode;
             }
         }
@@ -70,132 +147,66 @@ namespace Google.Common.Geometry
             return !Equals(left, right);
         }
 
-        public static S2Point minus(S2Point p1, S2Point p2)
+        public static S2Point operator -(S2Point p1, S2Point p2)
         {
-            return sub(p1, p2);
+            return new S2Point(p1._x - p2._x, p1._y - p2._y, p1._z - p2._z);
         }
 
-        public static S2Point neg(S2Point p)
+        public static S2Point operator -(S2Point p)
         {
-            return new S2Point(-p.x, -p.y, -p.z);
+            return new S2Point(-p._x, -p._y, -p._z);
         }
 
-        public double norm2()
-        {
-            return x*x + y*y + z*z;
-        }
-
-        public double norm()
-        {
-            return Math.Sqrt(norm2());
-        }
-
-        public static S2Point crossProd(S2Point p1, S2Point p2)
+        public static S2Point CrossProd(S2Point p1, S2Point p2)
         {
             return new S2Point(
-                p1.y*p2.z - p1.z*p2.y, p1.z*p2.x - p1.x*p2.z, p1.x*p2.y - p1.y*p2.x);
+                p1._y*p2._z - p1._z*p2._y, p1._z*p2._x - p1._x*p2._z, p1._x*p2._y - p1._y*p2._x);
         }
 
-        public static S2Point add(S2Point p1, S2Point p2)
+        public static S2Point operator +(S2Point p1, S2Point p2)
         {
-            return new S2Point(p1.x + p2.x, p1.y + p2.y, p1.z + p2.z);
+            return new S2Point(p1._x + p2._x, p1._y + p2._y, p1._z + p2._z);
         }
 
-        public static S2Point sub(S2Point p1, S2Point p2)
+        public double DotProd(S2Point that)
         {
-            return new S2Point(p1.x - p2.x, p1.y - p2.y, p1.z - p2.z);
+            return _x*that._x + _y*that._y + _z*that._z;
         }
 
-        public double dotProd(S2Point that)
+        public static S2Point operator *(S2Point p, double m)
         {
-            return x*that.x + y*that.y + z*that.z;
+            return new S2Point(m*p._x, m*p._y, m*p._z);
         }
 
-        public static S2Point mul(S2Point p, double m)
+        public static S2Point operator /(S2Point p, double m)
         {
-            return new S2Point(m*p.x, m*p.y, m*p.z);
+            return new S2Point(p._x/m, p._y/m, p._z/m);
         }
 
-        public static S2Point div(S2Point p, double m)
-        {
-            return new S2Point(p.x/m, p.y/m, p.z/m);
-        }
 
         /** return a vector orthogonal to this one */
 
-        public S2Point ortho()
+        public static S2Point Fabs(S2Point p)
         {
-            var k = largestAbsComponent();
-            S2Point temp;
-            if (k == 1)
-            {
-                temp = new S2Point(1, 0, 0);
-            }
-            else if (k == 2)
-            {
-                temp = new S2Point(0, 1, 0);
-            }
-            else
-            {
-                temp = new S2Point(0, 0, 1);
-            }
-            return normalize(crossProd(this, temp));
+            return new S2Point(Math.Abs(p._x), Math.Abs(p._y), Math.Abs(p._z));
         }
 
-        /** Return the index of the largest component fabs */
-
-        public int largestAbsComponent()
+        public static S2Point Normalize(S2Point p)
         {
-            var temp = fabs(this);
-            if (temp.x > temp.y)
-            {
-                if (temp.x > temp.z)
-                {
-                    return 0;
-                }
-                else
-                {
-                    return 2;
-                }
-            }
-            else
-            {
-                if (temp.y > temp.z)
-                {
-                    return 1;
-                }
-                else
-                {
-                    return 2;
-                }
-            }
-        }
-
-        public static S2Point fabs(S2Point p)
-        {
-            return new S2Point(Math.Abs(p.x), Math.Abs(p.y), Math.Abs(p.z));
-        }
-
-        public static S2Point normalize(S2Point p)
-        {
-            var norm = p.norm();
+            var norm = p.Norm;
             if (norm != 0)
             {
                 norm = 1.0/norm;
             }
-            return mul(p, norm);
+            return p*norm;
         }
 
-        public double get(int axis)
-        {
-            return (axis == 0) ? x : (axis == 1) ? y : z;
-        }
 
         /** Return the angle between two vectors in radians */
 
-        public double angle(S2Point va)
+        public double Angle(S2Point va)
         {
-            return Math.Atan2(crossProd(this, va).norm(), dotProd(va));
+            return Math.Atan2(CrossProd(this, va).Norm, DotProd(va));
         }
 
         /**
@@ -203,32 +214,57 @@ namespace Google.Common.Geometry
    * difference of margin.
    */
 
-        public bool aequal(S2Point that, double margin)
+        public bool Aequal(S2Point that, double margin)
         {
-            return (Math.Abs(x - that.x) < margin) && (Math.Abs(y - that.y) < margin)
-                   && (Math.Abs(z - that.z) < margin);
+            return (Math.Abs(_x - that._x) < margin) && (Math.Abs(_y - that._y) < margin)
+                   && (Math.Abs(_z - that._z) < margin);
         }
 
 
-        public bool lessThan(S2Point vb)
+        public static bool operator <(S2Point x, S2Point y)
         {
-            if (x < vb.x)
+            if (x._x < y._x)
             {
                 return true;
             }
-            if (vb.x < x)
+            if (y._x < x._x)
             {
                 return false;
             }
-            if (y < vb.y)
+            if (x._y < y._y)
             {
                 return true;
             }
-            if (vb.y < y)
+            if (y._y < x._y)
             {
                 return false;
             }
-            if (z < vb.z)
+            if (x._z < y._z)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public static bool operator >(S2Point x, S2Point y)
+        {
+            if (x._x > y._x)
+            {
+                return true;
+            }
+            if (y._x > x._x)
+            {
+                return false;
+            }
+            if (x._y > y._y)
+            {
+                return true;
+            }
+            if (y._y > x._y)
+            {
+                return false;
+            }
+            if (x._z > y._z)
             {
                 return true;
             }
@@ -238,10 +274,10 @@ namespace Google.Common.Geometry
 
         public override string ToString()
         {
-            return "(" + x + ", " + y + ", " + z + ")";
+            return "(" + _x + ", " + _y + ", " + _z + ")";
         }
 
-        public string toDegreesString()
+        public string ToDegreesString()
         {
             var s2LatLng = new S2LatLng(this);
             return "(" + s2LatLng.latDegrees() + ", "

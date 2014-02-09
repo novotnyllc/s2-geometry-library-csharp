@@ -287,8 +287,7 @@ namespace S2Geometry.Tests
             {
                 var p = line.vertex(i);
                 // (p[0]*x + p[1]*y + p[2]*z).Normalize()
-                var axis = S2Point.normalize(
-                    S2Point.add(S2Point.add(S2Point.mul(x, p.x), S2Point.mul(y, p.y)), S2Point.mul(z, p.z)));
+                var axis = S2Point.Normalize(((x * p.X) + (y * p.Y)) + (z * p.Z));
                 var cap = S2Cap.fromAxisAngle(axis, S1Angle.FromRadians(maxPerturbation));
                 vertices.Add(samplePoint(cap));
             }
@@ -354,7 +353,7 @@ namespace S2Geometry.Tests
                 for (var j = 0; j < loop.numVertices(); ++j)
                 {
                     var p = loop.vertex(j);
-                    Console.Error.WriteLine("   [" + p.x + ", " + p.y + ", " + p.z + "]\n");
+                    Console.Error.WriteLine("   [" + p.X + ", " + p.Y + ", " + p.Z + "]\n");
                 }
                 found = true;
             }
@@ -434,8 +433,8 @@ namespace S2Geometry.Tests
                 // This causes the S2PolygonBuilder to choose different first edges when
                 // trying to build loops.
                 var x = randomPoint();
-                var y = S2Point.normalize(S2Point.crossProd(x, randomPoint()));
-                var z = S2Point.normalize(S2Point.crossProd(x, y));
+                var y = S2Point.Normalize(S2Point.CrossProd(x, randomPoint()));
+                var z = S2Point.Normalize(S2Point.CrossProd(x, y));
 
                 foreach (var chain in test.chainsIn)
                 {
