@@ -354,23 +354,23 @@ namespace S2Geometry.Tests
         [Test]
         public void testBounds()
         {
-            assertTrue(candyCane.getRectBound().Lng.isFull());
-            assertTrue(candyCane.getRectBound().latLo().Degrees < -20);
-            assertTrue(candyCane.getRectBound().latHi().Degrees > 10);
-            assertTrue(smallNeCw.getRectBound().isFull());
-            assertEquals(arctic80.getRectBound(),
+            assertTrue(candyCane.RectBound.Lng.isFull());
+            assertTrue(candyCane.RectBound.latLo().Degrees < -20);
+            assertTrue(candyCane.RectBound.latHi().Degrees > 10);
+            assertTrue(smallNeCw.RectBound.isFull());
+            assertEquals(arctic80.RectBound,
                          new S2LatLngRect(S2LatLng.fromDegrees(80, -180), S2LatLng.fromDegrees(90, 180)));
-            assertEquals(antarctic80.getRectBound(),
+            assertEquals(antarctic80.RectBound,
                          new S2LatLngRect(S2LatLng.fromDegrees(-90, -180), S2LatLng.fromDegrees(-80, 180)));
 
             arctic80.invert();
             // The highest latitude of each edge is attained at its midpoint.
             var mid = S2Point.mul(S2Point.add(arctic80.vertex(0), arctic80.vertex(1)), 0.5);
-            assertDoubleNear(arctic80.getRectBound().latHi().Radians, new S2LatLng(mid).lat().Radians);
+            assertDoubleNear(arctic80.RectBound.latHi().Radians, new S2LatLng(mid).lat().Radians);
             arctic80.invert();
 
-            assertTrue(southHemi.getRectBound().Lng.isFull());
-            assertEquals(southHemi.getRectBound().Lat, new R1Interval(-S2.M_PI_2, 0));
+            assertTrue(southHemi.RectBound.Lng.isFull());
+            assertEquals(southHemi.RectBound.Lat, new R1Interval(-S2.M_PI_2, 0));
         }
 
         /**

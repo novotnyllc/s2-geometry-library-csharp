@@ -164,9 +164,9 @@ namespace S2Geometry.Tests
                 }
 
                 // Test Contains() and MayIntersect().
-                Assert.True(cell.contains(children[i]));
-                Assert.True(cell.mayIntersect(children[i]));
-                Assert.True(!children[i].contains(cell));
+                Assert.True(cell.Contains(children[i]));
+                Assert.True(cell.MayIntersect(children[i]));
+                Assert.True(!children[i].Contains(cell));
                 Assert.True(cell.contains(children[i].getCenterRaw()));
                 for (var j = 0; j < 4; ++j)
                 {
@@ -174,20 +174,20 @@ namespace S2Geometry.Tests
                     if (j != i)
                     {
                         Assert.True(!children[i].contains(children[j].getCenterRaw()));
-                        Assert.True(!children[i].mayIntersect(children[j]));
+                        Assert.True(!children[i].MayIntersect(children[j]));
                     }
                 }
 
                 // Test GetCapBound and GetRectBound.
-                var parentCap = cell.getCapBound();
-                var parentRect = cell.getRectBound();
+                var parentCap = cell.CapBound;
+                var parentRect = cell.RectBound;
                 if (cell.contains(new S2Point(0, 0, 1))
                     || cell.contains(new S2Point(0, 0, -1)))
                 {
                     Assert.True(parentRect.Lng.isFull());
                 }
-                var childCap = children[i].getCapBound();
-                var childRect = children[i].getRectBound();
+                var childCap = children[i].CapBound;
+                var childRect = children[i].RectBound;
                 Assert.True(childCap.contains(children[i].getCenter()));
                 Assert.True(childRect.contains(children[i].getCenterRaw()));
                 Assert.True(parentCap.contains(children[i].getCenter()));
@@ -205,7 +205,7 @@ namespace S2Geometry.Tests
                         Console.WriteLine("Parent rect: " + parentRect);
                         Console.WriteLine("Vertex raw(j) " + children[i].getVertex(j));
                         Console.WriteLine("Latlng of vertex: " + new S2LatLng(children[i].getVertex(j)));
-                        cell.getRectBound();
+                        Console.WriteLine("RectBound: " + cell.RectBound);
                     }
                     Assert.True(parentRect.contains(children[i].getVertex(j)));
                     if (!parentRect.contains(children[i].getVertexRaw(j)))
@@ -215,7 +215,7 @@ namespace S2Geometry.Tests
                         Console.WriteLine("Parent rect: " + parentRect);
                         Console.WriteLine("Vertex raw(j) " + children[i].getVertexRaw(j));
                         Console.WriteLine("Latlng of vertex: " + new S2LatLng(children[i].getVertexRaw(j)));
-                        cell.getRectBound();
+                        Console.WriteLine("RectBound: " + cell.RectBound);
                     }
                     Assert.True(parentRect.contains(children[i].getVertexRaw(j)));
                     if (j != i)

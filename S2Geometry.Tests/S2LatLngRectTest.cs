@@ -51,10 +51,10 @@ namespace S2Geometry.Tests
                     vertexContained = true;
                 }
             }
-            assertEquals(r.mayIntersect(cell), level >= 1);
+            assertEquals(r.MayIntersect(cell), level >= 1);
             assertEquals(r.intersects(cell), level >= 2);
             assertEquals(vertexContained, level >= 3);
-            assertEquals(r.contains(cell), level >= 4);
+            assertEquals(r.Contains(cell), level >= 4);
         }
 
         private static S1Angle bruteForceDistance(S2LatLngRect a, S2LatLngRect b)
@@ -350,15 +350,12 @@ namespace S2Geometry.Tests
             assertTrue(llr1.approxEquals(llr2));
 
             // GetCapBound(), bounding cap at center is smaller:
-            assertTrue(new S2LatLngRect(S2LatLng.fromDegrees(-45, -45), S2LatLng.fromDegrees(45, 45))
-                           .getCapBound().approxEquals(S2Cap.fromAxisHeight(new S2Point(1, 0, 0), 0.5)));
+            assertTrue(new S2LatLngRect(S2LatLng.fromDegrees(-45, -45), S2LatLng.fromDegrees(45, 45)).CapBound.approxEquals(S2Cap.fromAxisHeight(new S2Point(1, 0, 0), 0.5)));
             // GetCapBound(), bounding cap at north pole is smaller:
-            assertTrue(new S2LatLngRect(S2LatLng.fromDegrees(88, -80), S2LatLng.fromDegrees(89, 80))
-                           .getCapBound().approxEquals(S2Cap.fromAxisAngle(new S2Point(0, 0, 1), S1Angle.FromDegrees(2))));
+            assertTrue(new S2LatLngRect(S2LatLng.fromDegrees(88, -80), S2LatLng.fromDegrees(89, 80)).CapBound.approxEquals(S2Cap.fromAxisAngle(new S2Point(0, 0, 1), S1Angle.FromDegrees(2))));
             // GetCapBound(), longitude span > 180 degrees:
             assertTrue(
-                new S2LatLngRect(S2LatLng.fromDegrees(-30, -150), S2LatLng.fromDegrees(-10, 50))
-                    .getCapBound()
+                new S2LatLngRect(S2LatLng.fromDegrees(-30, -150), S2LatLng.fromDegrees(-10, 50)).CapBound
                     .approxEquals(S2Cap.fromAxisAngle(new S2Point(0, 0, -1), S1Angle.FromDegrees(80))));
 
             // Contains(S2Cell), MayIntersect(S2Cell), Intersects(S2Cell)
@@ -392,7 +389,7 @@ namespace S2Geometry.Tests
                 // This is the leaf cell at the top right hand corner of face 0.
                 // It has two angles of 60 degrees and two of 120 degrees.
                 var cell0tr = new S2Cell(new S2Point(1 + 1e-12, 1, 1));
-                var bound0tr = cell0tr.getRectBound();
+                var bound0tr = cell0tr.RectBound;
                 var v0 = new S2LatLng(cell0tr.getVertexRaw(0));
                 testCellOps(
                     rectFromDegrees(v0.lat().Degrees - 1e-8, v0.lng().Degrees - 1e-8,
@@ -406,7 +403,7 @@ namespace S2Geometry.Tests
             {
                 // These two intersect like a diamond and a square.
                 var cell202 = S2Cell.fromFacePosLevel(2, (byte)0, 2);
-                var bound202 = cell202.getRectBound();
+                var bound202 = cell202.RectBound;
                 testCellOps(
                     rectFromDegrees(bound202.lo().lat().Degrees + 3, bound202.lo().lng().Degrees + 3,
                                     bound202.hi().lat().Degrees - 3, bound202.hi().lng().Degrees - 3), cell202, 2);

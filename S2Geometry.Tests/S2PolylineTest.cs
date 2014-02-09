@@ -50,7 +50,7 @@ namespace S2Geometry.Tests
         {
             var vertices = new List<S2Point>();
             var empty = new S2Polyline(vertices);
-            assertEquals(empty.getRectBound(), S2LatLngRect.empty());
+            assertEquals(empty.RectBound, S2LatLngRect.empty());
         }
 
         [Test]
@@ -140,7 +140,7 @@ namespace S2Geometry.Tests
             for (var face = 0; face < 6; ++face)
             {
                 var cell = S2Cell.fromFacePosLevel(face, (byte)0, 0);
-                assertEquals(line.mayIntersect(cell), (face & 1) == 0);
+                assertEquals(line.MayIntersect(cell), (face & 1) == 0);
             }
         }
 

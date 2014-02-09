@@ -90,7 +90,7 @@ namespace Google.Common.Geometry
    * Initialize a loop corresponding to the given cell.
    */
 
-        public S2Loop(S2Cell cell) : this(cell, cell.getRectBound())
+        public S2Loop(S2Cell cell) : this(cell, cell.RectBound)
         {
         }
 
@@ -129,7 +129,7 @@ namespace Google.Common.Geometry
             vertexToIndex = src.vertexToIndex;
             index = src.index;
             firstLogicalVertex = src.firstLogicalVertex;
-            bound = src.getRectBound();
+            bound = src.RectBound;
             originInside = src.originInside;
             _depth = src._depth;
         }
@@ -157,17 +157,17 @@ namespace Google.Common.Geometry
             return 0;
         }
 
-        public S2Cap getCapBound()
+        public S2Cap CapBound
         {
-            return bound.getCapBound();
+            get { return bound.CapBound; }
         }
 
 
         /** Return a bounding latitude-longitude rectangle. */
 
-        public S2LatLngRect getRectBound()
+        public S2LatLngRect RectBound
         {
-            return bound;
+            get { return bound; }
         }
 
         /**
@@ -176,13 +176,13 @@ namespace Google.Common.Geometry
    * relationship could not be determined.
    */
 
-        public bool contains(S2Cell cell)
+        public bool Contains(S2Cell cell)
         {
             // It is faster to construct a bounding rectangle for an S2Cell than for
             // a general polygon. A future optimization could also take advantage of
             // the fact than an S2Cell is convex.
 
-            var cellBound = cell.getRectBound();
+            var cellBound = cell.RectBound;
             if (!bound.contains(cellBound))
             {
                 return false;
@@ -197,13 +197,13 @@ namespace Google.Common.Geometry
    * relationship could not be determined.
    */
 
-        public bool mayIntersect(S2Cell cell)
+        public bool MayIntersect(S2Cell cell)
         {
             // It is faster to construct a bounding rectangle for an S2Cell than for
             // a general polygon. A future optimization could also take advantage of
             // the fact than an S2Cell is convex.
 
-            var cellBound = cell.getRectBound();
+            var cellBound = cell.RectBound;
             if (!bound.intersects(cellBound))
             {
                 return false;
@@ -488,7 +488,7 @@ namespace Google.Common.Geometry
             // union is the entire sphere, i.e. two loops that contains each other's
             // boundaries but not each other's interiors.
 
-            if (!bound.contains(b.getRectBound()))
+            if (!bound.contains(b.RectBound))
             {
                 return false;
             }
@@ -512,7 +512,7 @@ namespace Google.Common.Geometry
             // and that A contains a vertex of B. However we still need to check for
             // the case mentioned above, where (A union B) is the entire sphere.
             // Normally this check is very cheap due to the bounding box precondition.
-            if (bound.union(b.getRectBound()).isFull())
+            if (bound.union(b.RectBound).isFull())
             {
                 if (b.contains(vertex(0)) && b.findVertex(vertex(0)) < 0)
                 {
@@ -533,7 +533,7 @@ namespace Google.Common.Geometry
             // This code is similar to Contains(), but is optimized for the case
             // where both loops enclose less than half of the sphere.
 
-            if (!bound.intersects(b.getRectBound()))
+            if (!bound.intersects(b.RectBound))
             {
                 return false;
             }
@@ -541,7 +541,7 @@ namespace Google.Common.Geometry
             // Normalize the arguments so that B has a smaller longitude span than A.
             // This makes intersection tests much more efficient in the case where
             // longitude pruning is used (see CheckEdgeCrossings).
-            if (b.getRectBound().Lng.getLength() > bound.Lng.getLength())
+            if (b.RectBound.Lng.getLength() > bound.Lng.getLength())
             {
                 return b.intersects(this);
             }
@@ -567,7 +567,7 @@ namespace Google.Common.Geometry
             // arbitrary non-shared vertex of A. Note that this check is cheap because
             // of the bounding box precondition and the fact that we normalized the
             // arguments so that A's longitude span is at least as long as B's.
-            if (b.getRectBound().contains(bound))
+            if (b.RectBound.contains(bound))
             {
                 if (b.contains(vertex(0)) && b.findVertex(vertex(0)) < 0)
                 {
@@ -586,7 +586,7 @@ namespace Google.Common.Geometry
 
         public bool containsNested(S2Loop b)
         {
-            if (!bound.contains(b.getRectBound()))
+            if (!bound.contains(b.RectBound))
             {
                 return false;
             }
@@ -616,7 +616,7 @@ namespace Google.Common.Geometry
         public int containsOrCrosses(S2Loop b)
         {
             // There can be containment or crossing only if the bounds intersect.
-            if (!bound.intersects(b.getRectBound()))
+            if (!bound.intersects(b.RectBound))
             {
                 return 0;
             }
@@ -641,7 +641,7 @@ namespace Google.Common.Geometry
             // either A contains B, or there are no shared vertices (due to the check
             // above). So now we just need to distinguish the case where A contains B
             // from the case where B contains A or the two loops are disjoint.
-            if (!bound.contains(b.getRectBound()))
+            if (!bound.contains(b.RectBound))
             {
                 return 0;
             }

@@ -53,67 +53,70 @@ namespace Google.Common.Geometry
             return Equals(lat, other.lat) && Equals(lng, other.lng);
         }
 
-        public S2Cap getCapBound()
+        public S2Cap CapBound
         {
-            // We consider two possible bounding caps, one whose axis passes
-            // through the center of the lat-long rectangle and one whose axis
-            // is the north or south pole. We return the smaller of the two caps.
+            get
+            {
+                // We consider two possible bounding caps, one whose axis passes
+                // through the center of the lat-long rectangle and one whose axis
+                // is the north or south pole. We return the smaller of the two caps.
 
-            if (isEmpty())
-            {
-                return S2Cap.empty();
-            }
-
-            double poleZ, poleAngle;
-            if (lat.lo() + lat.hi() < 0)
-            {
-                // South pole axis yields smaller cap.
-                poleZ = -1;
-                poleAngle = S2.M_PI_2 + lat.hi();
-            }
-            else
-            {
-                poleZ = 1;
-                poleAngle = S2.M_PI_2 - lat.lo();
-            }
-            var poleCap = S2Cap.fromAxisAngle(new S2Point(0, 0, poleZ), S1Angle
-                                                                            .FromRadians(poleAngle));
-
-            // For bounding rectangles that span 180 degrees or less in longitude, the
-            // maximum cap size is achieved at one of the rectangle vertices. For
-            // rectangles that are larger than 180 degrees, we punt and always return a
-            // bounding cap centered at one of the two poles.
-            var lngSpan = lng.hi() - lng.lo();
-            if (Math.IEEERemainder(lngSpan, 2*S2.M_PI) >= 0)
-            {
-                if (lngSpan < 2*S2.M_PI)
+                if (isEmpty())
                 {
-                    var midCap = S2Cap.fromAxisAngle(getCenter().toPoint(), S1Angle
-                                                                                .FromRadians(0));
-                    for (var k = 0; k < 4; ++k)
+                    return S2Cap.empty();
+                }
+
+                double poleZ, poleAngle;
+                if (lat.lo() + lat.hi() < 0)
+                {
+                    // South pole axis yields smaller cap.
+                    poleZ = -1;
+                    poleAngle = S2.M_PI_2 + lat.hi();
+                }
+                else
+                {
+                    poleZ = 1;
+                    poleAngle = S2.M_PI_2 - lat.lo();
+                }
+                var poleCap = S2Cap.fromAxisAngle(new S2Point(0, 0, poleZ), S1Angle
+                                                                                .FromRadians(poleAngle));
+
+                // For bounding rectangles that span 180 degrees or less in longitude, the
+                // maximum cap size is achieved at one of the rectangle vertices. For
+                // rectangles that are larger than 180 degrees, we punt and always return a
+                // bounding cap centered at one of the two poles.
+                var lngSpan = lng.hi() - lng.lo();
+                if (Math.IEEERemainder(lngSpan, 2*S2.M_PI) >= 0)
+                {
+                    if (lngSpan < 2*S2.M_PI)
                     {
-                        midCap = midCap.addPoint(getVertex(k).toPoint());
-                    }
-                    if (midCap.height() < poleCap.height())
-                    {
-                        return midCap;
+                        var midCap = S2Cap.fromAxisAngle(getCenter().toPoint(), S1Angle
+                                                                                    .FromRadians(0));
+                        for (var k = 0; k < 4; ++k)
+                        {
+                            midCap = midCap.addPoint(getVertex(k).toPoint());
+                        }
+                        if (midCap.height() < poleCap.height())
+                        {
+                            return midCap;
+                        }
                     }
                 }
+                return poleCap;
             }
-            return poleCap;
         }
 
-        public S2LatLngRect getRectBound()
+        public S2LatLngRect RectBound
         {
-            return this;
+            get { return this; }
         }
 
 
-        public bool contains(S2Cell cell)
+        public bool Contains(S2Cell cell)
         {
             // A latitude-longitude rectangle contains a cell if and only if it contains
             // the cell's bounding rectangle. (This is an exact test.)
-            return contains(cell.getRectBound());
+            return contains(cell.RectBound);
         }
 
         /**
@@ -124,10 +127,10 @@ namespace Google.Common.Geometry
    * goes up as the cells get smaller.
    */
 
-        public bool mayIntersect(S2Cell cell)
+        public bool MayIntersect(S2Cell cell)
         {
             // This test is cheap but is NOT exact (see s2latlngrect.h).
-            return intersects(cell.getRectBound());
+            return intersects(cell.RectBound);
         }
 
         public override bool Equals(object obj)
@@ -566,7 +569,7 @@ namespace Google.Common.Geometry
             }
 
             // Quick rejection test (not required for correctness).
-            if (!intersects(cell.getRectBound()))
+            if (!intersects(cell.RectBound))
             {
                 return false;
             }
@@ -725,7 +728,7 @@ namespace Google.Common.Geometry
             {
                 var vertexCap = S2Cap.fromAxisHeight(getVertex(k).toPoint(), cap
                                                                                  .height());
-                r = r.union(vertexCap.getRectBound());
+                r = r.union(vertexCap.RectBound);
             }
             return r;
         }

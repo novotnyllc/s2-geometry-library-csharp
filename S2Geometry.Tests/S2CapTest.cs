@@ -21,8 +21,8 @@ namespace S2Geometry.Tests
         public void testRectBound()
         {
             // Empty and full caps.
-            Assert.True(S2Cap.empty().getRectBound().isEmpty());
-            Assert.True(S2Cap.full().getRectBound().isFull());
+            Assert.True(S2Cap.empty().RectBound.isEmpty());
+            Assert.True(S2Cap.full().RectBound.isFull());
 
             var kDegreeEps = 1e-13;
             // Maximum allowable error for latitudes and longitudes measured in
@@ -30,40 +30,39 @@ namespace S2Geometry.Tests
 
             // Cap that includes the south pole.
             var rect =
-                S2Cap.fromAxisAngle(getLatLngPoint(-45, 57), S1Angle.FromDegrees(50)).getRectBound();
+                S2Cap.fromAxisAngle(getLatLngPoint(-45, 57), S1Angle.FromDegrees(50)).RectBound;
             assertDoubleNear(rect.latLo().Degrees, -90, kDegreeEps);
             assertDoubleNear(rect.latHi().Degrees, 5, kDegreeEps);
             Assert.True(rect.Lng.isFull());
 
             // Cap that is tangent to the north pole.
-            rect = S2Cap.fromAxisAngle(S2Point.normalize(new S2Point(1, 0, 1)), S1Angle.FromRadians(S2.M_PI_4))
-                        .getRectBound();
+            rect = S2Cap.fromAxisAngle(S2Point.normalize(new S2Point(1, 0, 1)), S1Angle.FromRadians(S2.M_PI_4)).RectBound;
             assertDoubleNear(rect.Lat.lo(), 0);
             assertDoubleNear(rect.Lat.hi(), S2.M_PI_2);
             Assert.True(rect.Lng.isFull());
 
             rect = S2Cap
-                .fromAxisAngle(S2Point.normalize(new S2Point(1, 0, 1)), S1Angle.FromDegrees(45)).getRectBound();
+                .fromAxisAngle(S2Point.normalize(new S2Point(1, 0, 1)), S1Angle.FromDegrees(45)).RectBound;
             assertDoubleNear(rect.latLo().Degrees, 0, kDegreeEps);
             assertDoubleNear(rect.latHi().Degrees, 90, kDegreeEps);
             Assert.True(rect.Lng.isFull());
 
             // The eastern hemisphere.
             rect = S2Cap
-                .fromAxisAngle(new S2Point(0, 1, 0), S1Angle.FromRadians(S2.M_PI_2 + 5e-16)).getRectBound();
+                .fromAxisAngle(new S2Point(0, 1, 0), S1Angle.FromRadians(S2.M_PI_2 + 5e-16)).RectBound;
             assertDoubleNear(rect.latLo().Degrees, -90, kDegreeEps);
             assertDoubleNear(rect.latHi().Degrees, 90, kDegreeEps);
             Assert.True(rect.Lng.isFull());
 
             // A cap centered on the equator.
-            rect = S2Cap.fromAxisAngle(getLatLngPoint(0, 50), S1Angle.FromDegrees(20)).getRectBound();
+            rect = S2Cap.fromAxisAngle(getLatLngPoint(0, 50), S1Angle.FromDegrees(20)).RectBound;
             assertDoubleNear(rect.latLo().Degrees, -20, kDegreeEps);
             assertDoubleNear(rect.latHi().Degrees, 20, kDegreeEps);
             assertDoubleNear(rect.lngLo().Degrees, 30, kDegreeEps);
             assertDoubleNear(rect.lngHi().Degrees, 70, kDegreeEps);
 
             // A cap centered on the north pole.
-            rect = S2Cap.fromAxisAngle(getLatLngPoint(90, 123), S1Angle.FromDegrees(10)).getRectBound();
+            rect = S2Cap.fromAxisAngle(getLatLngPoint(90, 123), S1Angle.FromDegrees(10)).RectBound;
             assertDoubleNear(rect.latLo().Degrees, 80, kDegreeEps);
             assertDoubleNear(rect.latHi().Degrees, 90, kDegreeEps);
             Assert.True(rect.Lng.isFull());
@@ -90,8 +89,8 @@ namespace S2Geometry.Tests
                 var cornerCell = new S2Cell(S2Projections.faceUvToXyz(face, 1 - EPS, 1 - EPS));
 
                 // Quick check for full and empty caps.
-                Assert.True(S2Cap.full().contains(rootCell));
-                Assert.True(!S2Cap.empty().mayIntersect(rootCell));
+                Assert.True(S2Cap.full().Contains(rootCell));
+                Assert.True(!S2Cap.empty().MayIntersect(rootCell));
 
                 // Check intersections with the bounding caps of the leaf cells that are
                 // adjacent to 'corner_cell' along the Hilbert curve. Because this corner
@@ -101,9 +100,9 @@ namespace S2Geometry.Tests
                 for (var id = first; id.lessThan(last); id = id.next())
                 {
                     var cell = new S2Cell(id);
-                    JavaAssert.Equal(cell.getCapBound().contains(cornerCell), id.Equals(cornerCell.id()));
+                    JavaAssert.Equal(cell.CapBound.Contains(cornerCell), id.Equals(cornerCell.id()));
                     JavaAssert.Equal(
-                        cell.getCapBound().mayIntersect(cornerCell), id.parent().contains(cornerCell.id()));
+                        cell.CapBound.MayIntersect(cornerCell), id.parent().contains(cornerCell.id()));
                 }
 
                 var antiFace = (face + 3)%6; // Opposite face.
@@ -112,28 +111,28 @@ namespace S2Geometry.Tests
                     // A cap that barely contains all of 'cap_face'.
                     var center = S2Projections.getNorm(capFace);
                     var covering = S2Cap.fromAxisAngle(center, S1Angle.FromRadians(kFaceRadius + EPS));
-                    JavaAssert.Equal(covering.contains(rootCell), capFace == face);
-                    JavaAssert.Equal(covering.mayIntersect(rootCell), capFace != antiFace);
-                    JavaAssert.Equal(covering.contains(edgeCell), center.dotProd(edgeCell.getCenter()) > 0.1);
-                    JavaAssert.Equal(covering.contains(edgeCell), covering.mayIntersect(edgeCell));
-                    JavaAssert.Equal(covering.contains(cornerCell), capFace == face);
+                    JavaAssert.Equal(covering.Contains(rootCell), capFace == face);
+                    JavaAssert.Equal(covering.MayIntersect(rootCell), capFace != antiFace);
+                    JavaAssert.Equal(covering.Contains(edgeCell), center.dotProd(edgeCell.getCenter()) > 0.1);
+                    JavaAssert.Equal(covering.Contains(edgeCell), covering.MayIntersect(edgeCell));
+                    JavaAssert.Equal(covering.Contains(cornerCell), capFace == face);
                     JavaAssert.Equal(
-                        covering.mayIntersect(cornerCell), center.dotProd(cornerCell.getCenter()) > 0);
+                        covering.MayIntersect(cornerCell), center.dotProd(cornerCell.getCenter()) > 0);
 
                     // A cap that barely intersects the edges of 'cap_face'.
                     var bulging = S2Cap.fromAxisAngle(center, S1Angle.FromRadians(S2.M_PI_4 + EPS));
-                    Assert.True(!bulging.contains(rootCell));
-                    JavaAssert.Equal(bulging.mayIntersect(rootCell), capFace != antiFace);
-                    JavaAssert.Equal(bulging.contains(edgeCell), capFace == face);
-                    JavaAssert.Equal(bulging.mayIntersect(edgeCell), center.dotProd(edgeCell.getCenter()) > 0.1);
-                    Assert.True(!bulging.contains(cornerCell));
-                    Assert.True(!bulging.mayIntersect(cornerCell));
+                    Assert.True(!bulging.Contains(rootCell));
+                    JavaAssert.Equal(bulging.MayIntersect(rootCell), capFace != antiFace);
+                    JavaAssert.Equal(bulging.Contains(edgeCell), capFace == face);
+                    JavaAssert.Equal(bulging.MayIntersect(edgeCell), center.dotProd(edgeCell.getCenter()) > 0.1);
+                    Assert.True(!bulging.Contains(cornerCell));
+                    Assert.True(!bulging.MayIntersect(cornerCell));
 
                     // A singleton cap.
                     var singleton = S2Cap.fromAxisAngle(center, S1Angle.FromRadians(0));
-                    JavaAssert.Equal(singleton.mayIntersect(rootCell), capFace == face);
-                    Assert.True(!singleton.mayIntersect(edgeCell));
-                    Assert.True(!singleton.mayIntersect(cornerCell));
+                    JavaAssert.Equal(singleton.MayIntersect(rootCell), capFace == face);
+                    Assert.True(!singleton.MayIntersect(edgeCell));
+                    Assert.True(!singleton.MayIntersect(cornerCell));
                 }
             }
         }

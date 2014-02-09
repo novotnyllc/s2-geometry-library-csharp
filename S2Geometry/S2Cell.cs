@@ -74,90 +74,96 @@ namespace Google.Common.Geometry
             return cellId.Equals(other.cellId) && _level == other._level && _face == other._face && _orientation == other._orientation;
         }
 
-        public S2Cap getCapBound()
+        public S2Cap CapBound
         {
-            // Use the cell center in (u,v)-space as the cap axis. This vector is
-            // very close to GetCenter() and faster to compute. Neither one of these
-            // vectors yields the bounding cap with minimal surface area, but they
-            // are both pretty close.
-            //
-            // It's possible to show that the two vertices that are furthest from
-            // the (u,v)-origin never determine the maximum cap size (this is a
-            // possible future optimization).
-
-            var u = 0.5*(uv[0][0] + uv[0][1]);
-            var v = 0.5*(uv[1][0] + uv[1][1]);
-            var cap = S2Cap.fromAxisHeight(S2Point.normalize(S2Projections.faceUvToXyz(_face, u, v)), 0);
-            for (var k = 0; k < 4; ++k)
+            get
             {
-                cap = cap.addPoint(getVertex(k));
-            }
-            return cap;
-        }
-
-        public S2LatLngRect getRectBound()
-        {
-            if (_level > 0)
-            {
-                // Except for cells at level 0, the latitude and longitude extremes are
-                // attained at the vertices. Furthermore, the latitude range is
-                // determined by one pair of diagonally opposite vertices and the
-                // longitude range is determined by the other pair.
+                // Use the cell center in (u,v)-space as the cap axis. This vector is
+                // very close to GetCenter() and faster to compute. Neither one of these
+                // vectors yields the bounding cap with minimal surface area, but they
+                // are both pretty close.
                 //
-                // We first determine which corner (i,j) of the cell has the largest
-                // absolute latitude. To maximize latitude, we want to find the point in
-                // the cell that has the largest absolute z-coordinate and the smallest
-                // absolute x- and y-coordinates. To do this we look at each coordinate
-                // (u and v), and determine whether we want to minimize or maximize that
-                // coordinate based on the axis direction and the cell's (u,v) quadrant.
-                var u = uv[0][0] + uv[0][1];
-                var v = uv[1][0] + uv[1][1];
-                var i = S2Projections.getUAxis(_face).z == 0 ? (u < 0 ? 1 : 0) : (u > 0 ? 1 : 0);
-                var j = S2Projections.getVAxis(_face).z == 0 ? (v < 0 ? 1 : 0) : (v > 0 ? 1 : 0);
+                // It's possible to show that the two vertices that are furthest from
+                // the (u,v)-origin never determine the maximum cap size (this is a
+                // possible future optimization).
 
-
-                var lat = R1Interval.fromPointPair(getLatitude(i, j), getLatitude(1 - i, 1 - j));
-                lat = lat.expanded(MAX_ERROR).intersection(S2LatLngRect.fullLat());
-                if (lat.lo() == -S2.M_PI_2 || lat.hi() == S2.M_PI_2)
+                var u = 0.5*(uv[0][0] + uv[0][1]);
+                var v = 0.5*(uv[1][0] + uv[1][1]);
+                var cap = S2Cap.fromAxisHeight(S2Point.normalize(S2Projections.faceUvToXyz(_face, u, v)), 0);
+                for (var k = 0; k < 4; ++k)
                 {
-                    return new S2LatLngRect(lat, S1Interval.full());
+                    cap = cap.addPoint(getVertex(k));
                 }
-                var lng = S1Interval.fromPointPair(getLongitude(i, 1 - j), getLongitude(1 - i, j));
-                return new S2LatLngRect(lat, lng.expanded(MAX_ERROR));
-            }
-
-
-            // The face centers are the +X, +Y, +Z, -X, -Y, -Z axes in that order.
-            // assert (S2Projections.getNorm(face).get(face % 3) == ((face < 3) ? 1 : -1));
-            switch (_face)
-            {
-                case 0:
-                    return new S2LatLngRect(
-                        new R1Interval(-S2.M_PI_4, S2.M_PI_4), new S1Interval(-S2.M_PI_4, S2.M_PI_4));
-                case 1:
-                    return new S2LatLngRect(
-                        new R1Interval(-S2.M_PI_4, S2.M_PI_4), new S1Interval(S2.M_PI_4, 3*S2.M_PI_4));
-                case 2:
-                    return new S2LatLngRect(
-                        new R1Interval(POLE_MIN_LAT, S2.M_PI_2), new S1Interval(-S2.M_PI, S2.M_PI));
-                case 3:
-                    return new S2LatLngRect(
-                        new R1Interval(-S2.M_PI_4, S2.M_PI_4), new S1Interval(3*S2.M_PI_4, -3*S2.M_PI_4));
-                case 4:
-                    return new S2LatLngRect(
-                        new R1Interval(-S2.M_PI_4, S2.M_PI_4), new S1Interval(-3*S2.M_PI_4, -S2.M_PI_4));
-                default:
-                    return new S2LatLngRect(
-                        new R1Interval(-S2.M_PI_2, -POLE_MIN_LAT), new S1Interval(-S2.M_PI, S2.M_PI));
+                return cap;
             }
         }
 
-        public bool mayIntersect(S2Cell cell)
+        public S2LatLngRect RectBound
+        {
+            get
+            {
+                if (_level > 0)
+                {
+                    // Except for cells at level 0, the latitude and longitude extremes are
+                    // attained at the vertices. Furthermore, the latitude range is
+                    // determined by one pair of diagonally opposite vertices and the
+                    // longitude range is determined by the other pair.
+                    //
+                    // We first determine which corner (i,j) of the cell has the largest
+                    // absolute latitude. To maximize latitude, we want to find the point in
+                    // the cell that has the largest absolute z-coordinate and the smallest
+                    // absolute x- and y-coordinates. To do this we look at each coordinate
+                    // (u and v), and determine whether we want to minimize or maximize that
+                    // coordinate based on the axis direction and the cell's (u,v) quadrant.
+                    var u = uv[0][0] + uv[0][1];
+                    var v = uv[1][0] + uv[1][1];
+                    var i = S2Projections.getUAxis(_face).z == 0 ? (u < 0 ? 1 : 0) : (u > 0 ? 1 : 0);
+                    var j = S2Projections.getVAxis(_face).z == 0 ? (v < 0 ? 1 : 0) : (v > 0 ? 1 : 0);
+
+
+                    var lat = R1Interval.fromPointPair(getLatitude(i, j), getLatitude(1 - i, 1 - j));
+                    lat = lat.expanded(MAX_ERROR).intersection(S2LatLngRect.fullLat());
+                    if (lat.lo() == -S2.M_PI_2 || lat.hi() == S2.M_PI_2)
+                    {
+                        return new S2LatLngRect(lat, S1Interval.full());
+                    }
+                    var lng = S1Interval.fromPointPair(getLongitude(i, 1 - j), getLongitude(1 - i, j));
+                    return new S2LatLngRect(lat, lng.expanded(MAX_ERROR));
+                }
+
+
+                // The face centers are the +X, +Y, +Z, -X, -Y, -Z axes in that order.
+                // assert (S2Projections.getNorm(face).get(face % 3) == ((face < 3) ? 1 : -1));
+                switch (_face)
+                {
+                    case 0:
+                        return new S2LatLngRect(
+                            new R1Interval(-S2.M_PI_4, S2.M_PI_4), new S1Interval(-S2.M_PI_4, S2.M_PI_4));
+                    case 1:
+                        return new S2LatLngRect(
+                            new R1Interval(-S2.M_PI_4, S2.M_PI_4), new S1Interval(S2.M_PI_4, 3*S2.M_PI_4));
+                    case 2:
+                        return new S2LatLngRect(
+                            new R1Interval(POLE_MIN_LAT, S2.M_PI_2), new S1Interval(-S2.M_PI, S2.M_PI));
+                    case 3:
+                        return new S2LatLngRect(
+                            new R1Interval(-S2.M_PI_4, S2.M_PI_4), new S1Interval(3*S2.M_PI_4, -3*S2.M_PI_4));
+                    case 4:
+                        return new S2LatLngRect(
+                            new R1Interval(-S2.M_PI_4, S2.M_PI_4), new S1Interval(-3*S2.M_PI_4, -S2.M_PI_4));
+                    default:
+                        return new S2LatLngRect(
+                            new R1Interval(-S2.M_PI_2, -POLE_MIN_LAT), new S1Interval(-S2.M_PI, S2.M_PI));
+                }
+            }
+        }
+
+        public bool MayIntersect(S2Cell cell)
         {
             return cellId.intersects(cell.cellId);
         }
 
-        public bool contains(S2Cell cell)
+        public bool Contains(S2Cell cell)
         {
             return cellId.contains(cell.cellId);
         }

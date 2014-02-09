@@ -129,7 +129,7 @@ namespace S2Geometry.Tests
                 return;
             }
 
-            if (!region.mayIntersect(new S2Cell(id)))
+            if (!region.MayIntersect(new S2Cell(id)))
             {
                 // If region does not intersect id, then neither should the covering.
                 if (checkTight)
@@ -142,7 +142,7 @@ namespace S2Geometry.Tests
                 // The region may intersect id, but we can't assert that the covering
                 // intersects id because we may discover that the region does not actually
                 // intersect upon further subdivision. (MayIntersect is not exact.)
-                Assert.True(!region.contains(new S2Cell(id)));
+                Assert.True(!region.Contains(new S2Cell(id)));
                 var result = !id.isLeaf();
                 Assert.True(result);
                 var end = id.childEnd();

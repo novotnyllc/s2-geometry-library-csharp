@@ -303,7 +303,7 @@ namespace Google.Common.Geometry
 
         private Candidate newCandidate(S2Cell cell)
         {
-            if (!region.mayIntersect(cell))
+            if (!region.MayIntersect(cell))
             {
                 return null;
             }
@@ -313,7 +313,7 @@ namespace Google.Common.Geometry
             {
                 if (interiorCovering)
                 {
-                    if (region.contains(cell))
+                    if (region.Contains(cell))
                     {
                         isTerminal = true;
                     }
@@ -324,7 +324,7 @@ namespace Google.Common.Geometry
                 }
                 else
                 {
-                    if (cell.level() + _levelMod > _maxLevel || region.contains(cell))
+                    if (cell.level() + _levelMod > _maxLevel || region.Contains(cell))
                     {
                         isTerminal = true;
                     }
@@ -423,7 +423,7 @@ namespace Google.Common.Geometry
             {
                 if (numLevels > 0)
                 {
-                    if (region.mayIntersect(childCells[i]))
+                    if (region.MayIntersect(childCells[i]))
                     {
                         numTerminals += expandChildren(candidate, childCells[i], numLevels);
                     }
@@ -454,7 +454,7 @@ namespace Google.Common.Geometry
             {
                 // Find the maximum level such that the bounding cap contains at most one
                 // cell vertex at that level.
-                var cap = region.getCapBound();
+                var cap = region.CapBound;
                 var level = Math.Min(S2Projections.MIN_WIDTH.getMaxLevel(2*cap.angle().Radians),
                                      Math.Min(maxLevel(), S2CellId.MAX_LEVEL - 1));
                 if (levelMod() > 1 && level > minLevel())
@@ -556,7 +556,7 @@ namespace Google.Common.Geometry
             {
                 var id = frontier[frontier.Count - 1];
                 frontier.RemoveAt(frontier.Count - 1);
-                if (!region.mayIntersect(new S2Cell(id)))
+                if (!region.MayIntersect(new S2Cell(id)))
                 {
                     continue;
                 }

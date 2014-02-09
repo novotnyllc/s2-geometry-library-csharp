@@ -68,22 +68,25 @@ namespace Google.Common.Geometry
             return true;
         }
 
-        public S2Cap getCapBound()
+        public S2Cap CapBound
         {
-            return getRectBound().getCapBound();
+            get { return RectBound.CapBound; }
         }
 
 
         /** Return a bounding latitude-longitude rectangle. */
 
-        public S2LatLngRect getRectBound()
+        public S2LatLngRect RectBound
         {
-            var bounder = new S2EdgeUtil.RectBounder();
-            for (var i = 0; i < numVertices(); ++i)
+            get
             {
-                bounder.addPoint(vertex(i));
+                var bounder = new S2EdgeUtil.RectBounder();
+                for (var i = 0; i < numVertices(); ++i)
+                {
+                    bounder.addPoint(vertex(i));
+                }
+                return bounder.getBound();
             }
-            return bounder.getBound();
         }
 
         /**
@@ -92,7 +95,7 @@ namespace Google.Common.Geometry
    * relationship could not be determined.
    */
 
-        public bool contains(S2Cell cell)
+        public bool Contains(S2Cell cell)
         {
             throw new NotSupportedException(
                 "'containment' is not numerically well-defined " + "except at the polyline vertices");
@@ -104,7 +107,7 @@ namespace Google.Common.Geometry
    * relationship could not be determined.
    */
 
-        public bool mayIntersect(S2Cell cell)
+        public bool MayIntersect(S2Cell cell)
         {
             if (numVertices() == 0)
             {

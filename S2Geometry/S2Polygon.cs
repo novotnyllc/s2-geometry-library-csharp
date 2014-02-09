@@ -74,7 +74,7 @@ namespace Google.Common.Geometry
         public S2Polygon(S2Loop loop)
         {
             loops = new List<S2Loop>();
-            bound = loop.getRectBound();
+            bound = loop.RectBound;
             hasHoles = false;
             numVertices = loop.numVertices();
 
@@ -88,7 +88,7 @@ namespace Google.Common.Geometry
         public S2Polygon(S2Polygon src)
         {
             loops = new List<S2Loop>();
-            bound = src.getRectBound();
+            bound = src.RectBound;
             hasHoles = src.hasHoles;
             numVertices = src.numVertices;
 
@@ -124,17 +124,17 @@ namespace Google.Common.Geometry
             return 0;
         }
 
-        public S2Cap getCapBound()
+        public S2Cap CapBound
         {
-            return bound.getCapBound();
+            get { return bound.CapBound; }
         }
 
 
         /** Return a bounding latitude-longitude rectangle. */
 
-        public S2LatLngRect getRectBound()
+        public S2LatLngRect RectBound
         {
-            return bound;
+            get { return bound; }
         }
 
         /**
@@ -143,13 +143,13 @@ namespace Google.Common.Geometry
    * relationship could not be determined.
    */
 
-        public bool contains(S2Cell cell)
+        public bool Contains(S2Cell cell)
         {
             if (numLoops() == 1)
             {
-                return loop(0).contains(cell);
+                return loop(0).Contains(cell);
             }
-            var cellBound = cell.getRectBound();
+            var cellBound = cell.RectBound;
             if (!bound.contains(cellBound))
             {
                 return false;
@@ -166,13 +166,13 @@ namespace Google.Common.Geometry
    * relationship could not be determined.
    */
 
-        public bool mayIntersect(S2Cell cell)
+        public bool MayIntersect(S2Cell cell)
         {
             if (numLoops() == 1)
             {
-                return loop(0).mayIntersect(cell);
+                return loop(0).MayIntersect(cell);
             }
-            var cellBound = cell.getRectBound();
+            var cellBound = cell.RectBound;
             if (!bound.intersects(cellBound))
             {
                 return false;
@@ -240,7 +240,7 @@ namespace Google.Common.Geometry
                 }
                 else
                 {
-                    bound = bound.union(loop(i).getRectBound());
+                    bound = bound.union(loop(i).RectBound);
                 }
             }
         }
@@ -471,12 +471,12 @@ namespace Google.Common.Geometry
             // Otherwise if neither polygon has holes, we can still use the more
             // efficient S2Loop::Contains method (rather than ContainsOrCrosses),
             // but it's worthwhile to do our own bounds check first.
-            if (!bound.contains(b.getRectBound()))
+            if (!bound.contains(b.RectBound))
             {
                 // If the union of the bounding boxes spans the full longitude range,
                 // it is still possible that polygon A contains B. (This is only
                 // possible if at least one polygon has multiple shells.)
-                if (!bound.Lng.union(b.getRectBound().Lng).isFull())
+                if (!bound.Lng.union(b.RectBound.Lng).isFull())
                 {
                     return false;
                 }
@@ -526,7 +526,7 @@ namespace Google.Common.Geometry
             // Otherwise if neither polygon has holes, we can still use the more
             // efficient S2Loop.intersects method. The polygons intersect if and
             // only if some pair of loop regions intersect.
-            if (!bound.intersects(b.getRectBound()))
+            if (!bound.intersects(b.RectBound))
             {
                 return false;
             }

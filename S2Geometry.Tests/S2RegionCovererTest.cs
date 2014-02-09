@@ -45,7 +45,7 @@ namespace S2Geometry.Tests
             {
                 for (var i = 0; i < covering.Count; ++i)
                 {
-                    assertTrue(region.contains(new S2Cell(covering[i])));
+                    assertTrue(region.Contains(new S2Cell(covering[i])));
                 }
             }
             else

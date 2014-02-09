@@ -45,60 +45,66 @@ namespace Google.Common.Geometry
             return _cellIds.SequenceEqual(other._cellIds);
         }
 
-        public bool contains(S2Cell cell)
+        public bool Contains(S2Cell cell)
         {
             return contains(cell.id());
         }
 
-        public S2Cap getCapBound()
+        public S2Cap CapBound
         {
-            // Compute the approximate centroid of the region. This won't produce the
-            // bounding cap of minimal area, but it should be close enough.
-            if (_cellIds.Count == 0)
+            get
             {
-                return S2Cap.empty();
-            }
-            var centroid = new S2Point(0, 0, 0);
-            foreach (var id in this)
-            {
-                var area = S2Cell.averageArea(id.level());
-                centroid = S2Point.add(centroid, S2Point.mul(id.toPoint(), area));
-            }
-            if (centroid.Equals(new S2Point(0, 0, 0)))
-            {
-                centroid = new S2Point(1, 0, 0);
-            }
-            else
-            {
-                centroid = S2Point.normalize(centroid);
-            }
+                // Compute the approximate centroid of the region. This won't produce the
+                // bounding cap of minimal area, but it should be close enough.
+                if (_cellIds.Count == 0)
+                {
+                    return S2Cap.empty();
+                }
+                var centroid = new S2Point(0, 0, 0);
+                foreach (var id in this)
+                {
+                    var area = S2Cell.averageArea(id.level());
+                    centroid = S2Point.add(centroid, S2Point.mul(id.toPoint(), area));
+                }
+                if (centroid.Equals(new S2Point(0, 0, 0)))
+                {
+                    centroid = new S2Point(1, 0, 0);
+                }
+                else
+                {
+                    centroid = S2Point.normalize(centroid);
+                }
 
-            // Use the centroid as the cap axis, and expand the cap angle so that it
-            // contains the bounding caps of all the individual cells. Note that it is
-            // *not* sufficient to just bound all the cell vertices because the bounding
-            // cap may be concave (i.e. cover more than one hemisphere).
-            var cap = S2Cap.fromAxisHeight(centroid, 0);
-            foreach (var id in this)
-            {
-                cap = cap.addCap(new S2Cell(id).getCapBound());
+                // Use the centroid as the cap axis, and expand the cap angle so that it
+                // contains the bounding caps of all the individual cells. Note that it is
+                // *not* sufficient to just bound all the cell vertices because the bounding
+                // cap may be concave (i.e. cover more than one hemisphere).
+                var cap = S2Cap.fromAxisHeight(centroid, 0);
+                foreach (var id in this)
+                {
+                    cap = cap.addCap(new S2Cell(id).CapBound);
+                }
+                return cap;
             }
-            return cap;
         }
 
-        public S2LatLngRect getRectBound()
+        public S2LatLngRect RectBound
         {
-            var bound = S2LatLngRect.empty();
-            foreach (var id in this)
+            get
             {
-                bound = bound.union(new S2Cell(id).getRectBound());
+                var bound = S2LatLngRect.empty();
+                foreach (var id in this)
+                {
+                    bound = bound.union(new S2Cell(id).RectBound);
+                }
+                return bound;
             }
-            return bound;
         }
 
 
         /** This is a fast operation (logarithmic in the size of the cell union). */
 
-        public bool mayIntersect(S2Cell cell)
+        public bool MayIntersect(S2Cell cell)
         {
             return intersects(cell.id());
         }

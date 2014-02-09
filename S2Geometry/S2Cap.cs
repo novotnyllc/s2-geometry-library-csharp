@@ -56,70 +56,73 @@ namespace Google.Common.Geometry
                    || (isEmpty() && other.isEmpty()) || (isFull() && other.isFull());
         }
 
-        public S2Cap getCapBound()
+        public S2Cap CapBound
         {
-            return this;
+            get { return this; }
         }
 
-        public S2LatLngRect getRectBound()
+        public S2LatLngRect RectBound
         {
-            if (isEmpty())
+            get
             {
-                return S2LatLngRect.empty();
-            }
-
-            // Convert the axis to a (lat,lng) pair, and compute the cap angle.
-            var axisLatLng = new S2LatLng(_axis);
-            var capAngle = angle().Radians;
-
-            var allLongitudes = false;
-            double[] lat = new double[2], lng = new double[2];
-            lng[0] = -S2.M_PI;
-            lng[1] = S2.M_PI;
-
-            // Check whether cap includes the south pole.
-            lat[0] = axisLatLng.lat().Radians - capAngle;
-            if (lat[0] <= -S2.M_PI_2)
-            {
-                lat[0] = -S2.M_PI_2;
-                allLongitudes = true;
-            }
-            // Check whether cap includes the north pole.
-            lat[1] = axisLatLng.lat().Radians + capAngle;
-            if (lat[1] >= S2.M_PI_2)
-            {
-                lat[1] = S2.M_PI_2;
-                allLongitudes = true;
-            }
-            if (!allLongitudes)
-            {
-                // Compute the range of longitudes covered by the cap. We use the law
-                // of sines for spherical triangles. Consider the triangle ABC where
-                // A is the north pole, B is the center of the cap, and C is the point
-                // of tangency between the cap boundary and a line of longitude. Then
-                // C is a right angle, and letting a,b,c denote the sides opposite A,B,C,
-                // we have sin(a)/sin(A) = sin(c)/sin(C), or sin(A) = sin(a)/sin(c).
-                // Here "a" is the cap angle, and "c" is the colatitude (90 degrees
-                // minus the latitude). This formula also works for negative latitudes.
-                //
-                // The formula for sin(a) follows from the relationship h = 1 - cos(a).
-
-                var sinA = Math.Sqrt(_height*(2 - _height));
-                var sinC = Math.Cos(axisLatLng.lat().Radians);
-                if (sinA <= sinC)
+                if (isEmpty())
                 {
-                    var angleA = Math.Asin(sinA/sinC);
-                    lng[0] = Math.IEEERemainder(axisLatLng.lng().Radians - angleA,
-                                                2*S2.M_PI);
-                    lng[1] = Math.IEEERemainder(axisLatLng.lng().Radians + angleA,
-                                                2*S2.M_PI);
+                    return S2LatLngRect.empty();
                 }
+
+                // Convert the axis to a (lat,lng) pair, and compute the cap angle.
+                var axisLatLng = new S2LatLng(_axis);
+                var capAngle = angle().Radians;
+
+                var allLongitudes = false;
+                double[] lat = new double[2], lng = new double[2];
+                lng[0] = -S2.M_PI;
+                lng[1] = S2.M_PI;
+
+                // Check whether cap includes the south pole.
+                lat[0] = axisLatLng.lat().Radians - capAngle;
+                if (lat[0] <= -S2.M_PI_2)
+                {
+                    lat[0] = -S2.M_PI_2;
+                    allLongitudes = true;
+                }
+                // Check whether cap includes the north pole.
+                lat[1] = axisLatLng.lat().Radians + capAngle;
+                if (lat[1] >= S2.M_PI_2)
+                {
+                    lat[1] = S2.M_PI_2;
+                    allLongitudes = true;
+                }
+                if (!allLongitudes)
+                {
+                    // Compute the range of longitudes covered by the cap. We use the law
+                    // of sines for spherical triangles. Consider the triangle ABC where
+                    // A is the north pole, B is the center of the cap, and C is the point
+                    // of tangency between the cap boundary and a line of longitude. Then
+                    // C is a right angle, and letting a,b,c denote the sides opposite A,B,C,
+                    // we have sin(a)/sin(A) = sin(c)/sin(C), or sin(A) = sin(a)/sin(c).
+                    // Here "a" is the cap angle, and "c" is the colatitude (90 degrees
+                    // minus the latitude). This formula also works for negative latitudes.
+                    //
+                    // The formula for sin(a) follows from the relationship h = 1 - cos(a).
+
+                    var sinA = Math.Sqrt(_height*(2 - _height));
+                    var sinC = Math.Cos(axisLatLng.lat().Radians);
+                    if (sinA <= sinC)
+                    {
+                        var angleA = Math.Asin(sinA/sinC);
+                        lng[0] = Math.IEEERemainder(axisLatLng.lng().Radians - angleA,
+                                                    2*S2.M_PI);
+                        lng[1] = Math.IEEERemainder(axisLatLng.lng().Radians + angleA,
+                                                    2*S2.M_PI);
+                    }
+                }
+                return new S2LatLngRect(new R1Interval(lat[0], lat[1]), new S1Interval(
+                                                                            lng[0], lng[1]));
             }
-            return new S2LatLngRect(new R1Interval(lat[0], lat[1]), new S1Interval(
-                                                                        lng[0], lng[1]));
         }
 
-        public bool contains(S2Cell cell)
+        public bool Contains(S2Cell cell)
         {
             // If the cap does not contain all cell vertices, return false.
             // We check the vertices before taking the Complement() because we can't
@@ -140,7 +143,7 @@ namespace Google.Common.Geometry
             return !complement().intersects(cell, vertices);
         }
 
-        public bool mayIntersect(S2Cell cell)
+        public bool MayIntersect(S2Cell cell)
         {
             // If the cap contains any cell vertex, return true.
             var vertices = new S2Point[4];
