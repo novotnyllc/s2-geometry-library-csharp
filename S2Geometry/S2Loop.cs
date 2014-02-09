@@ -334,7 +334,7 @@ namespace Google.Common.Geometry
             vertexToIndex = null;
             index = null;
             originInside ^= true;
-            if (bound.Lat.lo() > -S2.M_PI_2 && bound.Lat.hi() < S2.M_PI_2)
+            if (bound.Lat.Lo > -S2.M_PI_2 && bound.Lat.Hi < S2.M_PI_2)
             {
                 // The complement of this loop contains both poles.
                 bound = S2LatLngRect.full();
@@ -905,7 +905,7 @@ namespace Google.Common.Geometry
             // The bounding box does not need to be correct before calling this
             // function, but it must at least contain vertex(1) since we need to
             // do a Contains() test on this point below.
-            Preconditions.checkState(bound.contains(vertex(1)));
+            Preconditions.CheckState(bound.contains(vertex(1)));
 
             // To ensure that every point is contained in exactly one face of a
             // subdivision of the sphere, all containment tests are done by counting the
@@ -946,7 +946,7 @@ namespace Google.Common.Geometry
             bound = S2LatLngRect.full();
             if (contains(new S2Point(0, 0, 1)))
             {
-                b = new S2LatLngRect(new R1Interval(b.Lat.lo(), S2.M_PI_2), S1Interval.full());
+                b = new S2LatLngRect(new R1Interval(b.Lat.Lo, S2.M_PI_2), S1Interval.full());
             }
             // If a loop contains the south pole, then either it wraps entirely
             // around the sphere (full longitude range), or it also contains the
@@ -954,7 +954,7 @@ namespace Google.Common.Geometry
 
             if (b.Lng.isFull() && contains(new S2Point(0, 0, -1)))
             {
-                b = new S2LatLngRect(new R1Interval(-S2.M_PI_2, b.Lat.hi()), b.Lng);
+                b = new S2LatLngRect(new R1Interval(-S2.M_PI_2, b.Lat.Hi), b.Lng);
             }
             bound = b;
         }

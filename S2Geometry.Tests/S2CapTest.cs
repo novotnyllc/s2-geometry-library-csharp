@@ -37,8 +37,8 @@ namespace S2Geometry.Tests
 
             // Cap that is tangent to the north pole.
             rect = S2Cap.fromAxisAngle(S2Point.normalize(new S2Point(1, 0, 1)), S1Angle.FromRadians(S2.M_PI_4)).RectBound;
-            assertDoubleNear(rect.Lat.lo(), 0);
-            assertDoubleNear(rect.Lat.hi(), S2.M_PI_2);
+            assertDoubleNear(rect.Lat.Lo, 0);
+            assertDoubleNear(rect.Lat.Hi, S2.M_PI_2);
             Assert.True(rect.Lng.isFull());
 
             rect = S2Cap

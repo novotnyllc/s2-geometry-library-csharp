@@ -503,7 +503,7 @@ namespace Google.Common.Geometry
             // children first), and then by the number of fully contained children
             // (fewest children first).
 
-            Preconditions.checkState(candidateQueue.Count == 0 && result.Count == 0);
+            Preconditions.CheckState(candidateQueue.Count == 0 && result.Count == 0);
 
             this.region = region;
             candidatesCreatedCounter = 0;

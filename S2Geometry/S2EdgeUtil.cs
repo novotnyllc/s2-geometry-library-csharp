@@ -217,7 +217,7 @@ namespace Google.Common.Geometry
 
         public static S2Point getIntersection(S2Point a0, S2Point a1, S2Point b0, S2Point b1)
         {
-            Preconditions.checkArgument(robustCrossing(a0, a1, b0, b1) > 0,
+            Preconditions.CheckArgument(robustCrossing(a0, a1, b0, b1) > 0,
                                         "Input edges a0a1 and b0b1 muct have a true robustCrossing.");
 
             // We use robustCrossProd() to get accurate results even when two endpoints
@@ -280,7 +280,7 @@ namespace Google.Common.Geometry
 
         public static double getDistanceFraction(S2Point x, S2Point a0, S2Point a1)
         {
-            Preconditions.checkArgument(!a0.Equals(a1));
+            Preconditions.CheckArgument(!a0.Equals(a1));
             var d0 = x.angle(a0);
             var d1 = x.angle(a1);
             return d0/(d0 + d1);
@@ -308,9 +308,9 @@ namespace Google.Common.Geometry
 
         public static S1Angle getDistance(S2Point x, S2Point a, S2Point b, S2Point aCrossB)
         {
-            Preconditions.checkArgument(S2.isUnitLength(x));
-            Preconditions.checkArgument(S2.isUnitLength(a));
-            Preconditions.checkArgument(S2.isUnitLength(b));
+            Preconditions.CheckArgument(S2.isUnitLength(x));
+            Preconditions.CheckArgument(S2.isUnitLength(a));
+            Preconditions.CheckArgument(S2.isUnitLength(b));
 
             // There are three cases. If X is located in the spherical wedge defined by
             // A, B, and the axis A x B, then the closest point is on the segment AB.
@@ -345,9 +345,9 @@ namespace Google.Common.Geometry
 
         public static S2Point getClosestPoint(S2Point x, S2Point a, S2Point b)
         {
-            Preconditions.checkArgument(S2.isUnitLength(x));
-            Preconditions.checkArgument(S2.isUnitLength(a));
-            Preconditions.checkArgument(S2.isUnitLength(b));
+            Preconditions.CheckArgument(S2.isUnitLength(x));
+            Preconditions.CheckArgument(S2.isUnitLength(a));
+            Preconditions.CheckArgument(S2.isUnitLength(b));
 
             var crossProd = S2.robustCrossProd(a, b);
             // Find the closest point to X along the great circle through AB.
@@ -620,11 +620,11 @@ namespace Google.Common.Geometry
                         if (da < 0)
                         {
                             // It's possible that absLat < lat.lo() due to numerical errors.
-                            lat = new R1Interval(lat.lo(), Math.Max(absLat, bound.Lat.hi()));
+                            lat = new R1Interval(lat.Lo, Math.Max(absLat, bound.Lat.Hi));
                         }
                         else
                         {
-                            lat = new R1Interval(Math.Min(-absLat, bound.Lat.lo()), lat.hi());
+                            lat = new R1Interval(Math.Min(-absLat, bound.Lat.Lo), lat.Hi);
                         }
                         bound = new S2LatLngRect(lat, bound.Lng);
                     }

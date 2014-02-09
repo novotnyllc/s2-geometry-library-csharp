@@ -19,13 +19,13 @@ namespace S2Geometry.Tests
 
         private void testIntervalOps(R1Interval x, R1Interval y, String expectedRelation)
         {
-            JavaAssert.Equal(x.contains(y), expectedRelation[0] == 'T');
-            JavaAssert.Equal(x.interiorContains(y), expectedRelation[1] == 'T');
-            JavaAssert.Equal(x.intersects(y), expectedRelation[2] == 'T');
-            JavaAssert.Equal(x.interiorIntersects(y), expectedRelation[3] == 'T');
+            JavaAssert.Equal(x.Contains(y), expectedRelation[0] == 'T');
+            JavaAssert.Equal(x.InteriorContains(y), expectedRelation[1] == 'T');
+            JavaAssert.Equal(x.Intersects(y), expectedRelation[2] == 'T');
+            JavaAssert.Equal(x.InteriorIntersects(y), expectedRelation[3] == 'T');
 
-            JavaAssert.Equal(x.contains(y), x.union(y).Equals(x));
-            JavaAssert.Equal(x.intersects(y), !x.intersection(y).isEmpty());
+            JavaAssert.Equal(x.Contains(y), x.Union(y).Equals(x));
+            JavaAssert.Equal(x.Intersects(y), !x.Intersection(y).IsEmpty());
         }
 
         [Test]
@@ -34,32 +34,32 @@ namespace S2Geometry.Tests
             // Constructors and accessors.
             var unit = new R1Interval(0, 1);
             var negunit = new R1Interval(-1, 0);
-            JavaAssert.Equal(unit.lo(), 0.0);
-            JavaAssert.Equal(unit.hi(), 1.0);
-            JavaAssert.Equal(negunit.lo(), -1.0);
-            JavaAssert.Equal(negunit.hi(), 0.0);
+            JavaAssert.Equal(unit.Lo, 0.0);
+            JavaAssert.Equal(unit.Hi, 1.0);
+            JavaAssert.Equal(negunit.Lo, -1.0);
+            JavaAssert.Equal(negunit.Hi, 0.0);
 
             // is_empty()
             var half = new R1Interval(0.5, 0.5);
-            Assert.True(!unit.isEmpty());
-            Assert.True(!half.isEmpty());
-            var empty = R1Interval.empty();
-            Assert.True(empty.isEmpty());
+            Assert.True(!unit.IsEmpty());
+            Assert.True(!half.IsEmpty());
+            var empty = R1Interval.Empty;
+            Assert.True(empty.IsEmpty());
 
             // GetCenter(), GetLength()
-            JavaAssert.Equal(unit.getCenter(), 0.5);
-            JavaAssert.Equal(half.getCenter(), 0.5);
-            JavaAssert.Equal(negunit.getLength(), 1.0);
-            JavaAssert.Equal(half.getLength(), 0.0);
-            Assert.True(empty.getLength() < 0);
+            JavaAssert.Equal(unit.Center, 0.5);
+            JavaAssert.Equal(half.Center, 0.5);
+            JavaAssert.Equal(negunit.Length, 1.0);
+            JavaAssert.Equal(half.Length, 0.0);
+            Assert.True(empty.Length < 0);
 
             // contains(double), interiorContains(double)
-            Assert.True(unit.contains(0.5));
-            Assert.True(unit.interiorContains(0.5));
-            Assert.True(unit.contains(0));
-            Assert.True(!unit.interiorContains(0));
-            Assert.True(unit.contains(1));
-            Assert.True(!unit.interiorContains(1));
+            Assert.True(unit.Contains(0.5));
+            Assert.True(unit.InteriorContains(0.5));
+            Assert.True(unit.Contains(0));
+            Assert.True(!unit.InteriorContains(0));
+            Assert.True(unit.Contains(1));
+            Assert.True(!unit.InteriorContains(1));
 
             // contains(R1Interval), interiorContains(R1Interval)
             // Intersects(R1Interval), InteriorIntersects(R1Interval)
@@ -74,36 +74,36 @@ namespace S2Geometry.Tests
 
             // addPoint()
             R1Interval r;
-            r = empty.addPoint(5);
-            Assert.True(r.lo() == 5.0 && r.hi() == 5.0);
-            r = r.addPoint(-1);
-            Assert.True(r.lo() == -1.0 && r.hi() == 5.0);
-            r = r.addPoint(0);
-            Assert.True(r.lo() == -1.0 && r.hi() == 5.0);
+            r = empty.AddPoint(5);
+            Assert.True(r.Lo == 5.0 && r.Hi == 5.0);
+            r = r.AddPoint(-1);
+            Assert.True(r.Lo == -1.0 && r.Hi == 5.0);
+            r = r.AddPoint(0);
+            Assert.True(r.Lo == -1.0 && r.Hi == 5.0);
 
             // fromPointPair()
-            JavaAssert.Equal(R1Interval.fromPointPair(4, 4), new R1Interval(4, 4));
-            JavaAssert.Equal(R1Interval.fromPointPair(-1, -2), new R1Interval(-2, -1));
-            JavaAssert.Equal(R1Interval.fromPointPair(-5, 3), new R1Interval(-5, 3));
+            JavaAssert.Equal(R1Interval.FromPointPair(4, 4), new R1Interval(4, 4));
+            JavaAssert.Equal(R1Interval.FromPointPair(-1, -2), new R1Interval(-2, -1));
+            JavaAssert.Equal(R1Interval.FromPointPair(-5, 3), new R1Interval(-5, 3));
 
             // expanded()
-            JavaAssert.Equal(empty.expanded(0.45), empty);
-            JavaAssert.Equal(unit.expanded(0.5), new R1Interval(-0.5, 1.5));
+            JavaAssert.Equal(empty.Expanded(0.45), empty);
+            JavaAssert.Equal(unit.Expanded(0.5), new R1Interval(-0.5, 1.5));
 
             // union(), intersection()
-            Assert.True(new R1Interval(99, 100).union(empty).Equals(new R1Interval(99, 100)));
-            Assert.True(empty.union(new R1Interval(99, 100)).Equals(new R1Interval(99, 100)));
-            Assert.True(new R1Interval(5, 3).union(new R1Interval(0, -2)).isEmpty());
-            Assert.True(new R1Interval(0, -2).union(new R1Interval(5, 3)).isEmpty());
-            Assert.True(unit.union(unit).Equals(unit));
-            Assert.True(unit.union(negunit).Equals(new R1Interval(-1, 1)));
-            Assert.True(negunit.union(unit).Equals(new R1Interval(-1, 1)));
-            Assert.True(half.union(unit).Equals(unit));
-            Assert.True(unit.intersection(half).Equals(half));
-            Assert.True(unit.intersection(negunit).Equals(new R1Interval(0, 0)));
-            Assert.True(negunit.intersection(half).isEmpty());
-            Assert.True(unit.intersection(empty).isEmpty());
-            Assert.True(empty.intersection(unit).isEmpty());
+            Assert.True(new R1Interval(99, 100).Union(empty).Equals(new R1Interval(99, 100)));
+            Assert.True(empty.Union(new R1Interval(99, 100)).Equals(new R1Interval(99, 100)));
+            Assert.True(new R1Interval(5, 3).Union(new R1Interval(0, -2)).IsEmpty());
+            Assert.True(new R1Interval(0, -2).Union(new R1Interval(5, 3)).IsEmpty());
+            Assert.True(unit.Union(unit).Equals(unit));
+            Assert.True(unit.Union(negunit).Equals(new R1Interval(-1, 1)));
+            Assert.True(negunit.Union(unit).Equals(new R1Interval(-1, 1)));
+            Assert.True(half.Union(unit).Equals(unit));
+            Assert.True(unit.Intersection(half).Equals(half));
+            Assert.True(unit.Intersection(negunit).Equals(new R1Interval(0, 0)));
+            Assert.True(negunit.Intersection(half).IsEmpty());
+            Assert.True(unit.Intersection(empty).IsEmpty());
+            Assert.True(empty.Intersection(unit).IsEmpty());
         }
     }
 }

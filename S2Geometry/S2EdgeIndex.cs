@@ -240,7 +240,7 @@ namespace Google.Common.Geometry
 
         protected void findCandidateCrossings(S2Point a, S2Point b, List<int> candidateCrossings)
         {
-            Preconditions.checkState(indexComputed);
+            Preconditions.CheckState(indexComputed);
             var cover = new List<S2CellId>();
             getCovering(a, b, false, cover);
 
@@ -680,7 +680,7 @@ namespace Google.Common.Geometry
 
             public int index()
             {
-                Preconditions.checkState(hasNext());
+                Preconditions.CheckState(hasNext());
                 return currentIndex;
             }
 
@@ -706,7 +706,7 @@ namespace Google.Common.Geometry
 
             public void next()
             {
-                Preconditions.checkState(hasNext());
+                Preconditions.CheckState(hasNext());
                 if (isBruteForce)
                 {
                     ++currentIndex;

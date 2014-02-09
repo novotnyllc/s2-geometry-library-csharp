@@ -719,7 +719,7 @@ namespace Google.Common.Geometry
         public void initToIntersectionSloppy(
             S2Polygon a, S2Polygon b, S1Angle vertexMergeRadius)
         {
-            Preconditions.checkState(numLoops() == 0);
+            Preconditions.CheckState(numLoops() == 0);
             if (!a.bound.intersects(b.bound))
             {
                 return;
@@ -748,7 +748,7 @@ namespace Google.Common.Geometry
 
         public void initToUnionSloppy(S2Polygon a, S2Polygon b, S1Angle vertexMergeRadius)
         {
-            Preconditions.checkState(numLoops() == 0);
+            Preconditions.CheckState(numLoops() == 0);
 
             // We want the boundary of A clipped to the exterior of B,
             // plus the boundary of B clipped to the exterior of A,

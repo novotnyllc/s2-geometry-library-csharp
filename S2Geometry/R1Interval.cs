@@ -11,8 +11,13 @@ namespace Google.Common.Geometry
     ///     capable of representing the empty interval (containing no points) and
     ///     zero-length intervals (containing a single point).
     /// </summary>
-    public sealed class R1Interval : IEquatable<R1Interval>
+    public struct R1Interval : IEquatable<R1Interval>
     {
+        /// <summary>
+        ///     Returns an empty interval. (Any interval where lo > hi is considered empty.)
+        /// </summary>
+        public static R1Interval Empty = new R1Interval(1, 0);
+
         private readonly double _hi;
         private readonly double _lo;
 
@@ -22,17 +27,38 @@ namespace Google.Common.Geometry
             _hi = hi;
         }
 
+        public double Lo
+        {
+            get { return _lo; }
+        }
+
+        public double Hi
+        {
+            get { return _hi; }
+        }
+
+        public double Center
+        {
+            get { return 0.5*(Lo + Hi); }
+        }
+
+        /**
+   * Return the length of the interval. The length of an empty interval is
+   * negative.
+   */
+
+        public double Length
+        {
+            get { return Hi - Lo; }
+        }
+
         public bool Equals(R1Interval other)
         {
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return (_hi.Equals(other._hi) && _lo.Equals(other._lo)) || (isEmpty() && other.isEmpty());
+            return (_hi.Equals(other._hi) && _lo.Equals(other._lo)) || (IsEmpty() && other.IsEmpty());
         }
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != GetType()) return false;
             return Equals((R1Interval)obj);
         }
@@ -55,21 +81,12 @@ namespace Google.Common.Geometry
             return !Equals(left, right);
         }
 
-        /**
-   * Returns an empty interval. (Any interval where lo > hi is considered
-   * empty.)
-   */
-
-        public static R1Interval empty()
-        {
-            return new R1Interval(1, 0);
-        }
 
         /**
    * Convenience method to construct an interval containing a single point.
    */
 
-        public static R1Interval fromPoint(double p)
+        public static R1Interval FromPoint(double p)
         {
             return new R1Interval(p, p);
         }
@@ -80,7 +97,7 @@ namespace Google.Common.Geometry
    * calling AddPoint() twice, but it is more efficient.
    */
 
-        public static R1Interval fromPointPair(double p1, double p2)
+        public static R1Interval FromPointPair(double p1, double p2)
         {
             if (p1 <= p2)
             {
@@ -92,23 +109,13 @@ namespace Google.Common.Geometry
             }
         }
 
-        public double lo()
-        {
-            return _lo;
-        }
-
-        public double hi()
-        {
-            return _hi;
-        }
-
         /**
    * Return true if the interval is empty, i.e. it contains no points.
    */
 
-        public bool isEmpty()
+        public bool IsEmpty()
         {
-            return lo() > hi();
+            return Lo > Hi;
         }
 
         /**
@@ -116,40 +123,25 @@ namespace Google.Common.Geometry
    * arbitrary.
    */
 
-        public double getCenter()
+        public bool Contains(double p)
         {
-            return 0.5*(lo() + hi());
+            return p >= Lo && p <= Hi;
         }
 
-        /**
-   * Return the length of the interval. The length of an empty interval is
-   * negative.
-   */
-
-        public double getLength()
+        public bool InteriorContains(double p)
         {
-            return hi() - lo();
-        }
-
-        public bool contains(double p)
-        {
-            return p >= lo() && p <= hi();
-        }
-
-        public bool interiorContains(double p)
-        {
-            return p > lo() && p < hi();
+            return p > Lo && p < Hi;
         }
 
         /** Return true if this interval contains the interval 'y'. */
 
-        public bool contains(R1Interval y)
+        public bool Contains(R1Interval y)
         {
-            if (y.isEmpty())
+            if (y.IsEmpty())
             {
                 return true;
             }
-            return y.lo() >= lo() && y.hi() <= hi();
+            return y.Lo >= Lo && y.Hi <= Hi;
         }
 
         /**
@@ -157,13 +149,13 @@ namespace Google.Common.Geometry
    * 'y' (including its boundary).
    */
 
-        public bool interiorContains(R1Interval y)
+        public bool InteriorContains(R1Interval y)
         {
-            if (y.isEmpty())
+            if (y.IsEmpty())
             {
                 return true;
             }
-            return y.lo() > lo() && y.hi() < hi();
+            return y.Lo > Lo && y.Hi < Hi;
         }
 
         /**
@@ -171,15 +163,15 @@ namespace Google.Common.Geometry
    * have any points in common.
    */
 
-        public bool intersects(R1Interval y)
+        public bool Intersects(R1Interval y)
         {
-            if (lo() <= y.lo())
+            if (Lo <= y.Lo)
             {
-                return y.lo() <= hi() && y.lo() <= y.hi();
+                return y.Lo <= Hi && y.Lo <= y.Hi;
             }
             else
             {
-                return lo() <= y.hi() && lo() <= hi();
+                return Lo <= y.Hi && Lo <= Hi;
             }
         }
 
@@ -188,30 +180,30 @@ namespace Google.Common.Geometry
    * given interval (including its boundary).
    */
 
-        public bool interiorIntersects(R1Interval y)
+        public bool InteriorIntersects(R1Interval y)
         {
-            return y.lo() < hi() && lo() < y.hi() && lo() < hi() && y.lo() <= y.hi();
+            return y.Lo < Hi && Lo < y.Hi && Lo < Hi && y.Lo <= y.Hi;
         }
 
         /** Expand the interval so that it contains the given point "p". */
 
-        public R1Interval addPoint(double p)
+        public R1Interval AddPoint(double p)
         {
-            if (isEmpty())
+            if (IsEmpty())
             {
-                return fromPoint(p);
+                return FromPoint(p);
             }
-            else if (p < lo())
+            else if (p < Lo)
             {
-                return new R1Interval(p, hi());
+                return new R1Interval(p, Hi);
             }
-            else if (p > hi())
+            else if (p > Hi)
             {
-                return new R1Interval(lo(), p);
+                return new R1Interval(Lo, p);
             }
             else
             {
-                return new R1Interval(lo(), hi());
+                return new R1Interval(Lo, Hi);
             }
         }
 
@@ -221,14 +213,14 @@ namespace Google.Common.Geometry
    * always empty.
    */
 
-        public R1Interval expanded(double radius)
+        public R1Interval Expanded(double radius)
         {
             // assert (radius >= 0);
-            if (isEmpty())
+            if (IsEmpty())
             {
                 return this;
             }
-            return new R1Interval(lo() - radius, hi() + radius);
+            return new R1Interval(Lo - radius, Hi + radius);
         }
 
         /**
@@ -236,17 +228,17 @@ namespace Google.Common.Geometry
    * interval "y".
    */
 
-        public R1Interval union(R1Interval y)
+        public R1Interval Union(R1Interval y)
         {
-            if (isEmpty())
+            if (IsEmpty())
             {
                 return y;
             }
-            if (y.isEmpty())
+            if (y.IsEmpty())
             {
                 return this;
             }
-            return new R1Interval(Math.Min(lo(), y.lo()), Math.Max(hi(), y.hi()));
+            return new R1Interval(Math.Min(Lo, y.Lo), Math.Max(Hi, y.Hi));
         }
 
         /**
@@ -254,14 +246,14 @@ namespace Google.Common.Geometry
    * intervals do not need to be special-cased.
    */
 
-        public R1Interval intersection(R1Interval y)
+        public R1Interval Intersection(R1Interval y)
         {
-            return new R1Interval(Math.Max(lo(), y.lo()), Math.Min(hi(), y.hi()));
+            return new R1Interval(Math.Max(Lo, y.Lo), Math.Min(Hi, y.Hi));
         }
 
-        public bool approxEquals(R1Interval y)
+        public bool ApproxEquals(R1Interval y)
         {
-            return approxEquals(y, 1e-15);
+            return ApproxEquals(y, 1e-15);
         }
 
         /**
@@ -270,22 +262,22 @@ namespace Google.Common.Geometry
    *
    */
 
-        public bool approxEquals(R1Interval y, double maxError)
+        public bool ApproxEquals(R1Interval y, double maxError)
         {
-            if (isEmpty())
+            if (IsEmpty())
             {
-                return y.getLength() <= maxError;
+                return y.Length <= maxError;
             }
-            if (y.isEmpty())
+            if (y.IsEmpty())
             {
-                return getLength() <= maxError;
+                return Length <= maxError;
             }
-            return Math.Abs(y.lo() - lo()) + Math.Abs(y.hi() - hi()) <= maxError;
+            return Math.Abs(y.Lo - Lo) + Math.Abs(y.Hi - Hi) <= maxError;
         }
 
         public override string ToString()
         {
-            return "[" + lo() + ", " + hi() + "]";
+            return "[" + Lo + ", " + Hi + "]";
         }
     }
 }

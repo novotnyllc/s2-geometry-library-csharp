@@ -121,9 +121,9 @@ namespace Google.Common.Geometry
                     var j = S2Projections.getVAxis(_face).z == 0 ? (v < 0 ? 1 : 0) : (v > 0 ? 1 : 0);
 
 
-                    var lat = R1Interval.fromPointPair(getLatitude(i, j), getLatitude(1 - i, 1 - j));
-                    lat = lat.expanded(MAX_ERROR).intersection(S2LatLngRect.fullLat());
-                    if (lat.lo() == -S2.M_PI_2 || lat.hi() == S2.M_PI_2)
+                    var lat = R1Interval.FromPointPair(getLatitude(i, j), getLatitude(1 - i, 1 - j));
+                    lat = lat.Expanded(MAX_ERROR).Intersection(S2LatLngRect.fullLat());
+                    if (lat.Lo == -S2.M_PI_2 || lat.Hi == S2.M_PI_2)
                     {
                         return new S2LatLngRect(lat, S1Interval.full());
                     }

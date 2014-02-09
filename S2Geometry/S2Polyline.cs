@@ -288,7 +288,7 @@ namespace Google.Common.Geometry
 
         public int getNearestEdgeIndex(S2Point point)
         {
-            Preconditions.checkState(numVertices() > 0, "Empty polyline");
+            Preconditions.CheckState(numVertices() > 0, "Empty polyline");
 
             if (numVertices() == 1)
             {
@@ -320,8 +320,8 @@ namespace Google.Common.Geometry
 
         public S2Point projectToEdge(S2Point point, int index)
         {
-            Preconditions.checkState(numVertices() > 0, "Empty polyline");
-            Preconditions.checkState(numVertices() == 1 || index < numVertices() - 1, "Invalid edge index");
+            Preconditions.CheckState(numVertices() > 0, "Empty polyline");
+            Preconditions.CheckState(numVertices() == 1 || index < numVertices() - 1, "Invalid edge index");
             if (numVertices() == 1)
             {
                 // If there is only one vertex, it is always closest to any given point.

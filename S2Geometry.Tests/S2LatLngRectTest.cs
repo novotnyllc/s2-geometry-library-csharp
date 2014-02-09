@@ -414,25 +414,25 @@ namespace S2Geometry.Tests
         public void testEdgeBound()
         {
             // assertTrue cases where min/max latitude is not at a vertex.
-            assertDoubleNear(getEdgeBound(1, 1, 1, 1, -1, 1).Lat.hi(), S2.M_PI_4); // Max,
+            assertDoubleNear(getEdgeBound(1, 1, 1, 1, -1, 1).Lat.Hi, S2.M_PI_4); // Max,
             // CW
-            assertDoubleNear(getEdgeBound(1, -1, 1, 1, 1, 1).Lat.hi(), S2.M_PI_4); // Max,
+            assertDoubleNear(getEdgeBound(1, -1, 1, 1, 1, 1).Lat.Hi, S2.M_PI_4); // Max,
             // CCW
-            assertDoubleNear(getEdgeBound(1, -1, -1, -1, -1, -1).Lat.lo(), -S2.M_PI_4); // Min,
+            assertDoubleNear(getEdgeBound(1, -1, -1, -1, -1, -1).Lat.Lo, -S2.M_PI_4); // Min,
             // CW
-            assertDoubleNear(getEdgeBound(-1, 1, -1, -1, -1, -1).Lat.lo(), -S2.M_PI_4); // Min,
+            assertDoubleNear(getEdgeBound(-1, 1, -1, -1, -1, -1).Lat.Lo, -S2.M_PI_4); // Min,
             // CCW
 
             // assertTrue cases where the edge passes through one of the poles.
-            assertDoubleNear(getEdgeBound(.3, .4, 1, -.3, -.4, 1).Lat.hi(), S2.M_PI_2);
-            assertDoubleNear(getEdgeBound(.3, .4, -1, -.3, -.4, -1).Lat.lo(), -S2.M_PI_2);
+            assertDoubleNear(getEdgeBound(.3, .4, 1, -.3, -.4, 1).Lat.Hi, S2.M_PI_2);
+            assertDoubleNear(getEdgeBound(.3, .4, -1, -.3, -.4, -1).Lat.Lo, -S2.M_PI_2);
 
             // assertTrue cases where the min/max latitude is attained at a vertex.
             var kCubeLat = Math.Asin(Math.Sqrt(1.0/3)); // 35.26 degrees
             assertTrue(
-                getEdgeBound(1, 1, 1, 1, -1, -1).Lat.approxEquals(new R1Interval(-kCubeLat, kCubeLat)));
+                getEdgeBound(1, 1, 1, 1, -1, -1).Lat.ApproxEquals(new R1Interval(-kCubeLat, kCubeLat)));
             assertTrue(
-                getEdgeBound(1, -1, 1, 1, 1, -1).Lat.approxEquals(new R1Interval(-kCubeLat, kCubeLat)));
+                getEdgeBound(1, -1, 1, 1, 1, -1).Lat.ApproxEquals(new R1Interval(-kCubeLat, kCubeLat)));
         }
 
         [Test]

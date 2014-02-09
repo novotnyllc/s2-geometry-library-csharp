@@ -106,7 +106,7 @@ namespace Google.Common.Geometry
 
         public static int posToOrientation(int position)
         {
-            Preconditions.checkArgument(0 <= position && position < 4);
+            Preconditions.CheckArgument(0 <= position && position < 4);
 
             return POS_TO_ORIENTATION[position];
         }
@@ -137,8 +137,8 @@ namespace Google.Common.Geometry
 
         public static int ijToPos(int orientation, int ijIndex)
         {
-            Preconditions.checkArgument(0 <= orientation && orientation < 4);
-            Preconditions.checkArgument(0 <= ijIndex && ijIndex < 4);
+            Preconditions.CheckArgument(0 <= orientation && orientation < 4);
+            Preconditions.CheckArgument(0 <= ijIndex && ijIndex < 4);
             return IJ_TO_POS[orientation][ijIndex];
         }
 
