@@ -541,7 +541,7 @@ namespace Google.Common.Geometry
             // Normalize the arguments so that B has a smaller longitude span than A.
             // This makes intersection tests much more efficient in the case where
             // longitude pruning is used (see CheckEdgeCrossings).
-            if (b.RectBound.Lng.getLength() > bound.Lng.getLength())
+            if (b.RectBound.Lng.Length > bound.Lng.Length)
             {
                 return b.intersects(this);
             }
@@ -946,13 +946,13 @@ namespace Google.Common.Geometry
             bound = S2LatLngRect.full();
             if (contains(new S2Point(0, 0, 1)))
             {
-                b = new S2LatLngRect(new R1Interval(b.Lat.Lo, S2.M_PI_2), S1Interval.full());
+                b = new S2LatLngRect(new R1Interval(b.Lat.Lo, S2.M_PI_2), S1Interval.Full);
             }
             // If a loop contains the south pole, then either it wraps entirely
             // around the sphere (full longitude range), or it also contains the
             // north pole in which case b.lng().isFull() due to the test above.
 
-            if (b.Lng.isFull() && contains(new S2Point(0, 0, -1)))
+            if (b.Lng.IsFull && contains(new S2Point(0, 0, -1)))
             {
                 b = new S2LatLngRect(new R1Interval(-S2.M_PI_2, b.Lat.Hi), b.Lng);
             }

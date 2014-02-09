@@ -476,7 +476,7 @@ namespace Google.Common.Geometry
                 // If the union of the bounding boxes spans the full longitude range,
                 // it is still possible that polygon A contains B. (This is only
                 // possible if at least one polygon has multiple shells.)
-                if (!bound.Lng.union(b.RectBound.Lng).isFull())
+                if (!bound.Lng.Union(b.RectBound.Lng).IsFull)
                 {
                     return false;
                 }

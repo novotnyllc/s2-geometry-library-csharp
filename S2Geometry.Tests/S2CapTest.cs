@@ -33,26 +33,26 @@ namespace S2Geometry.Tests
                 S2Cap.fromAxisAngle(getLatLngPoint(-45, 57), S1Angle.FromDegrees(50)).RectBound;
             assertDoubleNear(rect.latLo().Degrees, -90, kDegreeEps);
             assertDoubleNear(rect.latHi().Degrees, 5, kDegreeEps);
-            Assert.True(rect.Lng.isFull());
+            Assert.True(rect.Lng.IsFull);
 
             // Cap that is tangent to the north pole.
             rect = S2Cap.fromAxisAngle(S2Point.normalize(new S2Point(1, 0, 1)), S1Angle.FromRadians(S2.M_PI_4)).RectBound;
             assertDoubleNear(rect.Lat.Lo, 0);
             assertDoubleNear(rect.Lat.Hi, S2.M_PI_2);
-            Assert.True(rect.Lng.isFull());
+            Assert.True(rect.Lng.IsFull);
 
             rect = S2Cap
                 .fromAxisAngle(S2Point.normalize(new S2Point(1, 0, 1)), S1Angle.FromDegrees(45)).RectBound;
             assertDoubleNear(rect.latLo().Degrees, 0, kDegreeEps);
             assertDoubleNear(rect.latHi().Degrees, 90, kDegreeEps);
-            Assert.True(rect.Lng.isFull());
+            Assert.True(rect.Lng.IsFull);
 
             // The eastern hemisphere.
             rect = S2Cap
                 .fromAxisAngle(new S2Point(0, 1, 0), S1Angle.FromRadians(S2.M_PI_2 + 5e-16)).RectBound;
             assertDoubleNear(rect.latLo().Degrees, -90, kDegreeEps);
             assertDoubleNear(rect.latHi().Degrees, 90, kDegreeEps);
-            Assert.True(rect.Lng.isFull());
+            Assert.True(rect.Lng.IsFull);
 
             // A cap centered on the equator.
             rect = S2Cap.fromAxisAngle(getLatLngPoint(0, 50), S1Angle.FromDegrees(20)).RectBound;
@@ -65,7 +65,7 @@ namespace S2Geometry.Tests
             rect = S2Cap.fromAxisAngle(getLatLngPoint(90, 123), S1Angle.FromDegrees(10)).RectBound;
             assertDoubleNear(rect.latLo().Degrees, 80, kDegreeEps);
             assertDoubleNear(rect.latHi().Degrees, 90, kDegreeEps);
-            Assert.True(rect.Lng.isFull());
+            Assert.True(rect.Lng.IsFull);
         }
 
         public void testCells()

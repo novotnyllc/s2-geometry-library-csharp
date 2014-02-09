@@ -558,7 +558,7 @@ namespace Google.Common.Geometry
             public bool intersects(S2Point v1)
             {
                 var lng1 = S2LatLng.longitude(v1).Radians;
-                var result = interval.intersects(S1Interval.fromPointPair(lng0, lng1));
+                var result = interval.Intersects(S1Interval.FromPointPair(lng0, lng1));
                 lng0 = lng1;
                 return result;
             }

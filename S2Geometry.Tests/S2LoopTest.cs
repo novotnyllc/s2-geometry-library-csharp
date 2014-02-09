@@ -354,7 +354,7 @@ namespace S2Geometry.Tests
         [Test]
         public void testBounds()
         {
-            assertTrue(candyCane.RectBound.Lng.isFull());
+            assertTrue(candyCane.RectBound.Lng.IsFull);
             assertTrue(candyCane.RectBound.latLo().Degrees < -20);
             assertTrue(candyCane.RectBound.latHi().Degrees > 10);
             assertTrue(smallNeCw.RectBound.isFull());
@@ -369,7 +369,7 @@ namespace S2Geometry.Tests
             assertDoubleNear(arctic80.RectBound.latHi().Radians, new S2LatLng(mid).lat().Radians);
             arctic80.invert();
 
-            assertTrue(southHemi.RectBound.Lng.isFull());
+            assertTrue(southHemi.RectBound.Lng.IsFull);
             assertEquals(southHemi.RectBound.Lat, new R1Interval(-S2.M_PI_2, 0));
         }
 

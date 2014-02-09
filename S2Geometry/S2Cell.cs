@@ -15,22 +15,22 @@ namespace Google.Common.Geometry
 
     public class S2Cell : IS2Region, IEquatable<S2Cell>
     {
-        private const int MAX_CELL_SIZE = 1 << S2CellId.MAX_LEVEL;
-        private static double MAX_ERROR = 1.0/(1L << 51);
+        private const int MaxCellSize = 1 << S2CellId.MAX_LEVEL;
+        private const double MaxError = 1.0/(1L << 51);
 
         // The 4 cells around the equator extend to +/-45 degrees latitude at the
         // midpoints of their top and bottom edges. The two cells covering the
         // poles extend down to +/-35.26 degrees at their vertices.
         // adding kMaxError (as opposed to the C version) because of asin and atan2
         // roundoff errors
-        private static readonly double POLE_MIN_LAT = Math.Asin(Math.Sqrt(1.0/3.0)) - MAX_ERROR;
+        private static readonly double PoleMinLat = Math.Asin(Math.Sqrt(1.0/3.0)) - MaxError;
 
         private byte _face;
         private byte _level;
         private byte _orientation;
-        private S2CellId cellId;
+        private S2CellId _cellId;
 
-        private double[][] uv = new double[2][]
+        private double[][] _uv = new double[2][]
         {
             new double[2],
             new double[2],
@@ -40,7 +40,7 @@ namespace Google.Common.Geometry
    * Default constructor used only internally.
    */
 
-        public S2Cell()
+        internal S2Cell()
         {
         }
 
@@ -71,7 +71,7 @@ namespace Google.Common.Geometry
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return cellId.Equals(other.cellId) && _level == other._level && _face == other._face && _orientation == other._orientation;
+            return _cellId.Equals(other._cellId) && _level == other._level && _face == other._face && _orientation == other._orientation;
         }
 
         public S2Cap CapBound
@@ -87,8 +87,8 @@ namespace Google.Common.Geometry
                 // the (u,v)-origin never determine the maximum cap size (this is a
                 // possible future optimization).
 
-                var u = 0.5*(uv[0][0] + uv[0][1]);
-                var v = 0.5*(uv[1][0] + uv[1][1]);
+                var u = 0.5*(_uv[0][0] + _uv[0][1]);
+                var v = 0.5*(_uv[1][0] + _uv[1][1]);
                 var cap = S2Cap.fromAxisHeight(S2Point.normalize(S2Projections.faceUvToXyz(_face, u, v)), 0);
                 for (var k = 0; k < 4; ++k)
                 {
@@ -115,20 +115,20 @@ namespace Google.Common.Geometry
                     // absolute x- and y-coordinates. To do this we look at each coordinate
                     // (u and v), and determine whether we want to minimize or maximize that
                     // coordinate based on the axis direction and the cell's (u,v) quadrant.
-                    var u = uv[0][0] + uv[0][1];
-                    var v = uv[1][0] + uv[1][1];
+                    var u = _uv[0][0] + _uv[0][1];
+                    var v = _uv[1][0] + _uv[1][1];
                     var i = S2Projections.getUAxis(_face).z == 0 ? (u < 0 ? 1 : 0) : (u > 0 ? 1 : 0);
                     var j = S2Projections.getVAxis(_face).z == 0 ? (v < 0 ? 1 : 0) : (v > 0 ? 1 : 0);
 
 
                     var lat = R1Interval.FromPointPair(getLatitude(i, j), getLatitude(1 - i, 1 - j));
-                    lat = lat.Expanded(MAX_ERROR).Intersection(S2LatLngRect.fullLat());
+                    lat = lat.Expanded(MaxError).Intersection(S2LatLngRect.fullLat());
                     if (lat.Lo == -S2.M_PI_2 || lat.Hi == S2.M_PI_2)
                     {
-                        return new S2LatLngRect(lat, S1Interval.full());
+                        return new S2LatLngRect(lat, S1Interval.Full);
                     }
-                    var lng = S1Interval.fromPointPair(getLongitude(i, 1 - j), getLongitude(1 - i, j));
-                    return new S2LatLngRect(lat, lng.expanded(MAX_ERROR));
+                    var lng = S1Interval.FromPointPair(getLongitude(i, 1 - j), getLongitude(1 - i, j));
+                    return new S2LatLngRect(lat, lng.Expanded(MaxError));
                 }
 
 
@@ -144,7 +144,7 @@ namespace Google.Common.Geometry
                             new R1Interval(-S2.M_PI_4, S2.M_PI_4), new S1Interval(S2.M_PI_4, 3*S2.M_PI_4));
                     case 2:
                         return new S2LatLngRect(
-                            new R1Interval(POLE_MIN_LAT, S2.M_PI_2), new S1Interval(-S2.M_PI, S2.M_PI));
+                            new R1Interval(PoleMinLat, S2.M_PI_2), new S1Interval(-S2.M_PI, S2.M_PI));
                     case 3:
                         return new S2LatLngRect(
                             new R1Interval(-S2.M_PI_4, S2.M_PI_4), new S1Interval(3*S2.M_PI_4, -3*S2.M_PI_4));
@@ -153,19 +153,19 @@ namespace Google.Common.Geometry
                             new R1Interval(-S2.M_PI_4, S2.M_PI_4), new S1Interval(-3*S2.M_PI_4, -S2.M_PI_4));
                     default:
                         return new S2LatLngRect(
-                            new R1Interval(-S2.M_PI_2, -POLE_MIN_LAT), new S1Interval(-S2.M_PI, S2.M_PI));
+                            new R1Interval(-S2.M_PI_2, -PoleMinLat), new S1Interval(-S2.M_PI, S2.M_PI));
                 }
             }
         }
 
         public bool MayIntersect(S2Cell cell)
         {
-            return cellId.intersects(cell.cellId);
+            return _cellId.intersects(cell._cellId);
         }
 
         public bool Contains(S2Cell cell)
         {
-            return cellId.contains(cell.cellId);
+            return _cellId.contains(cell._cellId);
         }
 
         public override bool Equals(object obj)
@@ -180,7 +180,7 @@ namespace Google.Common.Geometry
         {
             unchecked
             {
-                var hashCode = cellId.GetHashCode();
+                var hashCode = _cellId.GetHashCode();
                 hashCode = (hashCode*397) ^ _level.GetHashCode();
                 hashCode = (hashCode*397) ^ _face.GetHashCode();
                 hashCode = (hashCode*397) ^ _orientation.GetHashCode();
@@ -206,7 +206,7 @@ namespace Google.Common.Geometry
 
         public S2CellId id()
         {
-            return cellId;
+            return _cellId;
         }
 
         public int face()
@@ -243,7 +243,7 @@ namespace Google.Common.Geometry
         public S2Point getVertexRaw(int k)
         {
             // Vertices are returned in the order SW, SE, NE, NW.
-            return S2Projections.faceUvToXyz(_face, uv[0][(k >> 1) ^ (k & 1)], uv[1][k >> 1]);
+            return S2Projections.faceUvToXyz(_face, _uv[0][(k >> 1) ^ (k & 1)], _uv[1][k >> 1]);
         }
 
         public S2Point getEdge(int k)
@@ -256,13 +256,13 @@ namespace Google.Common.Geometry
             switch (k)
             {
                 case 0:
-                    return S2Projections.getVNorm(_face, uv[1][0]); // South
+                    return S2Projections.getVNorm(_face, _uv[1][0]); // South
                 case 1:
-                    return S2Projections.getUNorm(_face, uv[0][1]); // East
+                    return S2Projections.getUNorm(_face, _uv[0][1]); // East
                 case 2:
-                    return S2Point.neg(S2Projections.getVNorm(_face, uv[1][1])); // North
+                    return S2Point.neg(S2Projections.getVNorm(_face, _uv[1][1])); // North
                 default:
-                    return S2Point.neg(S2Projections.getUNorm(_face, uv[0][0])); // West
+                    return S2Point.neg(S2Projections.getUNorm(_face, _uv[0][0])); // West
             }
         }
 
@@ -286,7 +286,7 @@ namespace Google.Common.Geometry
             // This function is equivalent to just iterating over the child cell ids
             // and calling the S2Cell constructor, but it is about 2.5 times faster.
 
-            if (cellId.isLeaf())
+            if (_cellId.isLeaf())
             {
                 return false;
             }
@@ -295,21 +295,21 @@ namespace Google.Common.Geometry
             var uvMid = getCenterUV();
 
             // Create four children with the appropriate bounds.
-            var id = cellId.childBegin();
+            var id = _cellId.childBegin();
             for (var pos = 0; pos < 4; ++pos, id = id.next())
             {
                 var child = children[pos];
                 child._face = _face;
                 child._level = (byte)(_level + 1);
                 child._orientation = (byte)(_orientation ^ S2.posToOrientation(pos));
-                child.cellId = id;
+                child._cellId = id;
                 var ij = S2.posToIJ(_orientation, pos);
                 for (var d = 0; d < 2; ++d)
                 {
                     // The dimension 0 index (i/u) is in bit 1 of ij.
                     var m = 1 - ((ij >> (1 - d)) & 1);
-                    child.uv[d][m] = uvMid[d];
-                    child.uv[d][1 - m] = uv[d][1 - m];
+                    child._uv[d][m] = uvMid[d];
+                    child._uv[d][1 - m] = _uv[d][1 - m];
                 }
             }
             return true;
@@ -330,7 +330,7 @@ namespace Google.Common.Geometry
 
         public S2Point getCenterRaw()
         {
-            return cellId.toPointRaw();
+            return _cellId.toPointRaw();
         }
 
         /**
@@ -345,15 +345,15 @@ namespace Google.Common.Geometry
             var i = 0;
             var j = 0;
             int? notUsed = null;
-            cellId.toFaceIJOrientation(ref i, ref j, ref notUsed);
+            _cellId.toFaceIJOrientation(ref i, ref j, ref notUsed);
             var cellSize = 1 << (S2CellId.MAX_LEVEL - _level);
 
             // TODO(dbeaumont): Figure out a better naming of the variables here (and elsewhere).
-            var si = (i & -cellSize)*2 + cellSize - MAX_CELL_SIZE;
-            var x = S2Projections.stToUV((1.0/MAX_CELL_SIZE)*si);
+            var si = (i & -cellSize)*2 + cellSize - MaxCellSize;
+            var x = S2Projections.stToUV((1.0/MaxCellSize)*si);
 
-            var sj = (j & -cellSize)*2 + cellSize - MAX_CELL_SIZE;
-            var y = S2Projections.stToUV((1.0/MAX_CELL_SIZE)*sj);
+            var sj = (j & -cellSize)*2 + cellSize - MaxCellSize;
+            var y = S2Projections.stToUV((1.0/MaxCellSize)*sj);
 
             return new R2Vector(x, y);
         }
@@ -433,7 +433,7 @@ namespace Google.Common.Geometry
             clone._level = _level;
             clone._orientation = _orientation;
 
-            clone.uv = (double[][])uv.Clone();
+            clone._uv = (double[][])_uv.Clone();
 
             return clone;
         }
@@ -448,15 +448,15 @@ namespace Google.Common.Geometry
             {
                 return false;
             }
-            return (uvPoint.Value.X >= uv[0][0] && uvPoint.Value.X <= uv[0][1]
-                    && uvPoint.Value.Y >= uv[1][0] && uvPoint.Value.Y <= uv[1][1]);
+            return (uvPoint.Value.X >= _uv[0][0] && uvPoint.Value.X <= _uv[0][1]
+                    && uvPoint.Value.Y >= _uv[1][0] && uvPoint.Value.Y <= _uv[1][1]);
         }
 
         // The point 'p' does not need to be normalized.
 
         private void init(S2CellId id)
         {
-            cellId = id;
+            _cellId = id;
             var ij = new int[2];
             int? mOrientation = 0;
 
@@ -472,10 +472,10 @@ namespace Google.Common.Geometry
             for (var d = 0; d < 2; ++d)
             {
                 // Compute the cell bounds in scaled (i,j) coordinates.
-                var sijLo = (ij[d] & -cellSize)*2 - MAX_CELL_SIZE;
+                var sijLo = (ij[d] & -cellSize)*2 - MaxCellSize;
                 var sijHi = sijLo + cellSize*2;
-                uv[d][0] = S2Projections.stToUV((1.0/MAX_CELL_SIZE)*sijLo);
-                uv[d][1] = S2Projections.stToUV((1.0/MAX_CELL_SIZE)*sijHi);
+                _uv[d][0] = S2Projections.stToUV((1.0/MaxCellSize)*sijLo);
+                _uv[d][1] = S2Projections.stToUV((1.0/MaxCellSize)*sijHi);
             }
         }
 
@@ -484,13 +484,13 @@ namespace Google.Common.Geometry
 
         private double getLatitude(int i, int j)
         {
-            var p = S2Projections.faceUvToXyz(_face, uv[0][i], uv[1][j]);
+            var p = S2Projections.faceUvToXyz(_face, _uv[0][i], _uv[1][j]);
             return Math.Atan2(p.z, Math.Sqrt(p.x*p.x + p.y*p.y));
         }
 
         private double getLongitude(int i, int j)
         {
-            var p = S2Projections.faceUvToXyz(_face, uv[0][i], uv[1][j]);
+            var p = S2Projections.faceUvToXyz(_face, _uv[0][i], _uv[1][j]);
             return Math.Atan2(p.y, p.x);
         }
 
@@ -500,7 +500,7 @@ namespace Google.Common.Geometry
 
         public override String ToString()
         {
-            return "[" + _face + ", " + _level + ", " + _orientation + ", " + cellId + "]";
+            return "[" + _face + ", " + _level + ", " + _orientation + ", " + _cellId + "]";
         }
     }
 }

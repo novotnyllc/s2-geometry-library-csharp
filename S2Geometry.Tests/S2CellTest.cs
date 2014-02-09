@@ -184,7 +184,7 @@ namespace S2Geometry.Tests
                 if (cell.contains(new S2Point(0, 0, 1))
                     || cell.contains(new S2Point(0, 0, -1)))
                 {
-                    Assert.True(parentRect.Lng.isFull());
+                    Assert.True(parentRect.Lng.IsFull);
                 }
                 var childCap = children[i].CapBound;
                 var childRect = children[i].RectBound;

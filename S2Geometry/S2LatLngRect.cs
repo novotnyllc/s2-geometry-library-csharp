@@ -85,7 +85,7 @@ namespace Google.Common.Geometry
                 // maximum cap size is achieved at one of the rectangle vertices. For
                 // rectangles that are larger than 180 degrees, we punt and always return a
                 // bounding cap centered at one of the two poles.
-                var lngSpan = lng.hi() - lng.lo();
+                var lngSpan = lng.Hi - lng.Lo;
                 if (Math.IEEERemainder(lngSpan, 2*S2.M_PI) >= 0)
                 {
                     if (lngSpan < 2*S2.M_PI)
@@ -161,7 +161,7 @@ namespace Google.Common.Geometry
 
         public static S2LatLngRect empty()
         {
-            return new S2LatLngRect(R1Interval.Empty, S1Interval.empty());
+            return new S2LatLngRect(R1Interval.Empty, S1Interval.Empty);
         }
 
         /** The canonical full rectangle. */
@@ -184,7 +184,7 @@ namespace Google.Common.Geometry
 
         public static S1Interval fullLng()
         {
-            return S1Interval.full();
+            return S1Interval.Full;
         }
 
         /**
@@ -219,7 +219,7 @@ namespace Google.Common.Geometry
         {
             // assert (p1.isValid() && p2.isValid());
             return new S2LatLngRect(R1Interval.FromPointPair(p1.lat().Radians, p2
-                                                                                   .lat().Radians), S1Interval.fromPointPair(p1.lng().Radians, p2.lng().Radians));
+                                                                                   .lat().Radians), S1Interval.FromPointPair(p1.lng().Radians, p2.lng().Radians));
         }
 
         /**
@@ -271,7 +271,7 @@ namespace Google.Common.Geometry
         {
             // The lat/lng ranges must either be both empty or both non-empty.
             return (Math.Abs(lat.Lo) <= S2.M_PI_2 && Math.Abs(lat.Hi) <= S2.M_PI_2
-                    && lng.isValid() && lat.IsEmpty() == lng.isEmpty());
+                    && lng.IsValid && lat.IsEmpty() == lng.IsEmpty);
         }
 
         // Accessor methods.
@@ -287,12 +287,12 @@ namespace Google.Common.Geometry
 
         public S1Angle lngLo()
         {
-            return S1Angle.FromRadians(lng.lo());
+            return S1Angle.FromRadians(lng.Lo);
         }
 
         public S1Angle lngHi()
         {
-            return S1Angle.FromRadians(lng.hi());
+            return S1Angle.FromRadians(lng.Hi);
         }
 
         public S2LatLng lo()
@@ -317,7 +317,7 @@ namespace Google.Common.Geometry
         // Return true if the rectangle is full, i.e. it contains all points.
         public bool isFull()
         {
-            return lat.Equals(fullLat()) && lng.isFull();
+            return lat.Equals(fullLat()) && lng.IsFull;
         }
 
         /**
@@ -327,7 +327,7 @@ namespace Google.Common.Geometry
 
         public bool isInverted()
         {
-            return lng.isInverted();
+            return lng.IsInverted;
         }
 
         /** Return the k-th vertex of the rectangle (k = 0,1,2,3) in CCW order. */
@@ -338,13 +338,13 @@ namespace Google.Common.Geometry
             switch (k)
             {
                 case 0:
-                    return S2LatLng.fromRadians(lat.Lo, lng.lo());
+                    return S2LatLng.fromRadians(lat.Lo, lng.Lo);
                 case 1:
-                    return S2LatLng.fromRadians(lat.Lo, lng.hi());
+                    return S2LatLng.fromRadians(lat.Lo, lng.Hi);
                 case 2:
-                    return S2LatLng.fromRadians(lat.Hi, lng.hi());
+                    return S2LatLng.fromRadians(lat.Hi, lng.Hi);
                 case 3:
-                    return S2LatLng.fromRadians(lat.Hi, lng.lo());
+                    return S2LatLng.fromRadians(lat.Hi, lng.Lo);
                 default:
                     throw new ArgumentException("Invalid vertex index.");
             }
@@ -357,7 +357,7 @@ namespace Google.Common.Geometry
 
         public S2LatLng getCenter()
         {
-            return S2LatLng.fromRadians(lat.Center, lng.getCenter());
+            return S2LatLng.fromRadians(lat.Center, lng.Center);
         }
 
         /**
@@ -375,17 +375,17 @@ namespace Google.Common.Geometry
             Preconditions.CheckState(!a.isEmpty());
             Preconditions.CheckArgument(p.isValid());
 
-            if (a.Lng.contains(p.lng().Radians))
+            if (a.Lng.Contains(p.lng().Radians))
             {
                 return S1Angle.FromRadians(Math.Max(0.0, Math.Max(p.lat().Radians - a.Lat.Hi,
                                                               a.Lat.Lo - p.lat().Radians)));
             }
 
-            var interval = new S1Interval(a.Lng.hi(), a.Lng.complement().getCenter());
-            var aLng = a.Lng.lo();
-            if (interval.contains(p.lng().Radians))
+            var interval = new S1Interval(a.Lng.Hi, a.Lng.Complement.Center);
+            var aLng = a.Lng.Lo;
+            if (interval.Contains(p.lng().Radians))
             {
-                aLng = a.Lng.hi();
+                aLng = a.Lng.Hi;
             }
 
             var lo = S2LatLng.fromRadians(a.Lat.Lo, aLng).toPoint();
@@ -409,7 +409,7 @@ namespace Google.Common.Geometry
             Preconditions.CheckArgument(!b.isEmpty());
 
             // First, handle the trivial cases where the longitude intervals overlap.
-            if (a.Lng.intersects(b.Lng))
+            if (a.Lng.Intersects(b.Lng))
             {
                 if (a.Lat.Intersects(b.Lat))
                 {
@@ -438,9 +438,9 @@ namespace Google.Common.Geometry
             // occur somewhere on the pair of longitudinal edges which are nearest in
             // longitude-space.
             S1Angle aLng, bLng;
-            var loHi = S1Interval.fromPointPair(a.Lng.lo(), b.Lng.hi());
-            var hiLo = S1Interval.fromPointPair(a.Lng.hi(), b.Lng.lo());
-            if (loHi.getLength() < hiLo.getLength())
+            var loHi = S1Interval.FromPointPair(a.Lng.Lo, b.Lng.Hi);
+            var hiLo = S1Interval.FromPointPair(a.Lng.Hi, b.Lng.Lo);
+            if (loHi.Length < hiLo.Length)
             {
                 aLng = a.lngLo();
                 bLng = b.lngHi();
@@ -478,7 +478,7 @@ namespace Google.Common.Geometry
 
         public S2LatLng getSize()
         {
-            return S2LatLng.fromRadians(lat.Length, lng.getLength());
+            return S2LatLng.fromRadians(lat.Length, lng.Length);
         }
 
         /**
@@ -489,7 +489,7 @@ namespace Google.Common.Geometry
         public bool contains(S2LatLng ll)
         {
             // assert (ll.isValid());
-            return (lat.Contains(ll.lat().Radians) && lng.contains(ll.lng().Radians));
+            return (lat.Contains(ll.lat().Radians) && lng.Contains(ll.lng().Radians));
         }
 
         /**
@@ -512,7 +512,7 @@ namespace Google.Common.Geometry
         {
             // assert (ll.isValid());
             return (lat.InteriorContains(ll.lat().Radians) && lng
-                                                                    .interiorContains(ll.lng().Radians));
+                                                                    .InteriorContains(ll.lng().Radians));
         }
 
         /**
@@ -522,7 +522,7 @@ namespace Google.Common.Geometry
 
         public bool contains(S2LatLngRect other)
         {
-            return lat.Contains(other.lat) && lng.contains(other.lng);
+            return lat.Contains(other.lat) && lng.Contains(other.lng);
         }
 
         /**
@@ -533,7 +533,7 @@ namespace Google.Common.Geometry
         public bool interiorContains(S2LatLngRect other)
         {
             return (lat.InteriorContains(other.lat) && lng
-                                                           .interiorContains(other.lng));
+                                                           .InteriorContains(other.lng));
         }
 
         /** Return true if this rectangle and the given other rectangle have any
@@ -541,7 +541,7 @@ namespace Google.Common.Geometry
 
         public bool intersects(S2LatLngRect other)
         {
-            return lat.Intersects(other.lat) && lng.intersects(other.lng);
+            return lat.Intersects(other.lat) && lng.Intersects(other.lng);
         }
 
         /**
@@ -593,25 +593,25 @@ namespace Google.Common.Geometry
 
             for (var i = 0; i < 4; ++i)
             {
-                var edgeLng = S1Interval.fromPointPair(
+                var edgeLng = S1Interval.FromPointPair(
                     cellLl[i].lng().Radians, cellLl[(i + 1) & 3].lng().Radians);
-                if (!lng.intersects(edgeLng))
+                if (!lng.Intersects(edgeLng))
                 {
                     continue;
                 }
 
                 var a = cellV[i];
                 var b = cellV[(i + 1) & 3];
-                if (edgeLng.contains(lng.lo()))
+                if (edgeLng.Contains(lng.Lo))
                 {
-                    if (intersectsLngEdge(a, b, lat, lng.lo()))
+                    if (intersectsLngEdge(a, b, lat, lng.Lo))
                     {
                         return true;
                     }
                 }
-                if (edgeLng.contains(lng.hi()))
+                if (edgeLng.Contains(lng.Hi))
                 {
-                    if (intersectsLngEdge(a, b, lat, lng.hi()))
+                    if (intersectsLngEdge(a, b, lat, lng.Hi))
                     {
                         return true;
                     }
@@ -636,7 +636,7 @@ namespace Google.Common.Geometry
         public bool interiorIntersects(S2LatLngRect other)
         {
             return (lat.InteriorIntersects(other.lat) && lng
-                                                             .interiorIntersects(other.lng));
+                                                             .InteriorIntersects(other.lng));
         }
 
         public S2LatLngRect addPoint(S2Point p)
@@ -650,7 +650,7 @@ namespace Google.Common.Geometry
         {
             // assert (ll.isValid());
             var newLat = lat.AddPoint(ll.lat().Radians);
-            var newLng = lng.addPoint(ll.lng().Radians);
+            var newLng = lng.AddPoint(ll.lng().Radians);
             return new S2LatLngRect(newLat, newLng);
         }
 
@@ -674,7 +674,7 @@ namespace Google.Common.Geometry
                 return this;
             }
             return new S2LatLngRect(lat.Expanded(margin.lat().Radians).Intersection(
-                fullLat()), lng.expanded(margin.lng().Radians));
+                fullLat()), lng.Expanded(margin.lng().Radians));
         }
 
         /**
@@ -684,7 +684,7 @@ namespace Google.Common.Geometry
 
         public S2LatLngRect union(S2LatLngRect other)
         {
-            return new S2LatLngRect(lat.Union(other.lat), lng.union(other.lng));
+            return new S2LatLngRect(lat.Union(other.lat), lng.Union(other.lng));
         }
 
         /**
@@ -697,8 +697,8 @@ namespace Google.Common.Geometry
         public S2LatLngRect intersection(S2LatLngRect other)
         {
             var intersectLat = lat.Intersection(other.lat);
-            var intersectLng = lng.intersection(other.lng);
-            if (intersectLat.IsEmpty() || intersectLng.isEmpty())
+            var intersectLng = lng.Intersection(other.lng);
+            if (intersectLat.IsEmpty() || intersectLng.IsEmpty)
             {
                 // The lat/lng ranges must either be both empty or both non-empty.
                 return empty();
@@ -744,7 +744,7 @@ namespace Google.Common.Geometry
 
             // This is the size difference of the two spherical caps, multiplied by
             // the longitude ratio.
-            return Lng.getLength()*Math.Abs(Math.Sin(latHi().Radians) - Math.Sin(latLo().Radians));
+            return Lng.Length*Math.Abs(Math.Sin(latHi().Radians) - Math.Sin(latLo().Radians));
         }
 
 
@@ -756,7 +756,7 @@ namespace Google.Common.Geometry
 
         public bool approxEquals(S2LatLngRect other, double maxError)
         {
-            return (lat.ApproxEquals(other.lat, maxError) && lng.approxEquals(
+            return (lat.ApproxEquals(other.lat, maxError) && lng.ApproxEquals(
                 other.lng, maxError));
         }
 
@@ -838,24 +838,24 @@ namespace Google.Common.Geometry
             // also that it is contained within the given longitude interval "lng".
 
             // Compute the range of theta values spanned by the edge AB.
-            var abTheta = S1Interval.fromPointPair(Math.Atan2(
+            var abTheta = S1Interval.FromPointPair(Math.Atan2(
                 a.dotProd(y), a.dotProd(x)), Math.Atan2(b.dotProd(y), b.dotProd(x)));
 
-            if (abTheta.contains(theta))
+            if (abTheta.Contains(theta))
             {
                 // Check if the intersection point is also in the given "lng" interval.
                 var isect = S2Point.add(S2Point.mul(x, cosTheta), S2Point.mul(y,
                                                                               sinTheta));
-                if (lng.contains(Math.Atan2(isect.y, isect.x)))
+                if (lng.Contains(Math.Atan2(isect.y, isect.x)))
                 {
                     return true;
                 }
             }
-            if (abTheta.contains(-theta))
+            if (abTheta.Contains(-theta))
             {
                 // Check if the intersection point is also in the given "lng" interval.
                 var intersection = S2Point.sub(S2Point.mul(x, cosTheta), S2Point.mul(y, sinTheta));
-                if (lng.contains(Math.Atan2(intersection.y, intersection.x)))
+                if (lng.Contains(Math.Atan2(intersection.y, intersection.x)))
                 {
                     return true;
                 }

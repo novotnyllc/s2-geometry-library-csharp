@@ -136,15 +136,15 @@ namespace S2Geometry.Tests
         private static S1Angle getDistance(S2LatLng x, S1Angle lat, S1Interval interval)
         {
             assertTrue(x.isValid());
-            assertTrue(interval.isValid());
+            assertTrue(interval.IsValid);
 
             // Is X inside the longitude interval?
-            if (interval.contains(x.lng().Radians))
+            if (interval.Contains(x.lng().Radians))
                 return S1Angle.FromRadians(Math.Abs(x.lat().Radians - lat.Radians));
 
             // Return the distance to the closer endpoint.
-            return S1Angle.Min(x.getDistance(new S2LatLng(lat, S1Angle.FromRadians(interval.lo()))),
-                               x.getDistance(new S2LatLng(lat, S1Angle.FromRadians(interval.hi()))));
+            return S1Angle.Min(x.getDistance(new S2LatLng(lat, S1Angle.FromRadians(interval.Lo))),
+                               x.getDistance(new S2LatLng(lat, S1Angle.FromRadians(interval.Hi))));
         }
 
         private static S2LatLngRect getEdgeBound(double x1,
