@@ -289,7 +289,7 @@ namespace S2Geometry.Tests
                 // (p[0]*x + p[1]*y + p[2]*z).Normalize()
                 var axis = S2Point.normalize(
                     S2Point.add(S2Point.add(S2Point.mul(x, p.x), S2Point.mul(y, p.y)), S2Point.mul(z, p.z)));
-                var cap = S2Cap.fromAxisAngle(axis, S1Angle.radians(maxPerturbation));
+                var cap = S2Cap.fromAxisAngle(axis, S1Angle.FromRadians(maxPerturbation));
                 vertices.Add(samplePoint(cap));
             }
         }
@@ -414,8 +414,8 @@ namespace S2Geometry.Tests
                 // This implies that p <= 0.25 * (max - min). We choose "p" so that it is
                 // zero half of the time, and otherwise chosen randomly up to this limit.
 
-                var minMerge = S1Angle.degrees(test.minMerge).radians();
-                var maxMerge = S1Angle.degrees(test.maxMerge).radians();
+                var minMerge = S1Angle.FromDegrees(test.minMerge).Radians;
+                var maxMerge = S1Angle.FromDegrees(test.maxMerge).Radians;
                 var r = Math.Max(0.0, 2*rand.NextDouble() - 1);
                 var maxPerturbation = r*0.25*(maxMerge - minMerge);
 
@@ -424,7 +424,7 @@ namespace S2Geometry.Tests
                 // to the minimum value.
 
                 r = Math.Max(0.0, 2*rand.NextDouble() - 1);
-                options.setMergeDistance(S1Angle.radians(
+                options.setMergeDistance(S1Angle.FromRadians(
                     minMerge + 2*maxPerturbation + r*(maxMerge - minMerge - 4*maxPerturbation)));
 
                 options.setValidate(true);

@@ -439,15 +439,15 @@ namespace Google.Common.Geometry
         {
             if (contains(p))
             {
-                return S1Angle.radians(0);
+                return S1Angle.FromRadians(0);
             }
 
             // The furthest point from p on the sphere is its antipode, which is an
             // angle of PI radians. This is an upper bound on the angle.
-            var minDistance = S1Angle.radians(Math.PI);
+            var minDistance = S1Angle.FromRadians(Math.PI);
             for (var i = 0; i < numLoops(); i++)
             {
-                minDistance = S1Angle.min(minDistance, loop(i).getDistance(p));
+                minDistance = S1Angle.Min(minDistance, loop(i).getDistance(p));
             }
 
             return minDistance;

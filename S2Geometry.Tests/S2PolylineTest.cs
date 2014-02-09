@@ -106,7 +106,7 @@ namespace S2Geometry.Tests
                 vertices.Add(vertices[0]);
                 var line = new S2Polyline(vertices);
                 var length = line.getArclengthAngle();
-                assertTrue(Math.Abs(length.radians() - 2*S2.M_PI) < 2e-14);
+                assertTrue(Math.Abs(length.Radians - 2*S2.M_PI) < 2e-14);
             }
         }
 

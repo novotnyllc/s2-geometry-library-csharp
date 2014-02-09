@@ -126,7 +126,7 @@ namespace S2Geometry.Tests
             b = S2Point.normalize(b);
             expectedClosest = S2Point.normalize(expectedClosest);
 
-            assertEquals(distanceRadians, S2EdgeUtil.getDistance(x, a, b).radians(), kEpsilon);
+            assertEquals(distanceRadians, S2EdgeUtil.getDistance(x, a, b).Radians, kEpsilon);
 
             var closest = S2EdgeUtil.getClosestPoint(x, a, b);
             if (expectedClosest.Equals(new S2Point(0, 0, 0)))
@@ -325,15 +325,15 @@ namespace S2Geometry.Tests
                 var distAb = S2EdgeUtil.getDistance(x, a, b);
                 var distCd = S2EdgeUtil.getDistance(x, c, d);
 
-                assertTrue(distAb.lessThan(S2EdgeUtil.DEFAULT_INTERSECTION_TOLERANCE));
-                assertTrue(distCd.lessThan(S2EdgeUtil.DEFAULT_INTERSECTION_TOLERANCE));
+                assertTrue(distAb < S2EdgeUtil.DEFAULT_INTERSECTION_TOLERANCE);
+                assertTrue(distCd < S2EdgeUtil.DEFAULT_INTERSECTION_TOLERANCE);
 
                 // test getIntersection() post conditions
                 assertTrue(S2.orderedCCW(a, x, b, S2Point.normalize(S2.robustCrossProd(a, b))));
                 assertTrue(S2.orderedCCW(c, x, d, S2Point.normalize(S2.robustCrossProd(c, d))));
 
-                maxEdgeDist = S1Angle.max(maxEdgeDist, S1Angle.max(distAb, distCd));
-                maxPointDist = S1Angle.max(maxPointDist, new S1Angle(p, x));
+                maxEdgeDist = S1Angle.Max(maxEdgeDist, S1Angle.Max(distAb, distCd));
+                maxPointDist = S1Angle.Max(maxPointDist, new S1Angle(p, x));
             }
         }
 

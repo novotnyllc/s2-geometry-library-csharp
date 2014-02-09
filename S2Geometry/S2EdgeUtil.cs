@@ -27,7 +27,7 @@ namespace Google.Common.Geometry
    * edgeSpliceFraction() in S2PolygonBuilder. Note that the maximum error
    * measured by the unittest in 1,000,000 trials is less than 3e-16.
    */
-        public static readonly S1Angle DEFAULT_INTERSECTION_TOLERANCE = S1Angle.radians(1.5e-15);
+        public static readonly S1Angle DEFAULT_INTERSECTION_TOLERANCE = S1Angle.FromRadians(1.5e-15);
 
         /**
    * This class allows a vertex chain v0, v1, v2, ... to be efficiently tested
@@ -325,7 +325,7 @@ namespace Google.Common.Geometry
                 // distances but not necessarily for large distances (approaching Pi/2).
 
                 var sinDist = Math.Abs(x.dotProd(aCrossB))/aCrossB.norm();
-                return S1Angle.radians(Math.Asin(Math.Min(1.0, sinDist)));
+                return S1Angle.FromRadians(Math.Asin(Math.Min(1.0, sinDist)));
             }
 
             // Otherwise, the closest point is either A or B. The cheapest method is
@@ -334,7 +334,7 @@ namespace Google.Common.Geometry
             // accurate for small but not large distances (approaching Pi).
 
             var linearDist2 = Math.Min(S2Point.minus(x, a).norm2(), S2Point.minus(x, b).norm2());
-            return S1Angle.radians(2*Math.Asin(Math.Min(1.0, 0.5*Math.Sqrt(linearDist2))));
+            return S1Angle.FromRadians(2*Math.Asin(Math.Min(1.0, 0.5*Math.Sqrt(linearDist2))));
         }
 
         /**
@@ -547,7 +547,7 @@ namespace Google.Common.Geometry
             public LongitudePruner(S1Interval interval, S2Point v0)
             {
                 this.interval = interval;
-                lng0 = S2LatLng.longitude(v0).radians();
+                lng0 = S2LatLng.longitude(v0).Radians;
             }
 
             /**
@@ -557,7 +557,7 @@ namespace Google.Common.Geometry
 
             public bool intersects(S2Point v1)
             {
-                var lng1 = S2LatLng.longitude(v1).radians();
+                var lng1 = S2LatLng.longitude(v1).Radians;
                 var result = interval.intersects(S1Interval.fromPointPair(lng0, lng1));
                 lng0 = lng1;
                 return result;

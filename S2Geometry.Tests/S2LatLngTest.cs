@@ -14,8 +14,8 @@ namespace S2Geometry.Tests
         public void testBasic()
         {
             var llRad = S2LatLng.fromRadians(S2.M_PI_4, S2.M_PI_2);
-            assertTrue(llRad.lat().radians() == S2.M_PI_4);
-            assertTrue(llRad.lng().radians() == S2.M_PI_2);
+            assertTrue(llRad.lat().Radians == S2.M_PI_4);
+            assertTrue(llRad.lng().Radians == S2.M_PI_2);
             assertTrue(llRad.isValid());
             var llDeg = S2LatLng.fromDegrees(45, 90);
             assertEquals(llDeg, llRad);
@@ -27,15 +27,15 @@ namespace S2Geometry.Tests
             assertTrue(!bad.isValid());
             var better = bad.normalized();
             assertTrue(better.isValid());
-            assertEquals(better.lat(), S1Angle.degrees(90));
-            assertDoubleNear(better.lng().radians(), S1Angle.degrees(-160).radians());
+            assertEquals(better.lat(), S1Angle.FromDegrees(90));
+            assertDoubleNear(better.lng().Radians, S1Angle.FromDegrees(-160).Radians);
 
             bad = S2LatLng.fromDegrees(-100, -360);
             assertTrue(!bad.isValid());
             better = bad.normalized();
             assertTrue(better.isValid());
-            assertEquals(better.lat(), S1Angle.degrees(-90));
-            assertDoubleNear(better.lng().radians(), 0);
+            assertEquals(better.lat(), S1Angle.FromDegrees(-90));
+            assertDoubleNear(better.lng().Radians, 0);
 
             assertTrue((S2LatLng.fromDegrees(10, 20).add(S2LatLng.fromDegrees(20, 30))).approxEquals(
                 S2LatLng.fromDegrees(30, 50)));
@@ -49,13 +49,13 @@ namespace S2Geometry.Tests
         {
             // Test special cases: poles, "date line"
             assertDoubleNear(
-                new S2LatLng(S2LatLng.fromDegrees(90.0, 65.0).toPoint()).lat().degrees(), 90.0);
+                new S2LatLng(S2LatLng.fromDegrees(90.0, 65.0).toPoint()).lat().Degrees, 90.0);
             assertEquals(
-                new S2LatLng(S2LatLng.fromRadians(-S2.M_PI_2, 1).toPoint()).lat().radians(), -S2.M_PI_2);
+                new S2LatLng(S2LatLng.fromRadians(-S2.M_PI_2, 1).toPoint()).lat().Radians, -S2.M_PI_2);
             assertDoubleNear(
-                Math.Abs(new S2LatLng(S2LatLng.fromDegrees(12.2, 180.0).toPoint()).lng().degrees()), 180.0);
+                Math.Abs(new S2LatLng(S2LatLng.fromDegrees(12.2, 180.0).toPoint()).lng().Degrees), 180.0);
             assertEquals(
-                Math.Abs(new S2LatLng(S2LatLng.fromRadians(0.1, -S2.M_PI).toPoint()).lng().radians()),
+                Math.Abs(new S2LatLng(S2LatLng.fromRadians(0.1, -S2.M_PI).toPoint()).lng().Radians),
                 S2.M_PI);
 
             // Test a bunch of random points.
@@ -67,23 +67,23 @@ namespace S2Geometry.Tests
 
             // Test generation from E5
             var test = S2LatLng.fromE5(123456, 98765);
-            assertDoubleNear(test.lat().degrees(), 1.23456);
-            assertDoubleNear(test.lng().degrees(), 0.98765);
+            assertDoubleNear(test.lat().Degrees, 1.23456);
+            assertDoubleNear(test.lng().Degrees, 0.98765);
         }
 
         [Test]
         public void testDistance()
         {
             assertEquals(
-                S2LatLng.fromDegrees(90, 0).getDistance(S2LatLng.fromDegrees(90, 0)).radians(), 0.0);
+                S2LatLng.fromDegrees(90, 0).getDistance(S2LatLng.fromDegrees(90, 0)).Radians, 0.0);
             assertDoubleNear(
-                S2LatLng.fromDegrees(-37, 25).getDistance(S2LatLng.fromDegrees(-66, -155)).degrees(), 77,
+                S2LatLng.fromDegrees(-37, 25).getDistance(S2LatLng.fromDegrees(-66, -155)).Degrees, 77,
                 1e-13);
             assertDoubleNear(
-                S2LatLng.fromDegrees(0, 165).getDistance(S2LatLng.fromDegrees(0, -80)).degrees(), 115,
+                S2LatLng.fromDegrees(0, 165).getDistance(S2LatLng.fromDegrees(0, -80)).Degrees, 115,
                 1e-13);
             assertDoubleNear(
-                S2LatLng.fromDegrees(47, -127).getDistance(S2LatLng.fromDegrees(-47, 53)).degrees(), 180,
+                S2LatLng.fromDegrees(47, -127).getDistance(S2LatLng.fromDegrees(-47, 53)).Degrees, 180,
                 2e-6);
         }
     }

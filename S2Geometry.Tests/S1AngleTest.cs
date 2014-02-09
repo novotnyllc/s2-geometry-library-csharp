@@ -15,24 +15,24 @@ namespace S2Geometry.Tests
         public void S1AngleBasicTest()
         {
             // Check that the conversion between Pi radians and 180 degrees is exact.
-            JavaAssert.Equal(S1Angle.radians(Math.PI).radians(), Math.PI);
-            JavaAssert.Equal(S1Angle.radians(Math.PI).degrees(), 180.0);
-            JavaAssert.Equal(S1Angle.degrees(180).radians(), Math.PI);
-            JavaAssert.Equal(S1Angle.degrees(180).degrees(), 180.0);
+            JavaAssert.Equal(S1Angle.FromRadians(Math.PI).Radians, Math.PI);
+            JavaAssert.Equal(S1Angle.FromRadians(Math.PI).Degrees, 180.0);
+            JavaAssert.Equal(S1Angle.FromDegrees(180).Radians, Math.PI);
+            JavaAssert.Equal(S1Angle.FromDegrees(180).Degrees, 180.0);
 
-            JavaAssert.Equal(S1Angle.radians(Math.PI/2).degrees(), 90.0);
+            JavaAssert.Equal(S1Angle.FromRadians(Math.PI/2).Degrees, 90.0);
 
             // Check negative angles.
-            JavaAssert.Equal(S1Angle.radians(-Math.PI/2).degrees(), -90.0);
-            JavaAssert.Equal(S1Angle.degrees(-45).radians(), -Math.PI/4);
+            JavaAssert.Equal(S1Angle.FromRadians(-Math.PI/2).Degrees, -90.0);
+            JavaAssert.Equal(S1Angle.FromDegrees(-45).Radians, -Math.PI/4);
 
             // Check that E5/E6/E7 representations work as expected.
-            JavaAssert.Equal(S1Angle.e5(2000000), S1Angle.degrees(20));
-            JavaAssert.Equal(S1Angle.e6(-60000000), S1Angle.degrees(-60));
-            JavaAssert.Equal(S1Angle.e7(750000000), S1Angle.degrees(75));
-            JavaAssert.Equal(S1Angle.degrees(12.34567).e5(), 1234567);
-            JavaAssert.Equal(S1Angle.degrees(12.345678).e6(), 12345678);
-            JavaAssert.Equal(S1Angle.degrees(-12.3456789).e7(), -123456789);
+            JavaAssert.Equal(S1Angle.E5(2000000), S1Angle.FromDegrees(20));
+            JavaAssert.Equal(S1Angle.E6(-60000000), S1Angle.FromDegrees(-60));
+            JavaAssert.Equal(S1Angle.E7(750000000), S1Angle.FromDegrees(75));
+            JavaAssert.Equal(S1Angle.FromDegrees(12.34567).E5(), 1234567);
+            JavaAssert.Equal(S1Angle.FromDegrees(12.345678).E6(), 12345678);
+            JavaAssert.Equal(S1Angle.FromDegrees(-12.3456789).E7(), -123456789);
         }
     }
 }

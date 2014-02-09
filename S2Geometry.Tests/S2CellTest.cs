@@ -236,8 +236,8 @@ namespace S2Geometry.Tests
                             }
                         }
                         Assert.True(capCount <= 2);
-                        if (childRect.latLo().radians() > -S2.M_PI_2
-                            && childRect.latHi().radians() < S2.M_PI_2)
+                        if (childRect.latLo().Radians > -S2.M_PI_2
+                            && childRect.latHi().Radians < S2.M_PI_2)
                         {
                             // Bounding rectangles may be too large at the poles because the
                             // pole itself has an arbitrary fixed longitude.

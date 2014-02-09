@@ -48,7 +48,7 @@ namespace S2Geometry.Tests
             var edgeCenter = samplePoint(cap);
             // Pick two random points in a suitably sized cap about the edge center.
             var edgeCap = S2Cap.fromAxisAngle(
-                edgeCenter, S1Angle.radians(maxLengthMeters/S2LatLng.EARTH_RADIUS_METERS/2));
+                edgeCenter, S1Angle.FromRadians(maxLengthMeters/S2LatLng.EARTH_RADIUS_METERS/2));
             var p1 = samplePoint(edgeCap);
             var p2 = samplePoint(edgeCap);
             return new S2Edge(p1, p2);
@@ -64,7 +64,7 @@ namespace S2Geometry.Tests
             double edgeLengthMetersMax, double capSpanMeters, int numEdges, List<S2Edge> edges)
         {
             var cap = S2Cap.fromAxisAngle(
-                randomPoint(), S1Angle.radians(capSpanMeters/S2LatLng.EARTH_RADIUS_METERS));
+                randomPoint(), S1Angle.FromRadians(capSpanMeters/S2LatLng.EARTH_RADIUS_METERS));
             for (var i = 0; i < numEdges; ++i)
             {
                 edges.Add(randomEdgeCrossingCap(edgeLengthMetersMax, cap));

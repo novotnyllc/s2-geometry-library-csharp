@@ -239,22 +239,22 @@ namespace S2Geometry.Tests
             {
                 for (var j = 0; j < shell.loop(i).numVertices(); j++)
                 {
-                    assertEquals(0d, shell.getDistance(shell.loop(i).vertex(j)).radians(), epsilon);
+                    assertEquals(0d, shell.getDistance(shell.loop(i).vertex(j)).Radians, epsilon);
                 }
             }
 
             // A non-vertex point on an edge should be distance 0
             assertEquals(0d, rect.getDistance(
-                S2Point.normalize(S2Point.add(rect.loop(0).vertex(0), rect.loop(0).vertex(1)))).radians(),
+                S2Point.normalize(S2Point.add(rect.loop(0).vertex(0), rect.loop(0).vertex(1)))).Radians,
                          epsilon);
 
             var origin = S2LatLng.fromDegrees(0, 0).toPoint();
             // rect contains the origin
-            assertEquals(0d, rect.getDistance(origin).radians(), epsilon);
+            assertEquals(0d, rect.getDistance(origin).Radians, epsilon);
 
             // shell does NOT contain the origin, since it has a hole. The shortest
             // distance is to (1,0) or (-1,0), and should be 1 degree
-            assertEquals(1d, shell.getDistance(origin).degrees(), epsilon);
+            assertEquals(1d, shell.getDistance(origin).Degrees, epsilon);
         }
 
         [Test]
@@ -314,7 +314,7 @@ namespace S2Geometry.Tests
             polygons.Add(unAdj);
             // The polygons are sufficiently far apart that this angle will not
             // bring them together:
-            var union = S2Polygon.destructiveUnionSloppy(polygons, S1Angle.degrees(0.1));
+            var union = S2Polygon.destructiveUnionSloppy(polygons, S1Angle.FromDegrees(0.1));
 
             assertEquals(2, union.numLoops());
         }
@@ -325,7 +325,7 @@ namespace S2Geometry.Tests
             var polygons = new List<S2Polygon>();
             polygons.Add(adj0);
             polygons.Add(adj1);
-            var union = S2Polygon.destructiveUnionSloppy(polygons, S1Angle.degrees(0.1));
+            var union = S2Polygon.destructiveUnionSloppy(polygons, S1Angle.FromDegrees(0.1));
 
             assertEquals(1, union.numLoops());
             if (union.numLoops() != 1)

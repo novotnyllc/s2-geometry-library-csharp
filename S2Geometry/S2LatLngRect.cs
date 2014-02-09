@@ -24,8 +24,8 @@ namespace Google.Common.Geometry
 
         public S2LatLngRect(S2LatLng lo, S2LatLng hi)
         {
-            lat = new R1Interval(lo.lat().radians(), hi.lat().radians());
-            lng = new S1Interval(lo.lng().radians(), hi.lng().radians());
+            lat = new R1Interval(lo.lat().Radians, hi.lat().Radians);
+            lng = new S1Interval(lo.lng().Radians, hi.lng().Radians);
             // assert (isValid());
         }
 
@@ -77,7 +77,7 @@ namespace Google.Common.Geometry
                 poleAngle = S2.M_PI_2 - lat.lo();
             }
             var poleCap = S2Cap.fromAxisAngle(new S2Point(0, 0, poleZ), S1Angle
-                                                                            .radians(poleAngle));
+                                                                            .FromRadians(poleAngle));
 
             // For bounding rectangles that span 180 degrees or less in longitude, the
             // maximum cap size is achieved at one of the rectangle vertices. For
@@ -89,7 +89,7 @@ namespace Google.Common.Geometry
                 if (lngSpan < 2*S2.M_PI)
                 {
                     var midCap = S2Cap.fromAxisAngle(getCenter().toPoint(), S1Angle
-                                                                                .radians(0));
+                                                                                .FromRadians(0));
                     for (var k = 0; k < 4; ++k)
                     {
                         midCap = midCap.addPoint(getVertex(k).toPoint());
@@ -215,9 +215,8 @@ namespace Google.Common.Geometry
         public static S2LatLngRect fromPointPair(S2LatLng p1, S2LatLng p2)
         {
             // assert (p1.isValid() && p2.isValid());
-            return new S2LatLngRect(R1Interval.fromPointPair(p1.lat().radians(), p2
-                                                                                     .lat().radians()), S1Interval.fromPointPair(p1.lng().radians(), p2.lng()
-                                                                                                                                                       .radians()));
+            return new S2LatLngRect(R1Interval.fromPointPair(p1.lat().Radians, p2
+                                                                                   .lat().Radians), S1Interval.fromPointPair(p1.lng().Radians, p2.lng().Radians));
         }
 
         /**
@@ -275,22 +274,22 @@ namespace Google.Common.Geometry
         // Accessor methods.
         public S1Angle latLo()
         {
-            return S1Angle.radians(lat.lo());
+            return S1Angle.FromRadians(lat.lo());
         }
 
         public S1Angle latHi()
         {
-            return S1Angle.radians(lat.hi());
+            return S1Angle.FromRadians(lat.hi());
         }
 
         public S1Angle lngLo()
         {
-            return S1Angle.radians(lng.lo());
+            return S1Angle.FromRadians(lng.lo());
         }
 
         public S1Angle lngHi()
         {
-            return S1Angle.radians(lng.hi());
+            return S1Angle.FromRadians(lng.hi());
         }
 
         public S2LatLng lo()
@@ -373,15 +372,15 @@ namespace Google.Common.Geometry
             Preconditions.checkState(!a.isEmpty());
             Preconditions.checkArgument(p.isValid());
 
-            if (a.Lng.contains(p.lng().radians()))
+            if (a.Lng.contains(p.lng().Radians))
             {
-                return S1Angle.radians(Math.Max(0.0, Math.Max(p.lat().radians() - a.Lat.hi(),
-                                                              a.Lat.lo() - p.lat().radians())));
+                return S1Angle.FromRadians(Math.Max(0.0, Math.Max(p.lat().Radians - a.Lat.hi(),
+                                                              a.Lat.lo() - p.lat().Radians)));
             }
 
             var interval = new S1Interval(a.Lng.hi(), a.Lng.complement().getCenter());
             var aLng = a.Lng.lo();
-            if (interval.contains(p.lng().radians()))
+            if (interval.contains(p.lng().Radians))
             {
                 aLng = a.Lng.hi();
             }
@@ -411,7 +410,7 @@ namespace Google.Common.Geometry
             {
                 if (a.Lat.intersects(b.Lat))
                 {
-                    return S1Angle.radians(0); // Intersection between a and b.
+                    return S1Angle.FromRadians(0); // Intersection between a and b.
                 }
 
                 // We found an overlap in the longitude interval, but not in the latitude
@@ -429,7 +428,7 @@ namespace Google.Common.Geometry
                     lo = a.latHi();
                     hi = b.latLo();
                 }
-                return S1Angle.radians(hi.radians() - lo.radians());
+                return S1Angle.FromRadians(hi.Radians - lo.Radians);
             }
 
             // The longitude intervals don't overlap. In this case, the closest points
@@ -457,15 +456,15 @@ namespace Google.Common.Geometry
             var aLo = new S2LatLng(a.latLo(), aLng).toPoint();
             var aHi = new S2LatLng(a.latHi(), aLng).toPoint();
             var aLoCrossHi =
-                S2LatLng.fromRadians(0, aLng.radians() - S2.M_PI_2).normalized().toPoint();
+                S2LatLng.fromRadians(0, aLng.Radians - S2.M_PI_2).normalized().toPoint();
             var bLo = new S2LatLng(b.latLo(), bLng).toPoint();
             var bHi = new S2LatLng(b.latHi(), bLng).toPoint();
             var bLoCrossHi =
-                S2LatLng.fromRadians(0, bLng.radians() - S2.M_PI_2).normalized().toPoint();
+                S2LatLng.fromRadians(0, bLng.Radians - S2.M_PI_2).normalized().toPoint();
 
-            return S1Angle.min(S2EdgeUtil.getDistance(aLo, bLo, bHi, bLoCrossHi),
-                               S1Angle.min(S2EdgeUtil.getDistance(aHi, bLo, bHi, bLoCrossHi),
-                                           S1Angle.min(S2EdgeUtil.getDistance(bLo, aLo, aHi, aLoCrossHi),
+            return S1Angle.Min(S2EdgeUtil.getDistance(aLo, bLo, bHi, bLoCrossHi),
+                               S1Angle.Min(S2EdgeUtil.getDistance(aHi, bLo, bHi, bLoCrossHi),
+                                           S1Angle.Min(S2EdgeUtil.getDistance(bLo, aLo, aHi, aLoCrossHi),
                                                        S2EdgeUtil.getDistance(bHi, aLo, aHi, aLoCrossHi))));
         }
 
@@ -487,8 +486,7 @@ namespace Google.Common.Geometry
         public bool contains(S2LatLng ll)
         {
             // assert (ll.isValid());
-            return (lat.contains(ll.lat().radians()) && lng.contains(ll.lng()
-                                                                       .radians()));
+            return (lat.contains(ll.lat().Radians) && lng.contains(ll.lng().Radians));
         }
 
         /**
@@ -510,8 +508,8 @@ namespace Google.Common.Geometry
         public bool interiorContains(S2LatLng ll)
         {
             // assert (ll.isValid());
-            return (lat.interiorContains(ll.lat().radians()) && lng
-                                                                    .interiorContains(ll.lng().radians()));
+            return (lat.interiorContains(ll.lat().Radians) && lng
+                                                                    .interiorContains(ll.lng().Radians));
         }
 
         /**
@@ -593,7 +591,7 @@ namespace Google.Common.Geometry
             for (var i = 0; i < 4; ++i)
             {
                 var edgeLng = S1Interval.fromPointPair(
-                    cellLl[i].lng().radians(), cellLl[(i + 1) & 3].lng().radians());
+                    cellLl[i].lng().Radians, cellLl[(i + 1) & 3].lng().Radians);
                 if (!lng.intersects(edgeLng))
                 {
                     continue;
@@ -648,8 +646,8 @@ namespace Google.Common.Geometry
         public S2LatLngRect addPoint(S2LatLng ll)
         {
             // assert (ll.isValid());
-            var newLat = lat.addPoint(ll.lat().radians());
-            var newLng = lng.addPoint(ll.lng().radians());
+            var newLat = lat.addPoint(ll.lat().Radians);
+            var newLng = lng.addPoint(ll.lng().Radians);
             return new S2LatLngRect(newLat, newLng);
         }
 
@@ -672,8 +670,8 @@ namespace Google.Common.Geometry
             {
                 return this;
             }
-            return new S2LatLngRect(lat.expanded(margin.lat().radians()).intersection(
-                fullLat()), lng.expanded(margin.lng().radians()));
+            return new S2LatLngRect(lat.expanded(margin.lat().Radians).intersection(
+                fullLat()), lng.expanded(margin.lng().Radians));
         }
 
         /**
@@ -743,7 +741,7 @@ namespace Google.Common.Geometry
 
             // This is the size difference of the two spherical caps, multiplied by
             // the longitude ratio.
-            return Lng.getLength()*Math.Abs(Math.Sin(latHi().radians()) - Math.Sin(latLo().radians()));
+            return Lng.getLength()*Math.Abs(Math.Sin(latHi().Radians) - Math.Sin(latLo().Radians));
         }
 
 

@@ -160,7 +160,7 @@ namespace Google.Common.Geometry
 
         public bool assembleLoops(List<S2Loop> loops, List<S2Edge> unusedEdges)
         {
-            if (_options.getMergeDistance().radians() > 0)
+            if (_options.getMergeDistance().Radians > 0)
             {
                 mergeVertices();
             }
@@ -497,7 +497,7 @@ namespace Google.Common.Geometry
             // creating new vertex pairs that need to be merged. (We guarantee that all
             // vertex pairs are separated by at least merge_distance in the output.)
 
-            var index = new PointIndex(_options.getMergeDistance().radians());
+            var index = new PointIndex(_options.getMergeDistance().Radians);
 
             foreach (var edge in edges)
             {
@@ -634,7 +634,7 @@ namespace Google.Common.Geometry
                 this.undirectedEdges = undirectedEdges;
                 this.xorEdges = xorEdges;
                 validate = false;
-                mergeDistance = S1Angle.radians(0);
+                mergeDistance = S1Angle.FromRadians(0);
             }
 
             /**

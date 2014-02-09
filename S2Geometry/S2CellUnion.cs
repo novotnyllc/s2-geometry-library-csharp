@@ -562,8 +562,8 @@ namespace Google.Common.Geometry
             }
             // Find the maximum level such that all cells are at least "min_radius"
             // wide.
-            var radiusLevel = S2Projections.MIN_WIDTH.getMaxLevel(minRadius.radians());
-            if (radiusLevel == 0 && minRadius.radians() > S2Projections.MIN_WIDTH.getValue(0))
+            var radiusLevel = S2Projections.MIN_WIDTH.getMaxLevel(minRadius.Radians);
+            if (radiusLevel == 0 && minRadius.Radians > S2Projections.MIN_WIDTH.getValue(0))
             {
                 // The requested expansion is greater than the width of a face cell.
                 // The easiest way to handle this is to expand twice.

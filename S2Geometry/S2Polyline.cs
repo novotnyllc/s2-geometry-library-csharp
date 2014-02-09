@@ -231,7 +231,7 @@ namespace Google.Common.Geometry
             {
                 lengthSum += vertex(i - 1).angle(vertex(i));
             }
-            return S1Angle.radians(lengthSum);
+            return S1Angle.FromRadians(lengthSum);
         }
 
         /**
@@ -294,14 +294,14 @@ namespace Google.Common.Geometry
             }
 
             // Initial value larger than any possible distance on the unit sphere.
-            var minDistance = S1Angle.radians(10);
+            var minDistance = S1Angle.FromRadians(10);
             var minIndex = -1;
 
             // Find the line segment in the polyline that is closest to the point given.
             for (var i = 0; i < numVertices() - 1; ++i)
             {
                 var distanceToSegment = S2EdgeUtil.getDistance(point, vertex(i), vertex(i + 1));
-                if (distanceToSegment.lessThan(minDistance))
+                if (distanceToSegment < minDistance)
                 {
                     minDistance = distanceToSegment;
                     minIndex = i;

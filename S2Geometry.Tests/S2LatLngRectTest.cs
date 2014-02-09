@@ -61,7 +61,7 @@ namespace S2Geometry.Tests
         {
             if (a.intersects(b))
             {
-                return S1Angle.radians(0);
+                return S1Angle.FromRadians(0);
             }
 
             // Compare every point in 'a' against every latitude edge and longitude edge
@@ -86,7 +86,7 @@ namespace S2Geometry.Tests
             S2Point[][] lng_edge_b =
             {new[] {pntB[0].toPoint(), pntB[3].toPoint()}, new[] {pntB[1].toPoint(), pntB[2].toPoint()}};
 
-            var minDistance = S1Angle.degrees(180.0);
+            var minDistance = S1Angle.FromDegrees(180.0);
             for (var i = 0; i < 4; ++i)
             {
                 // For each point in a and b.
@@ -103,8 +103,8 @@ namespace S2Geometry.Tests
                     var bToLng =
                         S2EdgeUtil.getDistance(currentB.toPoint(), lng_edge_a[j][0], lng_edge_a[j][1]);
 
-                    minDistance = S1Angle.min(
-                        minDistance, S1Angle.min(aToLat, S1Angle.min(bToLat, S1Angle.min(aToLng, bToLng))));
+                    minDistance = S1Angle.Min(
+                        minDistance, S1Angle.Min(aToLat, S1Angle.Min(bToLat, S1Angle.Min(aToLng, bToLng))));
                 }
             }
             return minDistance;
@@ -114,7 +114,7 @@ namespace S2Geometry.Tests
         {
             if (a.contains(b))
             {
-                return S1Angle.radians(0);
+                return S1Angle.FromRadians(0);
             }
 
             var bToLoLat = getDistance(b, a.latLo(), a.Lng);
@@ -125,7 +125,7 @@ namespace S2Geometry.Tests
             var bToHiLng =
                 S2EdgeUtil.getDistance(b.toPoint(), new S2LatLng(a.latLo(), a.lngHi()).toPoint(),
                                        new S2LatLng(a.latHi(), a.lngHi()).toPoint());
-            return S1Angle.min(bToLoLat, S1Angle.min(bToHiLat, S1Angle.min(bToLoLng, bToHiLng)));
+            return S1Angle.Min(bToLoLat, S1Angle.Min(bToHiLat, S1Angle.Min(bToLoLng, bToHiLng)));
         }
 
         /**
@@ -139,12 +139,12 @@ namespace S2Geometry.Tests
             assertTrue(interval.isValid());
 
             // Is X inside the longitude interval?
-            if (interval.contains(x.lng().radians()))
-                return S1Angle.radians(Math.Abs(x.lat().radians() - lat.radians()));
+            if (interval.contains(x.lng().Radians))
+                return S1Angle.FromRadians(Math.Abs(x.lat().Radians - lat.Radians));
 
             // Return the distance to the closer endpoint.
-            return S1Angle.min(x.getDistance(new S2LatLng(lat, S1Angle.radians(interval.lo()))),
-                               x.getDistance(new S2LatLng(lat, S1Angle.radians(interval.hi()))));
+            return S1Angle.Min(x.getDistance(new S2LatLng(lat, S1Angle.FromRadians(interval.lo()))),
+                               x.getDistance(new S2LatLng(lat, S1Angle.FromRadians(interval.hi()))));
         }
 
         private static S2LatLngRect getEdgeBound(double x1,
@@ -185,7 +185,7 @@ namespace S2Geometry.Tests
         {
             var distance1 = bruteForceRectPointDistance(a, p.normalized());
             var distance2 = a.getDistance(p.normalized());
-            assertEquals(distance1.radians(), distance2.radians(), 1e-10);
+            assertEquals(distance1.Radians, distance2.Radians, 1e-10);
         }
 
         /**
@@ -198,7 +198,7 @@ namespace S2Geometry.Tests
         {
             var distance1 = bruteForceDistance(a, b);
             var distance2 = a.getDistance(b);
-            assertEquals(distance1.radians(), distance2.radians(), 1e-10);
+            assertEquals(distance1.Radians, distance2.Radians, 1e-10);
         }
 
         [Test]
@@ -226,10 +226,10 @@ namespace S2Geometry.Tests
 
             // assertTrue various constructors and accessor methods.
             var d1 = rectFromDegrees(-90, 0, -45, 180);
-            assertDoubleNear(d1.latLo().degrees(), -90);
-            assertDoubleNear(d1.latHi().degrees(), -45);
-            assertDoubleNear(d1.lngLo().degrees(), 0);
-            assertDoubleNear(d1.lngHi().degrees(), 180);
+            assertDoubleNear(d1.latLo().Degrees, -90);
+            assertDoubleNear(d1.latHi().Degrees, -45);
+            assertDoubleNear(d1.lngLo().Degrees, 0);
+            assertDoubleNear(d1.lngHi().Degrees, 180);
             assertTrue(d1.Lat.Equals(new R1Interval(-S2.M_PI_2, -S2.M_PI_4)));
             assertTrue(d1.Lng.Equals(new S1Interval(0, S2.M_PI)));
 
@@ -339,13 +339,13 @@ namespace S2Geometry.Tests
             // ConvolveWithCap()
             var llr1 =
                 new S2LatLngRect(S2LatLng.fromDegrees(0, 170), S2LatLng.fromDegrees(0, -170))
-                    .convolveWithCap(S1Angle.degrees(15));
+                    .convolveWithCap(S1Angle.FromDegrees(15));
             var llr2 =
                 new S2LatLngRect(S2LatLng.fromDegrees(-15, 155), S2LatLng.fromDegrees(15, -155));
             assertTrue(llr1.approxEquals(llr2));
 
             llr1 = new S2LatLngRect(S2LatLng.fromDegrees(60, 150), S2LatLng.fromDegrees(80, 10))
-                .convolveWithCap(S1Angle.degrees(15));
+                .convolveWithCap(S1Angle.FromDegrees(15));
             llr2 = new S2LatLngRect(S2LatLng.fromDegrees(45, -180), S2LatLng.fromDegrees(90, 180));
             assertTrue(llr1.approxEquals(llr2));
 
@@ -354,12 +354,12 @@ namespace S2Geometry.Tests
                            .getCapBound().approxEquals(S2Cap.fromAxisHeight(new S2Point(1, 0, 0), 0.5)));
             // GetCapBound(), bounding cap at north pole is smaller:
             assertTrue(new S2LatLngRect(S2LatLng.fromDegrees(88, -80), S2LatLng.fromDegrees(89, 80))
-                           .getCapBound().approxEquals(S2Cap.fromAxisAngle(new S2Point(0, 0, 1), S1Angle.degrees(2))));
+                           .getCapBound().approxEquals(S2Cap.fromAxisAngle(new S2Point(0, 0, 1), S1Angle.FromDegrees(2))));
             // GetCapBound(), longitude span > 180 degrees:
             assertTrue(
                 new S2LatLngRect(S2LatLng.fromDegrees(-30, -150), S2LatLng.fromDegrees(-10, 50))
                     .getCapBound()
-                    .approxEquals(S2Cap.fromAxisAngle(new S2Point(0, 0, -1), S1Angle.degrees(80))));
+                    .approxEquals(S2Cap.fromAxisAngle(new S2Point(0, 0, -1), S1Angle.FromDegrees(80))));
 
             // Contains(S2Cell), MayIntersect(S2Cell), Intersects(S2Cell)
 
@@ -395,8 +395,8 @@ namespace S2Geometry.Tests
                 var bound0tr = cell0tr.getRectBound();
                 var v0 = new S2LatLng(cell0tr.getVertexRaw(0));
                 testCellOps(
-                    rectFromDegrees(v0.lat().degrees() - 1e-8, v0.lng().degrees() - 1e-8,
-                                    v0.lat().degrees() - 2e-10, v0.lng().degrees() + 1e-10), cell0tr, 1);
+                    rectFromDegrees(v0.lat().Degrees - 1e-8, v0.lng().Degrees - 1e-8,
+                                    v0.lat().Degrees - 2e-10, v0.lng().Degrees + 1e-10), cell0tr, 1);
             }
 
             // Rectangles that intersect a face but where no vertex of one region
@@ -408,8 +408,8 @@ namespace S2Geometry.Tests
                 var cell202 = S2Cell.fromFacePosLevel(2, (byte)0, 2);
                 var bound202 = cell202.getRectBound();
                 testCellOps(
-                    rectFromDegrees(bound202.lo().lat().degrees() + 3, bound202.lo().lng().degrees() + 3,
-                                    bound202.hi().lat().degrees() - 3, bound202.hi().lng().degrees() - 3), cell202, 2);
+                    rectFromDegrees(bound202.lo().lat().Degrees + 3, bound202.lo().lng().Degrees + 3,
+                                    bound202.hi().lat().Degrees - 3, bound202.hi().lng().Degrees - 3), cell202, 2);
             }
         }
 
@@ -444,7 +444,7 @@ namespace S2Geometry.Tests
             // Check pairs of rectangles that overlap: (should all return 0):
             var a = rectFromDegrees(0, 0, 2, 2);
             var b = pointRectFromDegrees(0, 0);
-            var zero = S1Angle.radians(0);
+            var zero = S1Angle.FromRadians(0);
             assertEquals(zero, a.getDistance(a));
             assertEquals(zero, a.getDistance(b));
             assertEquals(zero, b.getDistance(b));

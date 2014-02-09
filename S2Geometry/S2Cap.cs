@@ -70,7 +70,7 @@ namespace Google.Common.Geometry
 
             // Convert the axis to a (lat,lng) pair, and compute the cap angle.
             var axisLatLng = new S2LatLng(_axis);
-            var capAngle = angle().radians();
+            var capAngle = angle().Radians;
 
             var allLongitudes = false;
             double[] lat = new double[2], lng = new double[2];
@@ -78,14 +78,14 @@ namespace Google.Common.Geometry
             lng[1] = S2.M_PI;
 
             // Check whether cap includes the south pole.
-            lat[0] = axisLatLng.lat().radians() - capAngle;
+            lat[0] = axisLatLng.lat().Radians - capAngle;
             if (lat[0] <= -S2.M_PI_2)
             {
                 lat[0] = -S2.M_PI_2;
                 allLongitudes = true;
             }
             // Check whether cap includes the north pole.
-            lat[1] = axisLatLng.lat().radians() + capAngle;
+            lat[1] = axisLatLng.lat().Radians + capAngle;
             if (lat[1] >= S2.M_PI_2)
             {
                 lat[1] = S2.M_PI_2;
@@ -105,13 +105,13 @@ namespace Google.Common.Geometry
                 // The formula for sin(a) follows from the relationship h = 1 - cos(a).
 
                 var sinA = Math.Sqrt(_height*(2 - _height));
-                var sinC = Math.Cos(axisLatLng.lat().radians());
+                var sinC = Math.Cos(axisLatLng.lat().Radians);
                 if (sinA <= sinC)
                 {
                     var angleA = Math.Asin(sinA/sinC);
-                    lng[0] = Math.IEEERemainder(axisLatLng.lng().radians() - angleA,
+                    lng[0] = Math.IEEERemainder(axisLatLng.lng().Radians - angleA,
                                                 2*S2.M_PI);
-                    lng[1] = Math.IEEERemainder(axisLatLng.lng().radians() + angleA,
+                    lng[1] = Math.IEEERemainder(axisLatLng.lng().Radians + angleA,
                                                 2*S2.M_PI);
                 }
             }
@@ -214,7 +214,7 @@ namespace Google.Common.Geometry
             // Computing it as 2*(sin(angle/2)**2) gives much better precision.
 
             // assert (S2.isUnitLength(axis));
-            var d = Math.Sin(0.5*angle.radians());
+            var d = Math.Sin(0.5*angle.Radians);
             return new S2Cap(axis, 2*d*d);
         }
 
@@ -272,9 +272,9 @@ namespace Google.Common.Geometry
             // follows from the relationship h = 1 - cos(theta) = 2 sin^2(theta/2).
             if (isEmpty())
             {
-                return S1Angle.radians(-1);
+                return S1Angle.FromRadians(-1);
             }
-            return S1Angle.radians(2*Math.Asin(Math.Sqrt(0.5*_height)));
+            return S1Angle.FromRadians(2*Math.Asin(Math.Sqrt(0.5*_height)));
         }
 
         /**
@@ -327,8 +327,8 @@ namespace Google.Common.Geometry
             {
                 return true;
             }
-            return angle().radians() >= _axis.angle(other._axis)
-                   + other.angle().radians();
+            return angle().Radians >= _axis.angle(other._axis)
+                   + other.angle().Radians;
         }
 
         /**
@@ -394,7 +394,7 @@ namespace Google.Common.Geometry
                 // See comments for FromAxisAngle() and AddPoint(). This could be
                 // optimized by doing the calculation in terms of cap heights rather
                 // than cap opening angles.
-                var angle = _axis.angle(other._axis) + other.angle().radians();
+                var angle = _axis.angle(other._axis) + other.angle().Radians;
                 if (angle >= S2.M_PI)
                 {
                     return new S2Cap(_axis, 2); //Full cap

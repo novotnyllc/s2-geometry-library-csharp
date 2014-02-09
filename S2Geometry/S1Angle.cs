@@ -6,30 +6,29 @@ using System.Threading.Tasks;
 
 namespace Google.Common.Geometry
 {
-    public sealed class S1Angle : IEquatable<S1Angle>, IComparable<S1Angle>
+    public struct S1Angle : IEquatable<S1Angle>, IComparable<S1Angle>
     {
         private readonly double _radians;
-
-        public S1Angle()
-        {
-            _radians = 0;
-        }
 
         private S1Angle(double radians)
         {
             _radians = radians;
         }
 
-        /**
-   * Return the angle between two points, which is also equal to the distance
-   * between these points on the unit sphere. The points do not need to be
-   * normalized.
-   */
-
+     
+        /// <summary>
+        /// Return the angle between two points, which is also equal to the distance
+        /// between these points on the unit sphere. The points do not need to be
+         /// normalized.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+   
         public S1Angle(S2Point x, S2Point y)
         {
             _radians = x.angle(y);
         }
+
 
         public int CompareTo(S1Angle other)
         {
@@ -38,15 +37,11 @@ namespace Google.Common.Geometry
 
         public bool Equals(S1Angle other)
         {
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
             return _radians.Equals(other._radians);
         }
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != GetType()) return false;
             return Equals((S1Angle)obj);
         }
@@ -66,91 +61,90 @@ namespace Google.Common.Geometry
             return !Equals(left, right);
         }
 
-        public double radians()
+        public double Radians
         {
-            return _radians;
+            get { return _radians; }
         }
 
-        public double degrees()
+        public double Degrees
         {
-            return _radians*(180/Math.PI);
+            get { return _radians*(180/Math.PI); }
         }
 
-        public long e5()
+        public long E5()
         {
-            return (long)Math.Round(degrees()*1e5);
+            return (long)Math.Round(Degrees*1e5);
         }
 
-        public long e6()
+        public long E6()
         {
-            return (long)Math.Round(degrees()*1e6);
+            return (long)Math.Round(Degrees*1e6);
         }
 
-        public long e7()
+        public long E7()
         {
-            return (long)Math.Round(degrees()*1e7);
+            return (long)Math.Round(Degrees*1e7);
         }
 
         /**
    * The default constructor yields a zero angle.
    */
 
-
-        public bool lessThan(S1Angle that)
+        public static bool operator <(S1Angle x, S1Angle y)
         {
-            return radians() < that.radians();
+            return x.Radians < y.Radians;
         }
 
-        public bool greaterThan(S1Angle that)
+        public static bool operator >(S1Angle x, S1Angle y)
         {
-            return radians() > that.radians();
+            return x.Radians > y.Radians;
         }
 
-        public bool lessOrEquals(S1Angle that)
+        public static bool operator <=(S1Angle x, S1Angle y)
         {
-            return radians() <= that.radians();
+            return x.Radians <= y.Radians;
         }
 
-        public bool greaterOrEquals(S1Angle that)
+        public static bool operator >=(S1Angle x, S1Angle y)
         {
-            return radians() >= that.radians();
+            return x.Radians >= y.Radians;
         }
 
-        public static S1Angle max(S1Angle left, S1Angle right)
+        public static S1Angle Max(S1Angle left, S1Angle right)
         {
-            return right.greaterThan(left) ? right : left;
+            return right > left ? right : left;
         }
 
-        public static S1Angle min(S1Angle left, S1Angle right)
+        public static S1Angle Min(S1Angle left, S1Angle right)
         {
-            return right.greaterThan(left) ? left : right;
+            return right > left ? left : right;
         }
 
-        public static S1Angle radians(double radians)
+        public static S1Angle FromRadians(double radians)
         {
             return new S1Angle(radians);
         }
 
-        public static S1Angle degrees(double degrees)
+        public static S1Angle FromDegrees(double degrees)
         {
             return new S1Angle(degrees*(Math.PI/180));
         }
 
-        public static S1Angle e5(long e5)
+        public static S1Angle E5(long e5)
         {
-            return degrees(e5*1e-5);
+            return FromDegrees(e5*1e-5);
         }
 
-        public static S1Angle e6(long e6)
+        public static S1Angle E6(long e6)
         {
             // Multiplying by 1e-6 isn't quite as accurate as dividing by 1e6,
             // but it's about 10 times faster and more than accurate enough.
-            return degrees(e6*1e-6);
+            return FromDegrees(e6*1e-6);
         }
 
-        public static S1Angle e7(long e7)
+        public static S1Angle E7(long e7)
         {
-            return degrees(e7*1e-7);
+            return FromDegrees(e7*1e-7);
         }
 
         /**
@@ -161,7 +155,7 @@ namespace Google.Common.Geometry
 
         public override string ToString()
         {
-            return degrees() + "d";
+            return Degrees + "d";
         }
     }
 }
