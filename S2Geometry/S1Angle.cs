@@ -15,18 +15,27 @@ namespace Google.Common.Geometry
             _radians = radians;
         }
 
-     
+
         /// <summary>
-        /// Return the angle between two points, which is also equal to the distance
-        /// between these points on the unit sphere. The points do not need to be
-         /// normalized.
+        ///     Return the angle between two points, which is also equal to the distance
+        ///     between these points on the unit sphere. The points do not need to be
+        ///     normalized.
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
-   
         public S1Angle(S2Point x, S2Point y)
         {
             _radians = x.angle(y);
+        }
+
+        public double Radians
+        {
+            get { return _radians; }
+        }
+
+        public double Degrees
+        {
+            get { return _radians*(180/Math.PI); }
         }
 
 
@@ -59,16 +68,6 @@ namespace Google.Common.Geometry
         public static bool operator !=(S1Angle left, S1Angle right)
         {
             return !Equals(left, right);
-        }
-
-        public double Radians
-        {
-            get { return _radians; }
-        }
-
-        public double Degrees
-        {
-            get { return _radians*(180/Math.PI); }
         }
 
         public long E5()
