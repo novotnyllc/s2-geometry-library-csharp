@@ -203,9 +203,9 @@ namespace S2Geometry.Tests
                 var face = S2Projections.xyzToFace(p);
                 var uv = S2Projections.validFaceXyzToUv(face, p);
                 assertDoubleNear(Math.IEEERemainder(
-                    S2Projections.uvToST(uv.x()), 1.0/(1 << MAX_WALK_LEVEL)), 0);
+                    S2Projections.uvToST(uv.X), 1.0/(1 << MAX_WALK_LEVEL)), 0);
                 assertDoubleNear(Math.IEEERemainder(
-                    S2Projections.uvToST(uv.y()), 1.0/(1 << MAX_WALK_LEVEL)), 0);
+                    S2Projections.uvToST(uv.Y), 1.0/(1 << MAX_WALK_LEVEL)), 0);
             }
         }
 

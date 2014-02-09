@@ -220,8 +220,8 @@ namespace Google.Common.Geometry
         {
             var face = S2Projections.xyzToFace(p);
             var uv = S2Projections.validFaceXyzToUv(face, p);
-            var i = stToIJ(S2Projections.uvToST(uv.x()));
-            var j = stToIJ(S2Projections.uvToST(uv.y()));
+            var i = stToIJ(S2Projections.uvToST(uv.X));
+            var j = stToIJ(S2Projections.uvToST(uv.Y));
             return fromFaceIJ(face, i, j);
         }
 
@@ -1079,7 +1079,7 @@ namespace Google.Common.Geometry
             var p = S2Projections.faceUvToXyz(face, s, t);
             face = S2Projections.xyzToFace(p);
             var st = S2Projections.validFaceXyzToUv(face, p);
-            return fromFaceIJ(face, stToIJ(st.x()), stToIJ(st.y()));
+            return fromFaceIJ(face, stToIJ(st.X), stToIJ(st.Y));
         }
 
         /**

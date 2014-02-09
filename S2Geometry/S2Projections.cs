@@ -345,7 +345,7 @@ namespace Google.Common.Geometry
             return face;
         }
 
-        public static R2Vector faceXyzToUv(int face, S2Point p)
+        public static R2Vector? faceXyzToUv(int face, S2Point p)
         {
             if (face < 3)
             {

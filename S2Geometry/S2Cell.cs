@@ -308,7 +308,7 @@ namespace Google.Common.Geometry
                 {
                     // The dimension 0 index (i/u) is in bit 1 of ij.
                     var m = 1 - ((ij >> (1 - d)) & 1);
-                    child.uv[d][m] = uvMid.get(d);
+                    child.uv[d][m] = uvMid[d];
                     child.uv[d][1 - m] = uv[d][1 - m];
                 }
             }
@@ -448,8 +448,8 @@ namespace Google.Common.Geometry
             {
                 return false;
             }
-            return (uvPoint.x() >= uv[0][0] && uvPoint.x() <= uv[0][1]
-                    && uvPoint.y() >= uv[1][0] && uvPoint.y() <= uv[1][1]);
+            return (uvPoint.Value.X >= uv[0][0] && uvPoint.Value.X <= uv[0][1]
+                    && uvPoint.Value.Y >= uv[1][0] && uvPoint.Value.Y <= uv[1][1]);
         }
 
         // The point 'p' does not need to be normalized.

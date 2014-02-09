@@ -646,18 +646,18 @@ namespace Google.Common.Geometry
         public static int planarCCW(R2Vector a, R2Vector b)
         {
             // Return +1 if the edge AB is CCW around the origin, etc.
-            double sab = (a.dotProd(b) > 0) ? -1 : 1;
-            var vab = R2Vector.add(a, R2Vector.mul(b, sab));
-            var da = a.norm2();
-            var db = b.norm2();
+            double sab = (a.DotProd(b) > 0) ? -1 : 1;
+            var vab = a + (b*sab);
+            var da = a.Norm2();
+            var db = b.Norm2();
             double sign;
-            if (da < db || (da == db && a.lessThan(b)))
+            if (da < db || (da == db && a < b ))
             {
-                sign = a.crossProd(vab)*sab;
+                sign = a.CrossProd(vab)*sab;
             }
             else
             {
-                sign = vab.crossProd(b);
+                sign = vab.CrossProd(b);
             }
             if (sign > 0)
             {
