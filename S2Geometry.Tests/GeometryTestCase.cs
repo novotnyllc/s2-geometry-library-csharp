@@ -177,7 +177,7 @@ namespace S2Geometry.Tests
             // point along the circle at that height.
 
             var h = rand.NextDouble()*cap.height();
-            var theta = 2*S2.M_PI*rand.NextDouble();
+            var theta = 2*S2.Pi*rand.NextDouble();
             var r = Math.Sqrt(h*(2 - h)); // Radius of circle.
 
             // (cos(theta)*r*x + sin(theta)*r*y + (1-h)*z).Normalize()

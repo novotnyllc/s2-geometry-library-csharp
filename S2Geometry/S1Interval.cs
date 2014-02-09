@@ -9,9 +9,9 @@ namespace Google.Common.Geometry
 {
     public struct S1Interval : IEquatable<S1Interval>
     {
-        public static readonly S1Interval Empty = new S1Interval(S2.M_PI, -S2.M_PI, true);
+        public static readonly S1Interval Empty = new S1Interval(S2.Pi, -S2.Pi, true);
 
-        public static readonly S1Interval Full = new S1Interval(-S2.M_PI, S2.M_PI, true);
+        public static readonly S1Interval Full = new S1Interval(-S2.Pi, S2.Pi, true);
         private readonly double _hi;
         private readonly double _lo;
 
@@ -30,13 +30,13 @@ namespace Google.Common.Geometry
             var newHi = hi;
             if (!@checked)
             {
-                if (lo == -S2.M_PI && hi != S2.M_PI)
+                if (lo == -S2.Pi && hi != S2.Pi)
                 {
-                    newLo = S2.M_PI;
+                    newLo = S2.Pi;
                 }
-                if (hi == -S2.M_PI && lo != S2.M_PI)
+                if (hi == -S2.Pi && lo != S2.Pi)
                 {
-                    newHi = S2.M_PI;
+                    newHi = S2.Pi;
                 }
             }
             _lo = newLo;
@@ -62,8 +62,8 @@ namespace Google.Common.Geometry
         {
             get
             {
-                return (Math.Abs(Lo) <= S2.M_PI && Math.Abs(Hi) <= S2.M_PI
-                        && !(Lo == -S2.M_PI && Hi != S2.M_PI) && !(Hi == -S2.M_PI && Lo != S2.M_PI));
+                return (Math.Abs(Lo) <= S2.Pi && Math.Abs(Hi) <= S2.Pi
+                        && !(Lo == -S2.Pi && Hi != S2.Pi) && !(Hi == -S2.Pi && Lo != S2.Pi));
             }
         }
 
@@ -71,7 +71,7 @@ namespace Google.Common.Geometry
 
         public bool IsFull
         {
-            get { return Hi - Lo == 2*S2.M_PI; }
+            get { return Hi - Lo == 2*S2.Pi; }
         }
 
 
@@ -79,7 +79,7 @@ namespace Google.Common.Geometry
 
         public bool IsEmpty
         {
-            get { return Lo - Hi == 2*S2.M_PI; }
+            get { return Lo - Hi == 2*S2.Pi; }
         }
 
 
@@ -105,7 +105,7 @@ namespace Google.Common.Geometry
                     return center;
                 }
                 // Return the center in the range (-Pi, Pi].
-                return (center <= 0) ? (center + S2.M_PI) : (center - S2.M_PI);
+                return (center <= 0) ? (center + S2.Pi) : (center - S2.Pi);
             }
         }
 
@@ -123,7 +123,7 @@ namespace Google.Common.Geometry
                 {
                     return length;
                 }
-                length += 2*S2.M_PI;
+                length += 2*S2.Pi;
                 // Empty intervals have a negative length.
                 return (length > 0) ? length : -1;
             }
@@ -181,9 +181,9 @@ namespace Google.Common.Geometry
 
         public static S1Interval FromPoint(double p)
         {
-            if (p == -S2.M_PI)
+            if (p == -S2.Pi)
             {
-                p = S2.M_PI;
+                p = S2.Pi;
             }
             return new S1Interval(p, p, true);
         }
@@ -197,15 +197,15 @@ namespace Google.Common.Geometry
         public static S1Interval FromPointPair(double p1, double p2)
         {
             // assert (Math.Abs(p1) <= S2.M_PI && Math.Abs(p2) <= S2.M_PI);
-            if (p1 == -S2.M_PI)
+            if (p1 == -S2.Pi)
             {
-                p1 = S2.M_PI;
+                p1 = S2.Pi;
             }
-            if (p2 == -S2.M_PI)
+            if (p2 == -S2.Pi)
             {
-                p2 = S2.M_PI;
+                p2 = S2.Pi;
             }
-            if (PositiveDistance(p1, p2) <= S2.M_PI)
+            if (PositiveDistance(p1, p2) <= S2.Pi)
             {
                 return new S1Interval(p1, p2, true);
             }
@@ -221,9 +221,9 @@ namespace Google.Common.Geometry
         {
             // Works for empty, full, and singleton intervals.
             // assert (Math.Abs(p) <= S2.M_PI);
-            if (p == -S2.M_PI)
+            if (p == -S2.Pi)
             {
-                p = S2.M_PI;
+                p = S2.Pi;
             }
             return FastContains(p);
         }
@@ -252,9 +252,9 @@ namespace Google.Common.Geometry
         {
             // Works for empty, full, and singleton intervals.
             // assert (Math.Abs(p) <= S2.M_PI);
-            if (p == -S2.M_PI)
+            if (p == -S2.Pi)
             {
-                p = S2.M_PI;
+                p = S2.Pi;
             }
 
             if (IsInverted)
@@ -382,11 +382,11 @@ namespace Google.Common.Geometry
 
         public S1Interval AddPoint(double p)
         {
-            Debug.Assert(Math.Abs(p) <= S2.M_PI);
+            Debug.Assert(Math.Abs(p) <= S2.Pi);
 
-            if (p == -S2.M_PI)
+            if (p == -S2.Pi)
             {
-                p = S2.M_PI;
+                p = S2.Pi;
             }
 
             if (FastContains(p))
@@ -431,17 +431,17 @@ namespace Google.Common.Geometry
 
             // Check whether this interval will be full after expansion, allowing
             // for a 1-bit rounding error when computing each endpoint.
-            if (Length + 2*radius >= 2*S2.M_PI - 1e-15)
+            if (Length + 2*radius >= 2*S2.Pi - 1e-15)
             {
                 return Full;
             }
 
             // NOTE(dbeaumont): Should this remainder be 2 * M_PI or just M_PI ??
-            var lo = Math.IEEERemainder(Lo - radius, 2*S2.M_PI);
-            var hi = Math.IEEERemainder(Hi + radius, 2*S2.M_PI);
-            if (lo == -S2.M_PI)
+            var lo = Math.IEEERemainder(Lo - radius, 2*S2.Pi);
+            var hi = Math.IEEERemainder(Hi + radius, 2*S2.Pi);
+            if (lo == -S2.Pi)
             {
-                lo = S2.M_PI;
+                lo = S2.Pi;
             }
             return new S1Interval(lo, hi);
         }
@@ -562,8 +562,8 @@ namespace Google.Common.Geometry
             {
                 return Length <= maxError;
             }
-            return (Math.Abs(Math.IEEERemainder(y.Lo - Lo, 2*S2.M_PI))
-                    + Math.Abs(Math.IEEERemainder(y.Hi - Hi, 2*S2.M_PI))) <= maxError;
+            return (Math.Abs(Math.IEEERemainder(y.Lo - Lo, 2*S2.Pi))
+                    + Math.Abs(Math.IEEERemainder(y.Hi - Hi, 2*S2.Pi))) <= maxError;
         }
 
         public bool ApproxEquals(S1Interval y)
@@ -594,7 +594,7 @@ namespace Google.Common.Geometry
             }
             // We want to ensure that if b == Pi and a == (-Pi + eps),
             // the return result is approximately 2*Pi and not zero.
-            return (b + S2.M_PI) - (a - S2.M_PI);
+            return (b + S2.Pi) - (a - S2.Pi);
         }
     }
 }

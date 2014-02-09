@@ -304,12 +304,12 @@ namespace S2Geometry.Tests
             }
             for (var offset = 0; offset < a.numVertices(); ++offset)
             {
-                if (S2.approxEquals(a.vertex(offset), b.vertex(0), maxError))
+                if (S2.ApproxEquals(a.vertex(offset), b.vertex(0), maxError))
                 {
                     var success = true;
                     for (var i = 0; i < a.numVertices(); ++i)
                     {
-                        if (!S2.approxEquals(a.vertex(i + offset), b.vertex(i), maxError))
+                        if (!S2.ApproxEquals(a.vertex(i + offset), b.vertex(i), maxError))
                         {
                             success = false;
                             break;

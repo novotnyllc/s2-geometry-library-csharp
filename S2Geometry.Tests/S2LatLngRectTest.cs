@@ -230,8 +230,8 @@ namespace S2Geometry.Tests
             assertDoubleNear(d1.latHi().Degrees, -45);
             assertDoubleNear(d1.lngLo().Degrees, 0);
             assertDoubleNear(d1.lngHi().Degrees, 180);
-            assertTrue(d1.Lat.Equals(new R1Interval(-S2.M_PI_2, -S2.M_PI_4)));
-            assertTrue(d1.Lng.Equals(new S1Interval(0, S2.M_PI)));
+            assertTrue(d1.Lat.Equals(new R1Interval(-S2.PiOver2, -S2.PiOver4)));
+            assertTrue(d1.Lng.Equals(new S1Interval(0, S2.Pi)));
 
             // FromCenterSize()
             assertTrue(
@@ -253,15 +253,15 @@ namespace S2Geometry.Tests
                 rectFromDegrees(-90, -70, 25, 80));
 
             // GetCenter(), GetVertex(), Contains(S2LatLng), InteriorContains(S2LatLng).
-            var eqM180 = S2LatLng.fromRadians(0, -S2.M_PI);
-            var northPole = S2LatLng.fromRadians(S2.M_PI_2, 0);
+            var eqM180 = S2LatLng.fromRadians(0, -S2.Pi);
+            var northPole = S2LatLng.fromRadians(S2.PiOver2, 0);
             var r1 = new S2LatLngRect(eqM180, northPole);
 
-            assertEquals(r1.getCenter(), S2LatLng.fromRadians(S2.M_PI_4, -S2.M_PI_2));
-            assertEquals(r1.getVertex(0), S2LatLng.fromRadians(0, S2.M_PI));
+            assertEquals(r1.getCenter(), S2LatLng.fromRadians(S2.PiOver4, -S2.PiOver2));
+            assertEquals(r1.getVertex(0), S2LatLng.fromRadians(0, S2.Pi));
             assertEquals(r1.getVertex(1), S2LatLng.fromRadians(0, 0));
-            assertEquals(r1.getVertex(2), S2LatLng.fromRadians(S2.M_PI_2, 0));
-            assertEquals(r1.getVertex(3), S2LatLng.fromRadians(S2.M_PI_2, S2.M_PI));
+            assertEquals(r1.getVertex(2), S2LatLng.fromRadians(S2.PiOver2, 0));
+            assertEquals(r1.getVertex(3), S2LatLng.fromRadians(S2.PiOver2, S2.Pi));
             assertTrue(r1.contains(S2LatLng.fromDegrees(30, -45)));
             assertTrue(!r1.contains(S2LatLng.fromDegrees(30, 45)));
             assertTrue(!r1.interiorContains(eqM180) && !r1.interiorContains(northPole));
@@ -271,14 +271,14 @@ namespace S2Geometry.Tests
             // Make sure that GetVertex() returns vertices in CCW order.
             for (var i = 0; i < 4; ++i)
             {
-                var lat = S2.M_PI_4*(i - 2);
-                var lng = S2.M_PI_2*(i - 2) + 0.2;
-                var r = new S2LatLngRect(new R1Interval(lat, lat + S2.M_PI_4), new S1Interval(
-                                                                                   Math.IEEERemainder(lng, 2*S2.M_PI), Math.IEEERemainder(lng + S2.M_PI_2, 2*S2.M_PI)));
+                var lat = S2.PiOver4*(i - 2);
+                var lng = S2.PiOver2*(i - 2) + 0.2;
+                var r = new S2LatLngRect(new R1Interval(lat, lat + S2.PiOver4), new S1Interval(
+                                                                                   Math.IEEERemainder(lng, 2*S2.Pi), Math.IEEERemainder(lng + S2.PiOver2, 2*S2.Pi)));
                 for (var k = 0; k < 4; ++k)
                 {
                     assertTrue(
-                        S2.simpleCCW(r.getVertex((k - 1) & 3).toPoint(), r.getVertex(k).toPoint(),
+                        S2.SimpleCcw(r.getVertex((k - 1) & 3).toPoint(), r.getVertex(k).toPoint(),
                                      r.getVertex((k + 1) & 3).toPoint()));
                 }
             }
@@ -321,8 +321,8 @@ namespace S2Geometry.Tests
             // AddPoint()
             var p = S2LatLngRect.empty();
             p = p.addPoint(S2LatLng.fromDegrees(0, 0));
-            p = p.addPoint(S2LatLng.fromRadians(0, -S2.M_PI_2));
-            p = p.addPoint(S2LatLng.fromRadians(S2.M_PI_4, -S2.M_PI));
+            p = p.addPoint(S2LatLng.fromRadians(0, -S2.PiOver2));
+            p = p.addPoint(S2LatLng.fromRadians(S2.PiOver4, -S2.Pi));
             p = p.addPoint(new S2Point(0, 0, 1));
             assertTrue(p.Equals(r1));
 
@@ -414,18 +414,18 @@ namespace S2Geometry.Tests
         public void testEdgeBound()
         {
             // assertTrue cases where min/max latitude is not at a vertex.
-            assertDoubleNear(getEdgeBound(1, 1, 1, 1, -1, 1).Lat.Hi, S2.M_PI_4); // Max,
+            assertDoubleNear(getEdgeBound(1, 1, 1, 1, -1, 1).Lat.Hi, S2.PiOver4); // Max,
             // CW
-            assertDoubleNear(getEdgeBound(1, -1, 1, 1, 1, 1).Lat.Hi, S2.M_PI_4); // Max,
+            assertDoubleNear(getEdgeBound(1, -1, 1, 1, 1, 1).Lat.Hi, S2.PiOver4); // Max,
             // CCW
-            assertDoubleNear(getEdgeBound(1, -1, -1, -1, -1, -1).Lat.Lo, -S2.M_PI_4); // Min,
+            assertDoubleNear(getEdgeBound(1, -1, -1, -1, -1, -1).Lat.Lo, -S2.PiOver4); // Min,
             // CW
-            assertDoubleNear(getEdgeBound(-1, 1, -1, -1, -1, -1).Lat.Lo, -S2.M_PI_4); // Min,
+            assertDoubleNear(getEdgeBound(-1, 1, -1, -1, -1, -1).Lat.Lo, -S2.PiOver4); // Min,
             // CCW
 
             // assertTrue cases where the edge passes through one of the poles.
-            assertDoubleNear(getEdgeBound(.3, .4, 1, -.3, -.4, 1).Lat.Hi, S2.M_PI_2);
-            assertDoubleNear(getEdgeBound(.3, .4, -1, -.3, -.4, -1).Lat.Lo, -S2.M_PI_2);
+            assertDoubleNear(getEdgeBound(.3, .4, 1, -.3, -.4, 1).Lat.Hi, S2.PiOver2);
+            assertDoubleNear(getEdgeBound(.3, .4, -1, -.3, -.4, -1).Lat.Lo, -S2.PiOver2);
 
             // assertTrue cases where the min/max latitude is attained at a vertex.
             var kCubeLat = Math.Asin(Math.Sqrt(1.0/3)); // 35.26 degrees

@@ -301,7 +301,7 @@ namespace Google.Common.Geometry
         {
             // We allow a bit of error so that exact hemispheres are
             // considered normalized.
-            return getArea() <= 2*S2.M_PI + 1e-14;
+            return getArea() <= 2*S2.Pi + 1e-14;
         }
 
         /**
@@ -334,7 +334,7 @@ namespace Google.Common.Geometry
             vertexToIndex = null;
             index = null;
             originInside ^= true;
-            if (bound.Lat.Lo > -S2.M_PI_2 && bound.Lat.Hi < S2.M_PI_2)
+            if (bound.Lat.Lo > -S2.PiOver2 && bound.Lat.Hi < S2.PiOver2)
             {
                 // The complement of this loop contains both poles.
                 bound = S2LatLngRect.full();
@@ -377,7 +377,7 @@ namespace Google.Common.Geometry
 
             var origin = vertex(0);
             var axis = (origin.largestAbsComponent() + 1)%3;
-            var slightlyDisplaced = origin.get(axis) + S2.M_E*1e-10;
+            var slightlyDisplaced = origin.get(axis) + S2.E*1e-10;
             origin =
                 new S2Point((axis == 0) ? slightlyDisplaced : origin.x,
                             (axis == 1) ? slightlyDisplaced : origin.y, (axis == 2) ? slightlyDisplaced : origin.z);
@@ -387,11 +387,11 @@ namespace Google.Common.Geometry
             var centroidSum = new S2Point(0, 0, 0);
             for (var i = 1; i <= numVertices(); ++i)
             {
-                areaSum += S2.signedArea(origin, vertex(i - 1), vertex(i));
+                areaSum += S2.SignedArea(origin, vertex(i - 1), vertex(i));
                 if (doCentroid)
                 {
                     // The true centroid is already premultiplied by the triangle area.
-                    var trueCentroid = S2.trueCentroid(origin, vertex(i - 1), vertex(i));
+                    var trueCentroid = S2.TrueCentroid(origin, vertex(i - 1), vertex(i));
                     centroidSum = S2Point.add(centroidSum, trueCentroid);
                 }
             }
@@ -408,7 +408,7 @@ namespace Google.Common.Geometry
                 // of position over the region to the right of the loop. This is the same
                 // as the integral of position over the region to the left of the loop,
                 // since the integral of position over the entire sphere is (0, 0, 0).
-                areaSum += 4*S2.M_PI;
+                areaSum += 4*S2.Pi;
             }
             // The loop's sign() does not affect the return result and should be taken
             // into account by the caller.
@@ -672,7 +672,7 @@ namespace Google.Common.Geometry
             var iOther = b.firstLogicalVertex;
             for (var i = 0; i < maxVertices; ++i, ++iThis, ++iOther)
             {
-                if (!S2.approxEquals(vertex(iThis), b.vertex(iOther), maxError))
+                if (!S2.ApproxEquals(vertex(iThis), b.vertex(iOther), maxError))
                 {
                     return false;
                 }
@@ -696,7 +696,7 @@ namespace Google.Common.Geometry
             }
 
             var inside = originInside;
-            var origin = S2.origin();
+            var origin = S2.Origin;
             var crosser = new S2EdgeUtil.EdgeCrosser(origin, p,
                                                      vertices[_numVertices - 1]);
 
@@ -781,7 +781,7 @@ namespace Google.Common.Geometry
             // All vertices must be unit length.
             for (var i = 0; i < _numVertices; ++i)
             {
-                if (!S2.isUnitLength(vertex(i)))
+                if (!S2.IsUnitLength(vertex(i)))
                 {
                     Debug.WriteLine("Vertex " + i + " is not unit length");
                     return false;
@@ -834,12 +834,12 @@ namespace Google.Common.Geometry
                         // to determine edge intersections. The workaround is to ignore
                         // intersections between edge pairs where all four points are
                         // nearly colinear.
-                        var abc = S2.angle(vertex(a1), vertex(a2), vertex(b1));
-                        var abcNearlyLinear = S2.approxEquals(abc, 0D, MAX_INTERSECTION_ERROR) ||
-                                              S2.approxEquals(abc, S2.M_PI, MAX_INTERSECTION_ERROR);
-                        var abd = S2.angle(vertex(a1), vertex(a2), vertex(b2));
-                        var abdNearlyLinear = S2.approxEquals(abd, 0D, MAX_INTERSECTION_ERROR) ||
-                                              S2.approxEquals(abd, S2.M_PI, MAX_INTERSECTION_ERROR);
+                        var abc = S2.Angle(vertex(a1), vertex(a2), vertex(b1));
+                        var abcNearlyLinear = S2.ApproxEquals(abc, 0D, MAX_INTERSECTION_ERROR) ||
+                                              S2.ApproxEquals(abc, S2.Pi, MAX_INTERSECTION_ERROR);
+                        var abd = S2.Angle(vertex(a1), vertex(a2), vertex(b2));
+                        var abdNearlyLinear = S2.ApproxEquals(abd, 0D, MAX_INTERSECTION_ERROR) ||
+                                              S2.ApproxEquals(abd, S2.Pi, MAX_INTERSECTION_ERROR);
                         if (abcNearlyLinear && abdNearlyLinear)
                         {
                             continue;
@@ -920,7 +920,7 @@ namespace Google.Common.Geometry
             // The test below is written so that B is inside if C=R but not if A=R.
 
             originInside = false; // Initialize before calling Contains().
-            var v1Inside = S2.orderedCCW(S2.ortho(vertex(1)), vertex(0), vertex(2), vertex(1));
+            var v1Inside = S2.OrderedCcw(S2.Ortho(vertex(1)), vertex(0), vertex(2), vertex(1));
             if (v1Inside != contains(vertex(1)))
             {
                 originInside = true;
@@ -946,7 +946,7 @@ namespace Google.Common.Geometry
             bound = S2LatLngRect.full();
             if (contains(new S2Point(0, 0, 1)))
             {
-                b = new S2LatLngRect(new R1Interval(b.Lat.Lo, S2.M_PI_2), S1Interval.Full);
+                b = new S2LatLngRect(new R1Interval(b.Lat.Lo, S2.PiOver2), S1Interval.Full);
             }
             // If a loop contains the south pole, then either it wraps entirely
             // around the sphere (full longitude range), or it also contains the
@@ -954,7 +954,7 @@ namespace Google.Common.Geometry
 
             if (b.Lng.IsFull && contains(new S2Point(0, 0, -1)))
             {
-                b = new S2LatLngRect(new R1Interval(-S2.M_PI_2, b.Lat.Hi), b.Lng);
+                b = new S2LatLngRect(new R1Interval(-S2.PiOver2, b.Lat.Hi), b.Lng);
             }
             bound = b;
         }

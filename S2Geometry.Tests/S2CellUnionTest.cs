@@ -45,15 +45,15 @@ namespace S2Geometry.Tests
 
         public void testMinMaxAvg(MetricBundle bundle)
         {
-            assertTrue(bundle.min_.deriv() < bundle.avg_.deriv());
-            assertTrue(bundle.avg_.deriv() < bundle.max_.deriv());
+            assertTrue(bundle.min_.Deriv() < bundle.avg_.Deriv());
+            assertTrue(bundle.avg_.Deriv() < bundle.max_.Deriv());
         }
 
         public void testLessOrEqual(MetricBundle a, MetricBundle b)
         {
-            assertTrue(a.min_.deriv() <= b.min_.deriv());
-            assertTrue(a.max_.deriv() <= b.max_.deriv());
-            assertTrue(a.avg_.deriv() <= b.avg_.deriv());
+            assertTrue(a.min_.Deriv() <= b.min_.Deriv());
+            assertTrue(a.max_.Deriv() <= b.max_.Deriv());
+            assertTrue(a.avg_.Deriv() <= b.avg_.Deriv());
         }
 
         [Test]
@@ -64,14 +64,14 @@ namespace S2Geometry.Tests
             var p045 = new S2Point(1, 1, 0);
             var p090 = new S2Point(0, 1, 0);
             var p180 = new S2Point(-1, 0, 0);
-            assertDoubleNear(S2.angle(p000, pz, p045), S2.M_PI_4);
-            assertDoubleNear(S2.angle(p045, pz, p180), 3*S2.M_PI_4);
-            assertDoubleNear(S2.angle(p000, pz, p180), S2.M_PI);
-            assertDoubleNear(S2.angle(pz, p000, pz), 0);
-            assertDoubleNear(S2.angle(pz, p000, p045), S2.M_PI_2);
+            assertDoubleNear(S2.Angle(p000, pz, p045), S2.PiOver4);
+            assertDoubleNear(S2.Angle(p045, pz, p180), 3*S2.PiOver4);
+            assertDoubleNear(S2.Angle(p000, pz, p180), S2.Pi);
+            assertDoubleNear(S2.Angle(pz, p000, pz), 0);
+            assertDoubleNear(S2.Angle(pz, p000, p045), S2.PiOver2);
 
-            assertDoubleNear(S2.area(p000, p090, pz), S2.M_PI_2);
-            assertDoubleNear(S2.area(p045, pz, p180), 3*S2.M_PI_4);
+            assertDoubleNear(S2.Area(p000, p090, pz), S2.PiOver2);
+            assertDoubleNear(S2.Area(p045, pz, p180), 3*S2.PiOver4);
 
             // Make sure that area() has good *relative* accuracy even for
             // very small areas.
@@ -79,16 +79,16 @@ namespace S2Geometry.Tests
             var pepsx = new S2Point(eps, 0, 1);
             var pepsy = new S2Point(0, eps, 1);
             var expected1 = 0.5*eps*eps;
-            assertDoubleNear(S2.area(pepsx, pepsy, pz), expected1, 1e-14*expected1);
+            assertDoubleNear(S2.Area(pepsx, pepsy, pz), expected1, 1e-14*expected1);
 
             // Make sure that it can handle degenerate triangles.
             var pr = new S2Point(0.257, -0.5723, 0.112);
             var pq = new S2Point(-0.747, 0.401, 0.2235);
-            assertEquals(S2.area(pr, pr, pr), 0.0);
+            assertEquals(S2.Area(pr, pr, pr), 0.0);
             // TODO: The following test is not exact in optimized mode because the
             // compiler chooses to mix 64-bit and 80-bit intermediate results.
-            assertDoubleNear(S2.area(pr, pq, pr), 0);
-            assertEquals(S2.area(p000, p045, p090), 0.0);
+            assertDoubleNear(S2.Area(pr, pq, pr), 0);
+            assertEquals(S2.Area(p000, p045, p090), 0.0);
 
             double maxGirard = 0;
             for (var i = 0; i < 10000; ++i)
@@ -100,30 +100,30 @@ namespace S2Geometry.Tests
                 var p2 = S2Point.add(p0, S2Point.mul(d2, 1e-15));
                 // The actual displacement can be as much as 1.2e-15 due to roundoff.
                 // This yields a maximum triangle area of about 0.7e-30.
-                assertTrue(S2.area(p0, p1, p2) < 0.7e-30);
-                maxGirard = Math.Max(maxGirard, S2.girardArea(p0, p1, p2));
+                assertTrue(S2.Area(p0, p1, p2) < 0.7e-30);
+                maxGirard = Math.Max(maxGirard, S2.GirardArea(p0, p1, p2));
             }
             Console.WriteLine("Worst case Girard for triangle area 1e-30: " + maxGirard);
 
             // Try a very long and skinny triangle.
             var p045eps = new S2Point(1, 1, eps);
             var expected2 = 5.8578643762690495119753e-11; // Mathematica.
-            assertDoubleNear(S2.area(p000, p045eps, p090), expected2, 1e-9*expected2);
+            assertDoubleNear(S2.Area(p000, p045eps, p090), expected2, 1e-9*expected2);
 
             // Triangles with near-180 degree edges that sum to a quarter-sphere.
             var eps2 = 1e-10;
             var p000eps2 = new S2Point(1, 0.1*eps2, eps2);
             var quarterArea1 =
-                S2.area(p000eps2, p000, p090) + S2.area(p000eps2, p090, p180) + S2.area(p000eps2, p180, pz)
-                + S2.area(p000eps2, pz, p000);
-            assertDoubleNear(quarterArea1, S2.M_PI);
+                S2.Area(p000eps2, p000, p090) + S2.Area(p000eps2, p090, p180) + S2.Area(p000eps2, p180, pz)
+                + S2.Area(p000eps2, pz, p000);
+            assertDoubleNear(quarterArea1, S2.Pi);
 
             // Four other triangles that sum to a quarter-sphere.
             var p045eps2 = new S2Point(1, 1, eps2);
             var quarterArea2 =
-                S2.area(p045eps2, p000, p090) + S2.area(p045eps2, p090, p180) + S2.area(p045eps2, p180, pz)
-                + S2.area(p045eps2, pz, p000);
-            assertDoubleNear(quarterArea2, S2.M_PI);
+                S2.Area(p045eps2, p000, p090) + S2.Area(p045eps2, p090, p180) + S2.Area(p045eps2, p180, pz)
+                + S2.Area(p045eps2, pz, p000);
+            assertDoubleNear(quarterArea2, S2.Pi);
         }
 
         [Test]
@@ -132,7 +132,7 @@ namespace S2Geometry.Tests
             var a = new S2Point(0.72571927877036835, 0.46058825605889098, 0.51106749730504852);
             var b = new S2Point(0.7257192746638208, 0.46058826573818168, 0.51106749441312738);
             var c = new S2Point(0.72571927671709457, 0.46058826089853633, 0.51106749585908795);
-            assertTrue(S2.robustCCW(a, b, c) != 0);
+            assertTrue(S2.RobustCcw(a, b, c) != 0);
         }
 
         [Test]
@@ -140,17 +140,17 @@ namespace S2Geometry.Tests
         {
             for (var i = 0; i < 10; ++i)
             {
-                assertEquals(i + 1, S2.exp(Math.Pow(2, i)));
+                assertEquals(i + 1, S2.Exp(Math.Pow(2, i)));
             }
 
             for (var i = 0; i < 10; ++i)
             {
-                assertEquals(i + 1, S2.exp(-Math.Pow(2, i)));
+                assertEquals(i + 1, S2.Exp(-Math.Pow(2, i)));
             }
 
-            assertEquals(0, S2.exp(0));
-            assertEquals(2, S2.exp(3));
-            assertEquals(3, S2.exp(5));
+            assertEquals(0, S2.Exp(0));
+            assertEquals(2, S2.Exp(3));
+            assertEquals(3, S2.Exp(5));
         }
 
         [Test]
@@ -181,7 +181,7 @@ namespace S2Geometry.Tests
             {
                 // The Hilbert curve on each face starts at (-1,-1) and terminates
                 // at either (1,-1) (if axes not swapped) or (-1,1) (if swapped).
-                var sign = ((face & S2.SWAP_MASK) != 0) ? -1 : 1;
+                var sign = ((face & S2.SwapMask) != 0) ? -1 : 1;
                 assertEquals(S2Projections.faceUvToXyz(face, sign, -sign),
                              S2Projections.faceUvToXyz((face + 1)%6, -1, -1));
             }
@@ -212,20 +212,20 @@ namespace S2Geometry.Tests
             // with the global minimums and maximums.
             assertTrue(S2Projections.MAX_EDGE_ASPECT >= 1.0);
             assertTrue(S2Projections.MAX_EDGE_ASPECT
-                       < S2Projections.MAX_EDGE.deriv()/S2Projections.MIN_EDGE.deriv());
+                       < S2Projections.MAX_EDGE.Deriv()/S2Projections.MIN_EDGE.Deriv());
             assertTrue(S2Projections.MAX_DIAG_ASPECT >= 1);
             assertTrue(S2Projections.MAX_DIAG_ASPECT
-                       < S2Projections.MAX_DIAG.deriv()/S2Projections.MIN_DIAG.deriv());
+                       < S2Projections.MAX_DIAG.Deriv()/S2Projections.MIN_DIAG.Deriv());
 
             // Check various conditions that are provable mathematically.
             testLessOrEqual(width, angleSpan);
             testLessOrEqual(width, edge);
             testLessOrEqual(edge, diag);
 
-            assertTrue(S2Projections.MIN_AREA.deriv()
-                       >= S2Projections.MIN_WIDTH.deriv()*S2Projections.MIN_EDGE.deriv() - 1e-15);
-            assertTrue(S2Projections.MAX_AREA.deriv()
-                       < S2Projections.MAX_WIDTH.deriv()*S2Projections.MAX_EDGE.deriv() + 1e-15);
+            assertTrue(S2Projections.MIN_AREA.Deriv()
+                       >= S2Projections.MIN_WIDTH.Deriv()*S2Projections.MIN_EDGE.Deriv() - 1e-15);
+            assertTrue(S2Projections.MAX_AREA.Deriv()
+                       < S2Projections.MAX_WIDTH.Deriv()*S2Projections.MAX_EDGE.Deriv() + 1e-15);
 
             // GetMinLevelForLength() and friends have built-in assertions, we just need
             // to call these functions to test them.
@@ -237,7 +237,7 @@ namespace S2Geometry.Tests
 
             for (var level = -2; level <= S2CellId.MAX_LEVEL + 3; ++level)
             {
-                var dWidth = (2*S2Projections.MIN_WIDTH.deriv())*Math.Pow(2, -level);
+                var dWidth = (2*S2Projections.MIN_WIDTH.Deriv())*Math.Pow(2, -level);
                 if (level >= S2CellId.MAX_LEVEL + 3)
                 {
                     dWidth = 0;
@@ -245,29 +245,29 @@ namespace S2Geometry.Tests
 
                 // Check boundary cases (exactly equal to a threshold value).
                 var expectedLevel = Math.Max(0, Math.Min(S2CellId.MAX_LEVEL, level));
-                assertEquals(S2Projections.MIN_WIDTH.getMinLevel(dWidth), expectedLevel);
-                assertEquals(S2Projections.MIN_WIDTH.getMaxLevel(dWidth), expectedLevel);
-                assertEquals(S2Projections.MIN_WIDTH.getClosestLevel(dWidth), expectedLevel);
+                assertEquals(S2Projections.MIN_WIDTH.GetMinLevel(dWidth), expectedLevel);
+                assertEquals(S2Projections.MIN_WIDTH.GetMaxLevel(dWidth), expectedLevel);
+                assertEquals(S2Projections.MIN_WIDTH.GetClosestLevel(dWidth), expectedLevel);
 
                 // Also check non-boundary cases.
-                assertEquals(S2Projections.MIN_WIDTH.getMinLevel(1.2*dWidth), expectedLevel);
-                assertEquals(S2Projections.MIN_WIDTH.getMaxLevel(0.8*dWidth), expectedLevel);
-                assertEquals(S2Projections.MIN_WIDTH.getClosestLevel(1.2*dWidth), expectedLevel);
-                assertEquals(S2Projections.MIN_WIDTH.getClosestLevel(0.8*dWidth), expectedLevel);
+                assertEquals(S2Projections.MIN_WIDTH.GetMinLevel(1.2*dWidth), expectedLevel);
+                assertEquals(S2Projections.MIN_WIDTH.GetMaxLevel(0.8*dWidth), expectedLevel);
+                assertEquals(S2Projections.MIN_WIDTH.GetClosestLevel(1.2*dWidth), expectedLevel);
+                assertEquals(S2Projections.MIN_WIDTH.GetClosestLevel(0.8*dWidth), expectedLevel);
 
                 // Same thing for area1.
-                var area1 = (4*S2Projections.MIN_AREA.deriv())*Math.Pow(4, -level);
+                var area1 = (4*S2Projections.MIN_AREA.Deriv())*Math.Pow(4, -level);
                 if (level <= -3)
                 {
                     area1 = 0;
                 }
-                assertEquals(S2Projections.MIN_AREA.getMinLevel(area1), expectedLevel);
-                assertEquals(S2Projections.MIN_AREA.getMaxLevel(area1), expectedLevel);
-                assertEquals(S2Projections.MIN_AREA.getClosestLevel(area1), expectedLevel);
-                assertEquals(S2Projections.MIN_AREA.getMinLevel(1.2*area1), expectedLevel);
-                assertEquals(S2Projections.MIN_AREA.getMaxLevel(0.8*area1), expectedLevel);
-                assertEquals(S2Projections.MIN_AREA.getClosestLevel(1.2*area1), expectedLevel);
-                assertEquals(S2Projections.MIN_AREA.getClosestLevel(0.8*area1), expectedLevel);
+                assertEquals(S2Projections.MIN_AREA.GetMinLevel(area1), expectedLevel);
+                assertEquals(S2Projections.MIN_AREA.GetMaxLevel(area1), expectedLevel);
+                assertEquals(S2Projections.MIN_AREA.GetClosestLevel(area1), expectedLevel);
+                assertEquals(S2Projections.MIN_AREA.GetMinLevel(1.2*area1), expectedLevel);
+                assertEquals(S2Projections.MIN_AREA.GetMaxLevel(0.8*area1), expectedLevel);
+                assertEquals(S2Projections.MIN_AREA.GetClosestLevel(1.2*area1), expectedLevel);
+                assertEquals(S2Projections.MIN_AREA.GetClosestLevel(0.8*area1), expectedLevel);
             }
         }
 
@@ -296,20 +296,20 @@ namespace S2Geometry.Tests
                 for (var i = 0; i < 4; ++i)
                 {
                     // Check consistency with respect to swapping axes.
-                    assertEquals(S2.ijToPos(r, i),
-                                 S2.ijToPos(r ^ S2.SWAP_MASK, swapAxes(i)));
-                    assertEquals(S2.posToIJ(r, i),
-                                 swapAxes(S2.posToIJ(r ^ S2.SWAP_MASK, i)));
+                    assertEquals(S2.IjToPos(r, i),
+                                 S2.IjToPos(r ^ S2.SwapMask, swapAxes(i)));
+                    assertEquals(S2.PosToIj(r, i),
+                                 swapAxes(S2.PosToIj(r ^ S2.SwapMask, i)));
 
                     // Check consistency with respect to reversing axis directions.
-                    assertEquals(S2.ijToPos(r, i),
-                                 S2.ijToPos(r ^ S2.INVERT_MASK, invertBits(i)));
-                    assertEquals(S2.posToIJ(r, i),
-                                 invertBits(S2.posToIJ(r ^ S2.INVERT_MASK, i)));
+                    assertEquals(S2.IjToPos(r, i),
+                                 S2.IjToPos(r ^ S2.InvertMask, invertBits(i)));
+                    assertEquals(S2.PosToIj(r, i),
+                                 invertBits(S2.PosToIj(r ^ S2.InvertMask, i)));
 
                     // Check that the two tables are inverses of each other.
-                    assertEquals(S2.ijToPos(r, S2.posToIJ(r, i)), i);
-                    assertEquals(S2.posToIJ(r, S2.ijToPos(r, i)), i);
+                    assertEquals(S2.IjToPos(r, S2.PosToIj(r, i)), i);
+                    assertEquals(S2.PosToIj(r, S2.IjToPos(r, i)), i);
                 }
             }
         }

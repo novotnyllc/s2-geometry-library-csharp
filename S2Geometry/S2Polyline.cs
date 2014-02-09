@@ -190,7 +190,7 @@ namespace Google.Common.Geometry
             var n = vertices.Count;
             for (var i = 0; i < n; ++i)
             {
-                if (!S2.isUnitLength(vertices[i]))
+                if (!S2.IsUnitLength(vertices[i]))
                 {
                     Debug.WriteLine("Vertex " + i + " is not unit length");
                     return false;

@@ -368,7 +368,7 @@ namespace Google.Common.Geometry
                         {
                             continue;
                         }
-                        if (!v2Found || S2.orderedCCW(v0, v2, v, v1))
+                        if (!v2Found || S2.OrderedCcw(v0, v2, v, v1))
                         {
                             v2 = v;
                         }
@@ -754,7 +754,7 @@ namespace Google.Common.Geometry
                 // level such that a spherical cap (i.e. "disc") of the given radius
                 // fits completely inside all cells at that level.
                 level =
-                    Math.Min(S2Projections.MIN_WIDTH.getMaxLevel(2*searchRadius), S2CellId.MAX_LEVEL - 1);
+                    Math.Min(S2Projections.MIN_WIDTH.GetMaxLevel(2*searchRadius), S2CellId.MAX_LEVEL - 1);
             }
 
 

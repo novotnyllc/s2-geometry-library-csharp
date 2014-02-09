@@ -164,11 +164,11 @@ namespace S2Geometry.Tests
 
         private void dumpCrossings(S2Loop loop)
         {
-            Console.WriteLine("Ortho(v1): " + S2.ortho(loop.vertex(1)));
-            Console.WriteLine("Contains(kOrigin): {0}\n", loop.contains(S2.origin()));
+            Console.WriteLine("Ortho(v1): " + S2.Ortho(loop.vertex(1)));
+            Console.WriteLine("Contains(kOrigin): {0}\n", loop.contains(S2.Origin));
             for (var i = 1; i <= loop.numVertices(); ++i)
             {
-                var a = S2.ortho(loop.vertex(i));
+                var a = S2.Ortho(loop.vertex(i));
                 var b = loop.vertex(i - 1);
                 var c = loop.vertex(i + 1);
                 var o = loop.vertex(i);
@@ -180,19 +180,19 @@ namespace S2Geometry.Tests
                                   loop.vertex(i).z,
                                   i - 1,
                                   i,
-                                  S2.robustCCW(b, o, a),
+                                  S2.RobustCcw(b, o, a),
                                   i + 1,
                                   i,
                                   i - 1,
-                                  S2.robustCCW(c, o, b),
+                                  S2.RobustCcw(c, o, b),
                                   i,
                                   i + 1,
-                                  S2.robustCCW(a, o, c),
-                                  S2.orderedCCW(a, b, c, o));
+                                  S2.RobustCcw(a, o, c),
+                                  S2.OrderedCcw(a, b, c, o));
             }
             for (var i = 0; i < loop.numVertices() + 2; ++i)
             {
-                var orig = S2.origin();
+                var orig = S2.Origin;
                 S2Point dest;
                 if (i < loop.numVertices())
                 {
@@ -218,16 +218,16 @@ namespace S2Geometry.Tests
             for (var i = 0; i <= 2; i += 2)
             {
                 Console.WriteLine("Origin->v1 crossing v{0}->v1: ", i);
-                var a = S2.ortho(loop.vertex(1));
+                var a = S2.Ortho(loop.vertex(1));
                 var b = loop.vertex(i);
-                var c = S2.origin();
+                var c = S2.Origin;
                 var o = loop.vertex(1);
                 Console.WriteLine("{0}1R={1}, M1{2}={3}, R1M={4}, crosses: {5}\n",
                                   i,
-                                  S2.robustCCW(b, o, a),
+                                  S2.RobustCcw(b, o, a),
                                   i,
-                                  S2.robustCCW(c, o, b),
-                                  S2.robustCCW(a, o, c),
+                                  S2.RobustCcw(c, o, b),
+                                  S2.RobustCcw(a, o, c),
                                   S2EdgeUtil.edgeOrVertexCrossing(c, o, b, a));
             }
         }
@@ -291,8 +291,8 @@ namespace S2Geometry.Tests
         [Test]
         public void testAreaCentroid()
         {
-            assertDoubleNear(northHemi.getArea(), 2*S2.M_PI);
-            assertDoubleNear(eastHemi.getArea(), 2*S2.M_PI);
+            assertDoubleNear(northHemi.getArea(), 2*S2.Pi);
+            assertDoubleNear(eastHemi.getArea(), 2*S2.Pi);
 
             // Construct spherical caps of random height, and approximate their boundary
             // with closely spaces vertices. Then check that the area and centroid are
@@ -318,10 +318,10 @@ namespace S2Geometry.Tests
                 var phi = Math.Asin(1 - height);
                 var maxDtheta =
                     2*Math.Acos(Math.Tan(Math.Abs(phi))/Math.Tan(Math.Abs(phi) + kMaxDist));
-                maxDtheta = Math.Min(S2.M_PI, maxDtheta); // At least 3 vertices.
+                maxDtheta = Math.Min(S2.Pi, maxDtheta); // At least 3 vertices.
 
                 var vertices = new List<S2Point>();
-                for (double theta = 0; theta < 2*S2.M_PI; theta += rand.NextDouble()*maxDtheta)
+                for (double theta = 0; theta < 2*S2.Pi; theta += rand.NextDouble()*maxDtheta)
                 {
                     var xCosThetaCosPhi = S2Point.mul(x, (Math.Cos(theta)*Math.Cos(phi)));
                     var ySinThetaCosPhi = S2Point.mul(y, (Math.Sin(theta)*Math.Cos(phi)));
@@ -337,10 +337,10 @@ namespace S2Geometry.Tests
 
                 var area = loop.getArea();
                 var centroid = loop.getCentroid();
-                var expectedArea = 2*S2.M_PI*height;
+                var expectedArea = 2*S2.Pi*height;
                 assertTrue(areaCentroid.getArea() == area);
                 assertTrue(centroid.Equals(areaCentroid.getCentroid()));
-                assertTrue(Math.Abs(area - expectedArea) <= 2*S2.M_PI*kMaxDist);
+                assertTrue(Math.Abs(area - expectedArea) <= 2*S2.Pi*kMaxDist);
 
                 // high probability
                 assertTrue(Math.Abs(area - expectedArea) >= 0.01*kMaxDist);
@@ -370,7 +370,7 @@ namespace S2Geometry.Tests
             arctic80.invert();
 
             assertTrue(southHemi.RectBound.Lng.IsFull);
-            assertEquals(southHemi.RectBound.Lat, new R1Interval(-S2.M_PI_2, 0));
+            assertEquals(southHemi.RectBound.Lat, new R1Interval(-S2.PiOver2, 0));
         }
 
         /**

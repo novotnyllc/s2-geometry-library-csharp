@@ -136,7 +136,7 @@ namespace S2Geometry.Tests
             }
             else
             {
-                assertTrue(S2.approxEquals(closest, expectedClosest));
+                assertTrue(S2.ApproxEquals(closest, expectedClosest));
             }
         }
 
@@ -329,8 +329,8 @@ namespace S2Geometry.Tests
                 assertTrue(distCd < S2EdgeUtil.DEFAULT_INTERSECTION_TOLERANCE);
 
                 // test getIntersection() post conditions
-                assertTrue(S2.orderedCCW(a, x, b, S2Point.normalize(S2.robustCrossProd(a, b))));
-                assertTrue(S2.orderedCCW(c, x, d, S2Point.normalize(S2.robustCrossProd(c, d))));
+                assertTrue(S2.OrderedCcw(a, x, b, S2Point.normalize(S2.RobustCrossProd(a, b))));
+                assertTrue(S2.OrderedCcw(c, x, d, S2Point.normalize(S2.RobustCrossProd(c, d))));
 
                 maxEdgeDist = S1Angle.Max(maxEdgeDist, S1Angle.Max(distAb, distCd));
                 maxPointDist = S1Angle.Max(maxPointDist, new S1Angle(p, x));
@@ -341,7 +341,7 @@ namespace S2Geometry.Tests
         public void testLongitudePruner()
         {
             var pruner1 = new S2EdgeUtil.LongitudePruner(
-                new S1Interval(0.75*S2.M_PI, -0.75*S2.M_PI), new S2Point(0, 1, 2));
+                new S1Interval(0.75*S2.Pi, -0.75*S2.Pi), new S2Point(0, 1, 2));
 
             assertFalse(pruner1.intersects(new S2Point(1, 1, 3)));
             assertTrue(pruner1.intersects(new S2Point(-1 - 1e-15, -1, 0)));
@@ -352,7 +352,7 @@ namespace S2Geometry.Tests
             assertTrue(pruner1.intersects(new S2Point(-1, -1e-15, 0)));
 
             var pruner2 = new S2EdgeUtil.LongitudePruner(
-                new S1Interval(0.25*S2.M_PI, 0.25*S2.M_PI), new S2Point(1, 0, 0));
+                new S1Interval(0.25*S2.Pi, 0.25*S2.Pi), new S2Point(1, 0, 0));
 
             assertFalse(pruner2.intersects(new S2Point(2, 1, 2)));
             assertTrue(pruner2.intersects(new S2Point(1, 2, 3)));
@@ -365,17 +365,17 @@ namespace S2Geometry.Tests
         {
             // Check cases where min/max latitude is not at a vertex.
             // Max, CW
-            assertDoubleNear(getEdgeBound(1, 1, 1, 1, -1, 1).Lat.Hi, S2.M_PI_4);
+            assertDoubleNear(getEdgeBound(1, 1, 1, 1, -1, 1).Lat.Hi, S2.PiOver4);
             // Max, CCW
-            assertDoubleNear(getEdgeBound(1, -1, 1, 1, 1, 1).Lat.Hi, S2.M_PI_4);
+            assertDoubleNear(getEdgeBound(1, -1, 1, 1, 1, 1).Lat.Hi, S2.PiOver4);
             // Min, CW
-            assertDoubleNear(getEdgeBound(1, -1, -1, -1, -1, -1).Lat.Lo, -S2.M_PI_4);
+            assertDoubleNear(getEdgeBound(1, -1, -1, -1, -1, -1).Lat.Lo, -S2.PiOver4);
             // Min, CCW
-            assertDoubleNear(getEdgeBound(-1, 1, -1, -1, -1, -1).Lat.Lo, -S2.M_PI_4);
+            assertDoubleNear(getEdgeBound(-1, 1, -1, -1, -1, -1).Lat.Lo, -S2.PiOver4);
 
             // Check cases where the edge passes through one of the poles.
-            assertDoubleNear(getEdgeBound(.3, .4, 1, -.3, -.4, 1).Lat.Hi, S2.M_PI_2);
-            assertDoubleNear(getEdgeBound(.3, .4, -1, -.3, -.4, -1).Lat.Lo, -S2.M_PI_2);
+            assertDoubleNear(getEdgeBound(.3, .4, 1, -.3, -.4, 1).Lat.Hi, S2.PiOver2);
+            assertDoubleNear(getEdgeBound(.3, .4, -1, -.3, -.4, -1).Lat.Lo, -S2.PiOver2);
 
             // Check cases where the min/max latitude is attained at a vertex.
             var kCubeLat = Math.Asin(Math.Sqrt(1.0/3)); // 35.26 degrees

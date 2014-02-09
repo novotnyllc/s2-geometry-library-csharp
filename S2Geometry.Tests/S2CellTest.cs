@@ -88,7 +88,7 @@ namespace S2Geometry.Tests
                 avgEdge += 0.25*edge;
                 var mid = S2Point.add(cell.getVertexRaw(i), cell
                                                                 .getVertexRaw((i + 1) & 3));
-                var width = S2.M_PI_2 - mid.angle(cell.getEdgeRaw(i ^ 2));
+                var width = S2.PiOver2 - mid.angle(cell.getEdgeRaw(i ^ 2));
                 minWidth = Math.Min(width, minWidth);
                 maxWidth = Math.Max(width, maxWidth);
                 if (i < 2)
@@ -236,8 +236,8 @@ namespace S2Geometry.Tests
                             }
                         }
                         Assert.True(capCount <= 2);
-                        if (childRect.latLo().Radians > -S2.M_PI_2
-                            && childRect.latHi().Radians < S2.M_PI_2)
+                        if (childRect.latLo().Radians > -S2.PiOver2
+                            && childRect.latHi().Radians < S2.PiOver2)
                         {
                             // Bounding rectangles may be too large at the poles because the
                             // pole itself has an arbitrary fixed longitude.
@@ -305,16 +305,16 @@ namespace S2Geometry.Tests
             // At low levels, error is dominated by the variation of differential
             // quantities across the cells, while at high levels error is dominated by
             // the effects of random sampling.
-            var tolerance = (maxMetric.getValue(level) - minMetric.getValue(level))
+            var tolerance = (maxMetric.GetValue(level) - minMetric.GetValue(level))
                             /Math.Sqrt(Math.Min(count, 0.5*(1L << level)))*10;
             if (tolerance == 0)
             {
                 tolerance = absError;
             }
 
-            var minError = minValue - minMetric.getValue(level);
-            var maxError = maxMetric.getValue(level) - maxValue;
-            var avgError = Math.Abs(avgMetric.getValue(level) - avgValue);
+            var minError = minValue - minMetric.GetValue(level);
+            var maxError = maxMetric.GetValue(level) - maxValue;
+            var avgError = Math.Abs(avgMetric.GetValue(level) - avgValue);
             Console.WriteLine(
                 "%-10s (%6.0f samples, tolerance %8.3g) - Min (%9.3g : %9.3g) "
                 + "Max (%9.3g : %9.3g), avg (%9.3g : %9.3g)\n", label, count,
@@ -322,12 +322,12 @@ namespace S2Geometry.Tests
                                                                   /maxValue, maxError/tolerance, avgError/avgValue, avgError
                                                                                                                     /tolerance);
 
-            Assert.True(minMetric.getValue(level) <= minValue + absError);
-            Assert.True(minMetric.getValue(level) >= minValue - tolerance);
-            Console.WriteLine("Level: " + maxMetric.getValue(level) + " Max " + (maxValue + tolerance));
-            Assert.True(maxMetric.getValue(level) <= maxValue + tolerance);
-            Assert.True(maxMetric.getValue(level) >= maxValue - absError);
-            assertDoubleNear(avgMetric.getValue(level), avgValue, 10*tolerance);
+            Assert.True(minMetric.GetValue(level) <= minValue + absError);
+            Assert.True(minMetric.GetValue(level) >= minValue - tolerance);
+            Console.WriteLine("Level: " + maxMetric.GetValue(level) + " Max " + (maxValue + tolerance));
+            Assert.True(maxMetric.GetValue(level) <= maxValue + tolerance);
+            Assert.True(maxMetric.GetValue(level) >= maxValue - absError);
+            assertDoubleNear(avgMetric.GetValue(level), avgValue, 10*tolerance);
         }
 
         private const int MAX_LEVEL = DEBUG_MODE ? 6 : 10;
@@ -371,7 +371,7 @@ namespace S2Geometry.Tests
                 JavaAssert.Equal(cell.face(), face);
                 JavaAssert.Equal(cell.level(), 0);
                 // Top-level faces have alternating orientations to get RHS coordinates.
-                JavaAssert.Equal(cell.orientation(), face & S2.SWAP_MASK);
+                JavaAssert.Equal(cell.orientation(), face & S2.SwapMask);
                 Assert.True(!cell.isLeaf());
                 for (var k = 0; k < 4; ++k)
                 {

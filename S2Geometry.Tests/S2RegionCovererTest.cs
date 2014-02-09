@@ -73,7 +73,7 @@ namespace S2Geometry.Tests
                 coverer.setMaxCells(skewed(10));
                 coverer.setLevelMod(1 + random(3));
                 var maxArea = Math.Min(
-                    4*S2.M_PI, (3*coverer.maxCells() + 1)*S2Cell.averageArea(coverer.minLevel()));
+                    4*S2.Pi, (3*coverer.maxCells() + 1)*S2Cell.averageArea(coverer.minLevel()));
                 var cap = getRandomCap(0.1*S2Cell.averageArea(kMaxLevel), maxArea);
                 var covering = new List<S2CellId>();
                 var interior = new List<S2CellId>();
@@ -134,7 +134,7 @@ namespace S2Geometry.Tests
                 var level = random(kMaxLevel + 1);
                 coverer.setMinLevel(level);
                 coverer.setMaxLevel(level);
-                var maxArea = Math.Min(4*S2.M_PI, 1000*S2Cell.averageArea(level));
+                var maxArea = Math.Min(4*S2.Pi, 1000*S2Cell.averageArea(level));
                 var cap = getRandomCap(0.1*S2Cell.averageArea(kMaxLevel), maxArea);
                 var covering = new List<S2CellId>();
                 S2RegionCoverer.getSimpleCovering(cap, cap.axis(), level, covering);

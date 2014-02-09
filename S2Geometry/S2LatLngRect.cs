@@ -71,12 +71,12 @@ namespace Google.Common.Geometry
                 {
                     // South pole axis yields smaller cap.
                     poleZ = -1;
-                    poleAngle = S2.M_PI_2 + lat.Hi;
+                    poleAngle = S2.PiOver2 + lat.Hi;
                 }
                 else
                 {
                     poleZ = 1;
-                    poleAngle = S2.M_PI_2 - lat.Lo;
+                    poleAngle = S2.PiOver2 - lat.Lo;
                 }
                 var poleCap = S2Cap.fromAxisAngle(new S2Point(0, 0, poleZ), S1Angle
                                                                                 .FromRadians(poleAngle));
@@ -86,9 +86,9 @@ namespace Google.Common.Geometry
                 // rectangles that are larger than 180 degrees, we punt and always return a
                 // bounding cap centered at one of the two poles.
                 var lngSpan = lng.Hi - lng.Lo;
-                if (Math.IEEERemainder(lngSpan, 2*S2.M_PI) >= 0)
+                if (Math.IEEERemainder(lngSpan, 2*S2.Pi) >= 0)
                 {
-                    if (lngSpan < 2*S2.M_PI)
+                    if (lngSpan < 2*S2.Pi)
                     {
                         var midCap = S2Cap.fromAxisAngle(getCenter().toPoint(), S1Angle
                                                                                     .FromRadians(0));
@@ -175,7 +175,7 @@ namespace Google.Common.Geometry
 
         public static R1Interval fullLat()
         {
-            return new R1Interval(-S2.M_PI_2, S2.M_PI_2);
+            return new R1Interval(-S2.PiOver2, S2.PiOver2);
         }
 
         /**
@@ -238,7 +238,7 @@ namespace Google.Common.Geometry
             // this plane that also passes through the equator. We use RobustCrossProd
             // to ensure that the edge normal is accurate even when the two points are
             // very close together.
-            var ab = S2.robustCrossProd(a, b);
+            var ab = S2.RobustCrossProd(a, b);
             var dir = S2Point.crossProd(ab, new S2Point(0, 0, 1));
             var da = dir.dotProd(a);
             var db = dir.dotProd(b);
@@ -270,7 +270,7 @@ namespace Google.Common.Geometry
         public bool isValid()
         {
             // The lat/lng ranges must either be both empty or both non-empty.
-            return (Math.Abs(lat.Lo) <= S2.M_PI_2 && Math.Abs(lat.Hi) <= S2.M_PI_2
+            return (Math.Abs(lat.Lo) <= S2.PiOver2 && Math.Abs(lat.Hi) <= S2.PiOver2
                     && lng.IsValid && lat.IsEmpty() == lng.IsEmpty);
         }
 
@@ -391,7 +391,7 @@ namespace Google.Common.Geometry
             var lo = S2LatLng.fromRadians(a.Lat.Lo, aLng).toPoint();
             var hi = S2LatLng.fromRadians(a.Lat.Hi, aLng).toPoint();
             var loCrossHi =
-                S2LatLng.fromRadians(0, aLng - S2.M_PI_2).normalized().toPoint();
+                S2LatLng.fromRadians(0, aLng - S2.PiOver2).normalized().toPoint();
             return S2EdgeUtil.getDistance(p.toPoint(), lo, hi, loCrossHi);
         }
 
@@ -459,11 +459,11 @@ namespace Google.Common.Geometry
             var aLo = new S2LatLng(a.latLo(), aLng).toPoint();
             var aHi = new S2LatLng(a.latHi(), aLng).toPoint();
             var aLoCrossHi =
-                S2LatLng.fromRadians(0, aLng.Radians - S2.M_PI_2).normalized().toPoint();
+                S2LatLng.fromRadians(0, aLng.Radians - S2.PiOver2).normalized().toPoint();
             var bLo = new S2LatLng(b.latLo(), bLng).toPoint();
             var bHi = new S2LatLng(b.latHi(), bLng).toPoint();
             var bLoCrossHi =
-                S2LatLng.fromRadians(0, bLng.Radians - S2.M_PI_2).normalized().toPoint();
+                S2LatLng.fromRadians(0, bLng.Radians - S2.PiOver2).normalized().toPoint();
 
             return S1Angle.Min(S2EdgeUtil.getDistance(aLo, bLo, bHi, bLoCrossHi),
                                S1Angle.Min(S2EdgeUtil.getDistance(aHi, bLo, bHi, bLoCrossHi),
@@ -791,7 +791,7 @@ namespace Google.Common.Geometry
             // longitude. The nice thing about edges of constant longitude is that
             // they are straight lines on the sphere (geodesics).
 
-            return S2.simpleCrossing(a, b, S2LatLng.fromRadians(lat.Lo, lng)
+            return S2.SimpleCrossing(a, b, S2LatLng.fromRadians(lat.Lo, lng)
                                                    .toPoint(), S2LatLng.fromRadians(lat.Hi, lng).toPoint());
         }
 
@@ -808,7 +808,7 @@ namespace Google.Common.Geometry
             // assert (S2.isUnitLength(a) && S2.isUnitLength(b));
 
             // First, compute the normal to the plane AB that points vaguely north.
-            var z = S2Point.normalize(S2.robustCrossProd(a, b));
+            var z = S2Point.normalize(S2.RobustCrossProd(a, b));
             if (z.z < 0)
             {
                 z = S2Point.neg(z);
@@ -816,7 +816,7 @@ namespace Google.Common.Geometry
 
             // Extend this to an orthonormal frame (x,y,z) where x is the direction
             // where the great circle through AB achieves its maximium latitude.
-            var y = S2Point.normalize(S2.robustCrossProd(z, new S2Point(0, 0, 1)));
+            var y = S2Point.normalize(S2.RobustCrossProd(z, new S2Point(0, 0, 1)));
             var x = S2Point.crossProd(y, z);
             // assert (S2.isUnitLength(x) && x.z >= 0);
 

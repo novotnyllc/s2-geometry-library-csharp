@@ -93,8 +93,8 @@ namespace Google.Common.Geometry
             // result changes according to the sign of the permutation. Thus ACB and
             // ABC are oppositely oriented, while BDA and ABD are the same.
             var aCrossB = S2Point.crossProd(a, b);
-            var acb = -S2.robustCCW(a, b, c, aCrossB);
-            var bda = S2.robustCCW(a, b, d, aCrossB);
+            var acb = -S2.RobustCcw(a, b, c, aCrossB);
+            var bda = S2.RobustCcw(a, b, d, aCrossB);
 
             // If any two vertices are the same, the result is degenerate.
             if ((bda & acb) == 0)
@@ -112,13 +112,13 @@ namespace Google.Common.Geometry
             // Otherwise we compute the orientations of CBD and DAC, and check whether
             // their orientations are compatible with the other two triangles.
             var cCrossD = S2Point.crossProd(c, d);
-            var cbd = -S2.robustCCW(c, d, b, cCrossD);
+            var cbd = -S2.RobustCcw(c, d, b, cCrossD);
             if (cbd != acb)
             {
                 return -1;
             }
 
-            var dac = S2.robustCCW(c, d, a, cCrossD);
+            var dac = S2.RobustCcw(c, d, a, cCrossD);
             return (dac == acb) ? 1 : -1;
         }
 
@@ -161,19 +161,19 @@ namespace Google.Common.Geometry
             // shared vertex than the edge CD.
             if (a.Equals(d))
             {
-                return S2.orderedCCW(S2.ortho(a), c, b, a);
+                return S2.OrderedCcw(S2.Ortho(a), c, b, a);
             }
             if (b.Equals(c))
             {
-                return S2.orderedCCW(S2.ortho(b), d, a, b);
+                return S2.OrderedCcw(S2.Ortho(b), d, a, b);
             }
             if (a.Equals(c))
             {
-                return S2.orderedCCW(S2.ortho(a), d, b, a);
+                return S2.OrderedCcw(S2.Ortho(a), d, b, a);
             }
             if (b.Equals(d))
             {
-                return S2.orderedCCW(S2.ortho(b), c, a, b);
+                return S2.OrderedCcw(S2.Ortho(b), c, a, b);
             }
 
             // assert (false);
@@ -222,9 +222,9 @@ namespace Google.Common.Geometry
 
             // We use robustCrossProd() to get accurate results even when two endpoints
             // are close together, or when the two line segments are nearly parallel.
-            var aNorm = S2Point.normalize(S2.robustCrossProd(a0, a1));
-            var bNorm = S2Point.normalize(S2.robustCrossProd(b0, b1));
-            var x = S2Point.normalize(S2.robustCrossProd(aNorm, bNorm));
+            var aNorm = S2Point.normalize(S2.RobustCrossProd(a0, a1));
+            var bNorm = S2Point.normalize(S2.RobustCrossProd(b0, b1));
+            var x = S2Point.normalize(S2.RobustCrossProd(aNorm, bNorm));
 
             // Make sure the intersection point is on the correct side of the sphere.
             // Since all vertices are unit length, and edges are less than 180 degrees,
@@ -245,7 +245,7 @@ namespace Google.Common.Geometry
             // (a0,a1) but outside the range covered by (a0,a1). In this case we do
             // additional clipping to ensure that it does.
 
-            if (S2.orderedCCW(a0, x, a1, aNorm) && S2.orderedCCW(b0, x, b1, bNorm))
+            if (S2.OrderedCcw(a0, x, a1, aNorm) && S2.OrderedCcw(b0, x, b1, bNorm))
             {
                 return x;
             }
@@ -253,19 +253,19 @@ namespace Google.Common.Geometry
             // Find the acceptable endpoint closest to x and return it. An endpoint is
             // acceptable if it lies between the endpoints of the other line segment.
             var r = new CloserResult(10, x);
-            if (S2.orderedCCW(b0, a0, b1, bNorm))
+            if (S2.OrderedCcw(b0, a0, b1, bNorm))
             {
                 r.replaceIfCloser(x, a0);
             }
-            if (S2.orderedCCW(b0, a1, b1, bNorm))
+            if (S2.OrderedCcw(b0, a1, b1, bNorm))
             {
                 r.replaceIfCloser(x, a1);
             }
-            if (S2.orderedCCW(a0, b0, a1, aNorm))
+            if (S2.OrderedCcw(a0, b0, a1, aNorm))
             {
                 r.replaceIfCloser(x, b0);
             }
-            if (S2.orderedCCW(a0, b1, a1, aNorm))
+            if (S2.OrderedCcw(a0, b1, a1, aNorm))
             {
                 r.replaceIfCloser(x, b1);
             }
@@ -296,7 +296,7 @@ namespace Google.Common.Geometry
 
         public static S1Angle getDistance(S2Point x, S2Point a, S2Point b)
         {
-            return getDistance(x, a, b, S2.robustCrossProd(a, b));
+            return getDistance(x, a, b, S2.RobustCrossProd(a, b));
         }
 
         /**
@@ -308,9 +308,9 @@ namespace Google.Common.Geometry
 
         public static S1Angle getDistance(S2Point x, S2Point a, S2Point b, S2Point aCrossB)
         {
-            Preconditions.CheckArgument(S2.isUnitLength(x));
-            Preconditions.CheckArgument(S2.isUnitLength(a));
-            Preconditions.CheckArgument(S2.isUnitLength(b));
+            Preconditions.CheckArgument(S2.IsUnitLength(x));
+            Preconditions.CheckArgument(S2.IsUnitLength(a));
+            Preconditions.CheckArgument(S2.IsUnitLength(b));
 
             // There are three cases. If X is located in the spherical wedge defined by
             // A, B, and the axis A x B, then the closest point is on the segment AB.
@@ -318,7 +318,7 @@ namespace Google.Common.Geometry
             // these two cases is the great circle passing through (A x B) and the
             // midpoint of AB.
 
-            if (S2.simpleCCW(aCrossB, a, x) && S2.simpleCCW(x, b, aCrossB))
+            if (S2.SimpleCcw(aCrossB, a, x) && S2.SimpleCcw(x, b, aCrossB))
             {
                 // The closest point to X lies on the segment AB. We compute the distance
                 // to the corresponding great circle. The result is accurate for small
@@ -345,16 +345,16 @@ namespace Google.Common.Geometry
 
         public static S2Point getClosestPoint(S2Point x, S2Point a, S2Point b)
         {
-            Preconditions.CheckArgument(S2.isUnitLength(x));
-            Preconditions.CheckArgument(S2.isUnitLength(a));
-            Preconditions.CheckArgument(S2.isUnitLength(b));
+            Preconditions.CheckArgument(S2.IsUnitLength(x));
+            Preconditions.CheckArgument(S2.IsUnitLength(a));
+            Preconditions.CheckArgument(S2.IsUnitLength(b));
 
-            var crossProd = S2.robustCrossProd(a, b);
+            var crossProd = S2.RobustCrossProd(a, b);
             // Find the closest point to X along the great circle through AB.
             var p = S2Point.minus(x, S2Point.mul(crossProd, x.dotProd(crossProd)/crossProd.norm2()));
 
             // If p is on the edge AB, then it's the closest point.
-            if (S2.simpleCCW(crossProd, a, p) && S2.simpleCCW(p, b, crossProd))
+            if (S2.SimpleCcw(crossProd, a, p) && S2.SimpleCcw(p, b, crossProd))
             {
                 return S2Point.normalize(p);
             }
@@ -432,7 +432,7 @@ namespace Google.Common.Geometry
             public void restartAt(S2Point c)
             {
                 this.c = c;
-                acb = -S2.robustCCW(a, b, c, aCrossB);
+                acb = -S2.RobustCcw(a, b, c, aCrossB);
             }
 
             /**
@@ -455,7 +455,7 @@ namespace Google.Common.Geometry
 
                 // Recall that robustCCW is invariant with respect to rotating its
                 // arguments, i.e. ABC has the same orientation as BDA.
-                var bda = S2.robustCCW(a, b, d, aCrossB);
+                var bda = S2.RobustCcw(a, b, d, aCrossB);
                 int result;
 
                 if (bda == -acb && bda != 0)
@@ -515,13 +515,13 @@ namespace Google.Common.Geometry
                 // ACB and BDA have the appropriate orientations, so now we check the
                 // triangles CBD and DAC.
                 var cCrossD = S2Point.crossProd(c, d);
-                var cbd = -S2.robustCCW(c, d, b, cCrossD);
+                var cbd = -S2.RobustCcw(c, d, b, cCrossD);
                 if (cbd != acb)
                 {
                     return -1;
                 }
 
-                var dac = S2.robustCCW(c, d, a, cCrossD);
+                var dac = S2.RobustCcw(c, d, a, cCrossD);
                 return (dac == acb) ? 1 : -1;
             }
         }
@@ -606,7 +606,7 @@ namespace Google.Common.Geometry
                     // "dir" in this plane that also passes through the equator. We use
                     // RobustCrossProd to ensure that the edge normal is accurate even
                     // when the two points are very close together.
-                    var aCrossB = S2.robustCrossProd(a, b);
+                    var aCrossB = S2.RobustCrossProd(a, b);
                     var dir = S2Point.crossProd(aCrossB, new S2Point(0, 0, 1));
                     var da = dir.dotProd(a);
                     var db = dir.dotProd(b);
@@ -657,7 +657,7 @@ namespace Google.Common.Geometry
                 // For A to contain B (where each loop interior is defined to be its left
                 // side), the CCW edge order around ab1 must be a2 b2 b0 a0. We split
                 // this test into two parts that test three vertices each.
-                return S2.orderedCCW(a2, b2, b0, ab1) && S2.orderedCCW(b0, a0, a2, ab1) ? 1 : 0;
+                return S2.OrderedCcw(a2, b2, b0, ab1) && S2.OrderedCcw(b0, a0, a2, ab1) ? 1 : 0;
             }
         }
 
@@ -696,11 +696,11 @@ namespace Google.Common.Geometry
                 // particular note that if orderedCCW(a,b,c,o) returns true, it may be
                 // possible that orderedCCW(c,b,a,o) is also true (if a == b or b == c).
 
-                if (S2.orderedCCW(a0, a2, b2, ab1))
+                if (S2.OrderedCcw(a0, a2, b2, ab1))
                 {
                     // The cases with this vertex ordering are 1, 5, and 6,
                     // although case 2 is also possible if a2 == b2.
-                    if (S2.orderedCCW(b2, b0, a0, ab1))
+                    if (S2.OrderedCcw(b2, b0, a0, ab1))
                     {
                         return 1; // Case 1 (A contains B)
                     }
@@ -709,7 +709,7 @@ namespace Google.Common.Geometry
                     return (a2.Equals(b2)) ? 0 : -1; // Case 2 vs. 5,6.
                 }
                 // We are in case 2, 3, or 4.
-                return S2.orderedCCW(a0, b0, a2, ab1) ? 0 : -1; // Case 2,3 vs. 4.
+                return S2.OrderedCcw(a0, b0, a2, ab1) ? 0 : -1; // Case 2,3 vs. 4.
             }
         }
 
@@ -727,13 +727,13 @@ namespace Google.Common.Geometry
                 // distinguish cases (1) [A contains B], (3) [A and B are disjoint],
                 // and (2,4,5,6) [A intersects but does not contain B].
 
-                if (S2.orderedCCW(a0, a2, b2, ab1))
+                if (S2.OrderedCcw(a0, a2, b2, ab1))
                 {
                     // We are in case 1, 5, or 6, or case 2 if a2 == b2.
-                    return S2.orderedCCW(b2, b0, a0, ab1) ? 1 : -1; // Case 1 vs. 2,5,6.
+                    return S2.OrderedCcw(b2, b0, a0, ab1) ? 1 : -1; // Case 1 vs. 2,5,6.
                 }
                 // We are in cases 2, 3, or 4.
-                if (!S2.orderedCCW(a2, b0, b2, ab1))
+                if (!S2.OrderedCcw(a2, b0, b2, ab1))
                 {
                     return 0; // Case 3.
                 }
@@ -761,7 +761,7 @@ namespace Google.Common.Geometry
                 // Note that it's important to write these conditions as negatives
                 // (!OrderedCCW(a,b,c,o) rather than Ordered(c,b,a,o)) to get correct
                 // results when two vertices are the same.
-                return (S2.orderedCCW(a0, b2, b0, ab1) && S2.orderedCCW(b0, a2, a0, ab1) ? 0 : -1);
+                return (S2.OrderedCcw(a0, b2, b0, ab1) && S2.OrderedCcw(b0, a2, a0, ab1) ? 0 : -1);
             }
         }
 

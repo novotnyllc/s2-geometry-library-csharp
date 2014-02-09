@@ -332,7 +332,7 @@ namespace Google.Common.Geometry
             // thickening is honored (it's not a big deal if we honor it when we don't
             // request it) when doing the covering-by-cap trick.
             var edgeLength = a.angle(b);
-            var idealLevel = S2Projections.MIN_WIDTH.getMaxLevel(edgeLength*(1 + 2*THICKENING));
+            var idealLevel = S2Projections.MIN_WIDTH.GetMaxLevel(edgeLength*(1 + 2*THICKENING));
 
             S2CellId containingCellId;
             if (!thickenEdge)

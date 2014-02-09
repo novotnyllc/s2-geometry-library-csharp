@@ -57,7 +57,7 @@ namespace S2Geometry.Tests
                 int? childOrientation = 0;
                 JavaAssert.Equal(child.toFaceIJOrientation(ref i, ref j, ref childOrientation), face);
                 JavaAssert.Equal(
-                    childOrientation.Value, orientation.Value ^ S2.posToOrientation(pos));
+                    childOrientation.Value, orientation.Value ^ S2.PosToOrientation(pos));
 
                 parentMap.Add(child, parent);
                 expandCell(child, cells, parentMap);
@@ -190,7 +190,7 @@ namespace S2Geometry.Tests
             // path over the surface of the sphere, i.e. there are no
             // discontinuous jumps from one region to another.
 
-            var maxDist = S2Projections.MAX_EDGE.getValue(MAX_WALK_LEVEL);
+            var maxDist = S2Projections.MAX_EDGE.GetValue(MAX_WALK_LEVEL);
             var end = S2CellId.end(MAX_WALK_LEVEL);
             var id = S2CellId.begin(MAX_WALK_LEVEL);
             for (; !id.Equals(end); id = id.next())
@@ -220,7 +220,7 @@ namespace S2Geometry.Tests
             // the cells at the corners of each face are stretched -- they have 60 and
             // 120 degree angles.)
 
-            var maxDist = 0.5*S2Projections.MAX_DIAG.getValue(S2CellId.MAX_LEVEL);
+            var maxDist = 0.5*S2Projections.MAX_DIAG.GetValue(S2CellId.MAX_LEVEL);
             for (var i = 0; i < 1000000; ++i)
             {
                 // randomPoint();

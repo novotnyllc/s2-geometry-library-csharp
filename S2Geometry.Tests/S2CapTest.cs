@@ -36,9 +36,9 @@ namespace S2Geometry.Tests
             Assert.True(rect.Lng.IsFull);
 
             // Cap that is tangent to the north pole.
-            rect = S2Cap.fromAxisAngle(S2Point.normalize(new S2Point(1, 0, 1)), S1Angle.FromRadians(S2.M_PI_4)).RectBound;
+            rect = S2Cap.fromAxisAngle(S2Point.normalize(new S2Point(1, 0, 1)), S1Angle.FromRadians(S2.PiOver4)).RectBound;
             assertDoubleNear(rect.Lat.Lo, 0);
-            assertDoubleNear(rect.Lat.Hi, S2.M_PI_2);
+            assertDoubleNear(rect.Lat.Hi, S2.PiOver2);
             Assert.True(rect.Lng.IsFull);
 
             rect = S2Cap
@@ -49,7 +49,7 @@ namespace S2Geometry.Tests
 
             // The eastern hemisphere.
             rect = S2Cap
-                .fromAxisAngle(new S2Point(0, 1, 0), S1Angle.FromRadians(S2.M_PI_2 + 5e-16)).RectBound;
+                .fromAxisAngle(new S2Point(0, 1, 0), S1Angle.FromRadians(S2.PiOver2 + 5e-16)).RectBound;
             assertDoubleNear(rect.latLo().Degrees, -90, kDegreeEps);
             assertDoubleNear(rect.latHi().Degrees, 90, kDegreeEps);
             Assert.True(rect.Lng.IsFull);
@@ -75,7 +75,7 @@ namespace S2Geometry.Tests
             // and then check for the expected intersection/containment results.
 
             // The distance from the center of a face to one of its vertices.
-            var kFaceRadius = Math.Atan(S2.M_SQRT2);
+            var kFaceRadius = Math.Atan(S2.Sqrt2);
 
             for (var face = 0; face < 6; ++face)
             {
@@ -120,7 +120,7 @@ namespace S2Geometry.Tests
                         covering.MayIntersect(cornerCell), center.dotProd(cornerCell.getCenter()) > 0);
 
                     // A cap that barely intersects the edges of 'cap_face'.
-                    var bulging = S2Cap.fromAxisAngle(center, S1Angle.FromRadians(S2.M_PI_4 + EPS));
+                    var bulging = S2Cap.fromAxisAngle(center, S1Angle.FromRadians(S2.PiOver4 + EPS));
                     Assert.True(!bulging.Contains(rootCell));
                     JavaAssert.Equal(bulging.MayIntersect(rootCell), capFace != antiFace);
                     JavaAssert.Equal(bulging.Contains(edgeCell), capFace == face);
@@ -221,9 +221,9 @@ namespace S2Geometry.Tests
             Assert.True(!xaxis.interiorIntersects(empty));
             Assert.True(hemi.contains(tiny));
             Assert.True(hemi.contains(
-                S2Cap.fromAxisAngle(new S2Point(1, 0, 0), S1Angle.FromRadians(S2.M_PI_4 - EPS))));
+                S2Cap.fromAxisAngle(new S2Point(1, 0, 0), S1Angle.FromRadians(S2.PiOver4 - EPS))));
             Assert.True(!hemi.contains(
-                S2Cap.fromAxisAngle(new S2Point(1, 0, 0), S1Angle.FromRadians(S2.M_PI_4 + EPS))));
+                S2Cap.fromAxisAngle(new S2Point(1, 0, 0), S1Angle.FromRadians(S2.PiOver4 + EPS))));
             Assert.True(concave.contains(hemi));
             Assert.True(concave.interiorIntersects(hemi.complement()));
             Assert.True(!concave.contains(S2Cap.fromAxisHeight(S2Point.neg(concave.axis()), 0.1)));

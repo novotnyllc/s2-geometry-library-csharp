@@ -9,12 +9,11 @@ namespace Google.Common.Geometry
     public static class S2
     {
         // Declare some frequently used constants
-        public static readonly double M_PI = Math.PI;
-        public static readonly double M_1_PI = 1.0/Math.PI;
-        public static readonly double M_PI_2 = Math.PI/2.0;
-        public static readonly double M_PI_4 = Math.PI/4.0;
-        public static readonly double M_SQRT2 = Math.Sqrt(2);
-        public static readonly double M_E = Math.E;
+        public const double Pi = Math.PI;
+        public const double InversePi = 1.0/Math.PI;
+        public const double PiOver2 = Math.PI/2.0;
+        public const double PiOver4 = Math.PI/4.0;
+        public const double E = Math.E;
 
         // Together these flags define a cell orientation. If SWAP_MASK
         // is true, then canonical traversal order is flipped around the
@@ -22,13 +21,14 @@ namespace Google.Common.Geometry
         // INVERT_MASK is true, then the traversal order is rotated by 180
         // degrees (i.e. the bits of i and j are inverted, or equivalently,
         // the axis directions are reversed).
-        public static readonly int SWAP_MASK = 0x01;
-        public static readonly int INVERT_MASK = 0x02;
+        public const int SwapMask = 0x01;
+        public const int InvertMask = 0x02;
 
         // Number of bits in the mantissa of a double.
-        private static readonly int EXPONENT_SHIFT = 52;
+        private const int ExponentShift = 52;
         // Mask to extract the exponent from a double.
-        private static readonly long EXPONENT_MASK = 0x7ff0000000000000L;
+        private const long ExponentMask = 0x7ff0000000000000L;
+        public static readonly double Sqrt2 = Math.Sqrt(2);
 
         /**
    * If v is non-zero, return an integer {@code exp} such that
@@ -44,8 +44,8 @@ namespace Google.Common.Geometry
 
         /** Mapping Hilbert traversal order to orientation adjustment mask. */
 
-        private static readonly int[] POS_TO_ORIENTATION =
-        {SWAP_MASK, 0, 0, INVERT_MASK + SWAP_MASK};
+        private static readonly int[] _PosToOrientation =
+        {SwapMask, 0, 0, InvertMask + SwapMask};
 
         /**
    * Returns an XOR bit mask indicating how the orientation of a child subcell
@@ -62,7 +62,7 @@ namespace Google.Common.Geometry
 
         /** Mapping from cell orientation + Hilbert traversal to IJ-index. */
 
-        private static readonly int[][] POS_TO_IJ = new int[][]
+        private static readonly int[][] _PosToIj = new int[][]
         {
             // 0 1 2 3
             new[] {0, 1, 3, 2}, // canonical order: (0,0), (0,1), (1,1), (1,0)
@@ -85,7 +85,7 @@ namespace Google.Common.Geometry
 
         /** Mapping from Hilbert traversal order + cell orientation to IJ-index. */
 
-        private static readonly int[][] IJ_TO_POS = new int[][]
+        private static readonly int[][] _IjToPos = new int[][]
         {
             // (0,0) (0,1) (1,0) (1,1)
             new[] {0, 1, 3, 2}, // canonical order
@@ -94,24 +94,26 @@ namespace Google.Common.Geometry
             new[] {2, 1, 3, 0}, // swapped & inverted
         };
 
-        internal static int exp(double v)
+        public static readonly S2Point Origin = new S2Point(0, 1, 0);
+
+        internal static int Exp(double v)
         {
             if (v == 0)
             {
                 return 0;
             }
             var bits = BitConverter.DoubleToInt64Bits(v);
-            return (int)((EXPONENT_MASK & bits) >> EXPONENT_SHIFT) - 1022;
+            return (int)((ExponentMask & bits) >> ExponentShift) - 1022;
         }
 
-        public static int posToOrientation(int position)
+        public static int PosToOrientation(int position)
         {
             Preconditions.CheckArgument(0 <= position && position < 4);
 
-            return POS_TO_ORIENTATION[position];
+            return _PosToOrientation[position];
         }
 
-        public static int posToIJ(int orientation, int position)
+        public static int PosToIj(int orientation, int position)
         {
             //Preconditions.checkArgument(0 <= orientation && orientation < 4);
             //Preconditions.checkArgument(0 <= position && position < 4);
@@ -120,7 +122,7 @@ namespace Google.Common.Geometry
             if (!(0 <= orientation && orientation < 4))
                 throw new ArgumentException("orientation");
 
-            return POS_TO_IJ[orientation][position];
+            return _PosToIj[orientation][position];
         }
 
         /**
@@ -135,11 +137,11 @@ namespace Google.Common.Geometry
    * @throws IllegalArgumentException if either parameter is out of bounds.
    */
 
-        public static int ijToPos(int orientation, int ijIndex)
+        public static int IjToPos(int orientation, int ijIndex)
         {
             Preconditions.CheckArgument(0 <= orientation && orientation < 4);
             Preconditions.CheckArgument(0 <= ijIndex && ijIndex < 4);
-            return IJ_TO_POS[orientation][ijIndex];
+            return _IjToPos[orientation][ijIndex];
         }
 
         /**
@@ -153,17 +155,13 @@ namespace Google.Common.Geometry
    * rules out the north and south poles.)
    */
 
-        public static S2Point origin()
-        {
-            return new S2Point(0, 1, 0);
-        }
 
         /**
    * Return true if the given point is approximately unit length (this is mainly
    * useful for assertions).
    */
 
-        public static bool isUnitLength(S2Point p)
+        public static bool IsUnitLength(S2Point p)
         {
             return Math.Abs(p.norm2() - 1) <= 1e-15;
         }
@@ -176,7 +174,7 @@ namespace Google.Common.Geometry
    * SimpleCrossing(c,d,a,b) == SimpleCrossing(a,b,c,d)
    */
 
-        public static bool simpleCrossing(S2Point a, S2Point b, S2Point c, S2Point d)
+        public static bool SimpleCrossing(S2Point a, S2Point b, S2Point c, S2Point d)
         {
             // We compute SimpleCCW() for triangles ACB, CBD, BDA, and DAC. All
             // of these triangles need to have the same orientation (CW or CCW)
@@ -208,7 +206,7 @@ namespace Google.Common.Geometry
    * == -RCP(a,b) unless a == b or a == -b
    */
 
-        public static S2Point robustCrossProd(S2Point a, S2Point b)
+        public static S2Point RobustCrossProd(S2Point a, S2Point b)
         {
             // The direction of a.CrossProd(b) becomes unstable as (a + b) or (a - b)
             // approaches zero. This leads to situations where a.CrossProd(b) is not
@@ -228,7 +226,7 @@ namespace Google.Common.Geometry
 
             // The only result that makes sense mathematically is to return zero, but
             // we find it more convenient to return an arbitrary orthogonal vector.
-            return ortho(a);
+            return Ortho(a);
         }
 
         /**
@@ -236,7 +234,7 @@ namespace Google.Common.Geometry
    * = -Ortho(a) for all a.
    */
 
-        public static S2Point ortho(S2Point a)
+        public static S2Point Ortho(S2Point a)
         {
             // The current implementation in S2Point has the property we need,
             // i.e. Ortho(-a) = -Ortho(a) for all a.
@@ -254,7 +252,7 @@ namespace Google.Common.Geometry
    * degrees.
    */
 
-        internal static double area(S2Point a, S2Point b, S2Point c)
+        internal static double Area(S2Point a, S2Point b, S2Point c)
         {
             // This method is based on l'Huilier's theorem,
             //
@@ -302,7 +300,7 @@ namespace Google.Common.Geometry
                 if (dmin < 1e-2*s*s2*s2)
                 {
                     // This triangle is skinny enough to consider Girard's formula.
-                    var area = girardArea(a, b, c);
+                    var area = GirardArea(a, b, c);
                     if (dmin < s*(0.1*area))
                     {
                         return area;
@@ -324,7 +322,7 @@ namespace Google.Common.Geometry
    * triangles.
    */
 
-        public static double girardArea(S2Point a, S2Point b, S2Point c)
+        public static double GirardArea(S2Point a, S2Point b, S2Point c)
         {
             // This is equivalent to the usual Girard's formula but is slightly
             // more accurate, faster to compute, and handles a == b == c without
@@ -341,9 +339,9 @@ namespace Google.Common.Geometry
    * and a negative value otherwise.
    */
 
-        public static double signedArea(S2Point a, S2Point b, S2Point c)
+        public static double SignedArea(S2Point a, S2Point b, S2Point c)
         {
-            return area(a, b, c)*robustCCW(a, b, c);
+            return Area(a, b, c)*RobustCcw(a, b, c);
         }
 
         // About centroids:
@@ -386,7 +384,7 @@ namespace Google.Common.Geometry
    * intuitive "center" (see example above).
    */
 
-        public static S2Point planarCentroid(S2Point a, S2Point b, S2Point c)
+        public static S2Point PlanarCentroid(S2Point a, S2Point b, S2Point c)
         {
             return new S2Point((a.x + b.x + c.x)/3.0, (a.y + b.y + c.y)/3.0, (a.z + b.z + c.z)/3.0);
         }
@@ -399,7 +397,7 @@ namespace Google.Common.Geometry
    * easier to calculate this way.
    */
 
-        public static S2Point trueCentroid(S2Point a, S2Point b, S2Point c)
+        public static S2Point TrueCentroid(S2Point a, S2Point b, S2Point c)
         {
             // I couldn't find any references for computing the true centroid of a
             // spherical triangle... I have a truly marvellous demonstration of this
@@ -436,7 +434,7 @@ namespace Google.Common.Geometry
    * In other words, ABC and CBA are guaranteed not to be both CCW
    */
 
-        public static bool simpleCCW(S2Point a, S2Point b, S2Point c)
+        public static bool SimpleCcw(S2Point a, S2Point b, S2Point c)
         {
             // We compute the signed volume of the parallelepiped ABC. The usual
             // formula for this is (AxB).C, but we compute it here using (CxA).B
@@ -478,9 +476,9 @@ namespace Google.Common.Geometry
    * are undefined.
    */
 
-        public static int robustCCW(S2Point a, S2Point b, S2Point c)
+        public static int RobustCcw(S2Point a, S2Point b, S2Point c)
         {
-            return robustCCW(a, b, c, S2Point.crossProd(a, b));
+            return RobustCcw(a, b, c, S2Point.crossProd(a, b));
         }
 
         /**
@@ -491,7 +489,7 @@ namespace Google.Common.Geometry
    * are undefined
    */
 
-        public static int robustCCW(S2Point a, S2Point b, S2Point c, S2Point aCrossB)
+        public static int RobustCcw(S2Point a, S2Point b, S2Point c, S2Point aCrossB)
         {
             // assert (isUnitLength(a) && isUnitLength(b) && isUnitLength(c));
 
@@ -503,7 +501,7 @@ namespace Google.Common.Geometry
             // is greater than 2*14*(2**-54), the determinant will have the same sign
             // even if the arguments are rotated (which produces a mathematically
             // equivalent result but with potentially different rounding errors).
-            var kMinAbsValue = 1.6e-15; // 2 * 14 * 2**-54
+            const double kMinAbsValue = 1.6e-15; // 2 * 14 * 2**-54
 
             var det = aCrossB.dotProd(c);
 
@@ -521,7 +519,7 @@ namespace Google.Common.Geometry
                 return -1;
             }
 
-            return expensiveCCW(a, b, c);
+            return ExpensiveCcw(a, b, c);
         }
 
         /**
@@ -529,7 +527,7 @@ namespace Google.Common.Geometry
    * the determinant is uncertain.
    */
 
-        private static int expensiveCCW(S2Point a, S2Point b, S2Point c)
+        private static int ExpensiveCcw(S2Point a, S2Point b, S2Point c)
         {
             // Return zero if and only if two points are the same. This ensures (1).
             if (a.Equals(b) || b.Equals(c) || c.Equals(a))
@@ -627,14 +625,14 @@ namespace Google.Common.Geometry
             // the Y-Z plane, then in the Z-X plane, and then in the X-Y plane.
 
             var ccw =
-                planarOrderedCCW(new R2Vector(a.y, a.z), new R2Vector(b.y, b.z), new R2Vector(c.y, c.z));
+                PlanarOrderedCcw(new R2Vector(a.y, a.z), new R2Vector(b.y, b.z), new R2Vector(c.y, c.z));
             if (ccw == 0)
             {
                 ccw =
-                    planarOrderedCCW(new R2Vector(a.z, a.x), new R2Vector(b.z, b.x), new R2Vector(c.z, c.x));
+                    PlanarOrderedCcw(new R2Vector(a.z, a.x), new R2Vector(b.z, b.x), new R2Vector(c.z, c.x));
                 if (ccw == 0)
                 {
-                    ccw = planarOrderedCCW(
+                    ccw = PlanarOrderedCcw(
                         new R2Vector(a.x, a.y), new R2Vector(b.x, b.y), new R2Vector(c.x, c.y));
                     // assert (ccw != 0);
                 }
@@ -643,7 +641,7 @@ namespace Google.Common.Geometry
         }
 
 
-        public static int planarCCW(R2Vector a, R2Vector b)
+        public static int PlanarCcw(R2Vector a, R2Vector b)
         {
             // Return +1 if the edge AB is CCW around the origin, etc.
             double sab = (a.DotProd(b) > 0) ? -1 : 1;
@@ -651,7 +649,7 @@ namespace Google.Common.Geometry
             var da = a.Norm2();
             var db = b.Norm2();
             double sign;
-            if (da < db || (da == db && a < b ))
+            if (da < db || (da == db && a < b))
             {
                 sign = a.CrossProd(vab)*sab;
             }
@@ -670,12 +668,12 @@ namespace Google.Common.Geometry
             return 0;
         }
 
-        public static int planarOrderedCCW(R2Vector a, R2Vector b, R2Vector c)
+        public static int PlanarOrderedCcw(R2Vector a, R2Vector b, R2Vector c)
         {
             var sum = 0;
-            sum += planarCCW(a, b);
-            sum += planarCCW(b, c);
-            sum += planarCCW(c, a);
+            sum += PlanarCcw(a, b);
+            sum += PlanarCcw(b, c);
+            sum += PlanarCcw(c, a);
             if (sum > 0)
             {
                 return 1;
@@ -702,22 +700,22 @@ namespace Google.Common.Geometry
    * </ol>
    */
 
-        public static bool orderedCCW(S2Point a, S2Point b, S2Point c, S2Point o)
+        public static bool OrderedCcw(S2Point a, S2Point b, S2Point c, S2Point o)
         {
             // The last inequality below is ">" rather than ">=" so that we return true
             // if A == B or B == C, and otherwise false if A == C. Recall that
             // RobustCCW(x,y,z) == -RobustCCW(z,y,x) for all x,y,z.
 
             var sum = 0;
-            if (robustCCW(b, o, a) >= 0)
+            if (RobustCcw(b, o, a) >= 0)
             {
                 ++sum;
             }
-            if (robustCCW(c, o, b) >= 0)
+            if (RobustCcw(c, o, b) >= 0)
             {
                 ++sum;
             }
-            if (robustCCW(a, o, c) > 0)
+            if (RobustCcw(a, o, c) > 0)
             {
                 ++sum;
             }
@@ -734,7 +732,7 @@ namespace Google.Common.Geometry
    * degrees.
    */
 
-        public static double angle(S2Point a, S2Point b, S2Point c)
+        public static double Angle(S2Point a, S2Point b, S2Point c)
         {
             return S2Point.crossProd(a, b).angle(S2Point.crossProd(c, b));
         }
@@ -752,12 +750,12 @@ namespace Google.Common.Geometry
    * @return the exterior angle at the vertex B in the triangle ABC
    */
 
-        public static double turnAngle(S2Point a, S2Point b, S2Point c)
+        public static double TurnAngle(S2Point a, S2Point b, S2Point c)
         {
             // This is a bit less efficient because we compute all 3 cross products, but
             // it ensures that turnAngle(a,b,c) == -turnAngle(c,b,a) for all a,b,c.
             var outAngle = S2Point.crossProd(b, a).angle(S2Point.crossProd(c, b));
-            return (robustCCW(a, b, c) > 0) ? outAngle : -outAngle;
+            return (RobustCcw(a, b, c) > 0) ? outAngle : -outAngle;
         }
 
         /**
@@ -765,24 +763,24 @@ namespace Google.Common.Geometry
    * (mainly useful for testing).
    */
 
-        public static bool approxEquals(S2Point a, S2Point b, double maxError)
+        public static bool ApproxEquals(S2Point a, S2Point b, double maxError)
         {
             return a.angle(b) <= maxError;
         }
 
-        public static bool approxEquals(S2Point a, S2Point b)
+        public static bool ApproxEquals(S2Point a, S2Point b)
         {
-            return approxEquals(a, b, 1e-15);
+            return ApproxEquals(a, b, 1e-15);
         }
 
-        public static bool approxEquals(double a, double b, double maxError)
+        public static bool ApproxEquals(double a, double b, double maxError)
         {
             return Math.Abs(a - b) <= maxError;
         }
 
-        public static bool approxEquals(double a, double b)
+        public static bool ApproxEquals(double a, double b)
         {
-            return approxEquals(a, b, 1e-15);
+            return ApproxEquals(a, b, 1e-15);
         }
 
         public class Metric
@@ -805,14 +803,14 @@ namespace Google.Common.Geometry
      * a length or area in (s,t)-space to get a useful value.
      */
 
-            public double deriv()
+            public double Deriv()
             {
                 return _deriv;
             }
 
             /** Return the value of a metric for cells at the given level. */
 
-            public double getValue(int level)
+            public double GetValue(int level)
             {
                 return FpUtils.Scalb(_deriv, _dim*(1 - level));
             }
@@ -824,9 +822,9 @@ namespace Google.Common.Geometry
      * always a valid level.
      */
 
-            public int getClosestLevel(double value)
+            public int GetClosestLevel(double value)
             {
-                return getMinLevel(M_SQRT2*value);
+                return GetMinLevel(Sqrt2*value);
             }
 
             /**
@@ -837,7 +835,7 @@ namespace Google.Common.Geometry
      * valid level.
      */
 
-            public int getMinLevel(double value)
+            public int GetMinLevel(double value)
             {
                 if (value <= 0)
                 {
@@ -846,7 +844,7 @@ namespace Google.Common.Geometry
 
                 // This code is equivalent to computing a floating-point "level"
                 // value and rounding up.
-                var exponent = exp(value/((1 << _dim)*_deriv));
+                var exponent = Exp(value/((1 << _dim)*_deriv));
                 var level = Math.Max(0,
                                      Math.Min(S2CellId.MAX_LEVEL, -((exponent - 1) >> (_dim - 1))));
                 // assert (level == S2CellId.MAX_LEVEL || getValue(level) <= value);
@@ -862,7 +860,7 @@ namespace Google.Common.Geometry
      * valid level.
      */
 
-            public int getMaxLevel(double value)
+            public int GetMaxLevel(double value)
             {
                 if (value <= 0)
                 {
@@ -871,7 +869,7 @@ namespace Google.Common.Geometry
 
                 // This code is equivalent to computing a floating-point "level"
                 // value and rounding down.
-                var exponent = exp((1 << _dim)*_deriv/value);
+                var exponent = Exp((1 << _dim)*_deriv/value);
                 var level = Math.Max(0,
                                      Math.Min(S2CellId.MAX_LEVEL, ((exponent - 1) >> (_dim - 1))));
                 // assert (level == 0 || getValue(level) >= value);

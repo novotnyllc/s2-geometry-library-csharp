@@ -123,7 +123,7 @@ namespace Google.Common.Geometry
 
                     var lat = R1Interval.FromPointPair(getLatitude(i, j), getLatitude(1 - i, 1 - j));
                     lat = lat.Expanded(MaxError).Intersection(S2LatLngRect.fullLat());
-                    if (lat.Lo == -S2.M_PI_2 || lat.Hi == S2.M_PI_2)
+                    if (lat.Lo == -S2.PiOver2 || lat.Hi == S2.PiOver2)
                     {
                         return new S2LatLngRect(lat, S1Interval.Full);
                     }
@@ -138,22 +138,22 @@ namespace Google.Common.Geometry
                 {
                     case 0:
                         return new S2LatLngRect(
-                            new R1Interval(-S2.M_PI_4, S2.M_PI_4), new S1Interval(-S2.M_PI_4, S2.M_PI_4));
+                            new R1Interval(-S2.PiOver4, S2.PiOver4), new S1Interval(-S2.PiOver4, S2.PiOver4));
                     case 1:
                         return new S2LatLngRect(
-                            new R1Interval(-S2.M_PI_4, S2.M_PI_4), new S1Interval(S2.M_PI_4, 3*S2.M_PI_4));
+                            new R1Interval(-S2.PiOver4, S2.PiOver4), new S1Interval(S2.PiOver4, 3*S2.PiOver4));
                     case 2:
                         return new S2LatLngRect(
-                            new R1Interval(PoleMinLat, S2.M_PI_2), new S1Interval(-S2.M_PI, S2.M_PI));
+                            new R1Interval(PoleMinLat, S2.PiOver2), new S1Interval(-S2.Pi, S2.Pi));
                     case 3:
                         return new S2LatLngRect(
-                            new R1Interval(-S2.M_PI_4, S2.M_PI_4), new S1Interval(3*S2.M_PI_4, -3*S2.M_PI_4));
+                            new R1Interval(-S2.PiOver4, S2.PiOver4), new S1Interval(3*S2.PiOver4, -3*S2.PiOver4));
                     case 4:
                         return new S2LatLngRect(
-                            new R1Interval(-S2.M_PI_4, S2.M_PI_4), new S1Interval(-3*S2.M_PI_4, -S2.M_PI_4));
+                            new R1Interval(-S2.PiOver4, S2.PiOver4), new S1Interval(-3*S2.PiOver4, -S2.PiOver4));
                     default:
                         return new S2LatLngRect(
-                            new R1Interval(-S2.M_PI_2, -PoleMinLat), new S1Interval(-S2.M_PI, S2.M_PI));
+                            new R1Interval(-S2.PiOver2, -PoleMinLat), new S1Interval(-S2.Pi, S2.Pi));
                 }
             }
         }
@@ -301,9 +301,9 @@ namespace Google.Common.Geometry
                 var child = children[pos];
                 child._face = _face;
                 child._level = (byte)(_level + 1);
-                child._orientation = (byte)(_orientation ^ S2.posToOrientation(pos));
+                child._orientation = (byte)(_orientation ^ S2.PosToOrientation(pos));
                 child._cellId = id;
-                var ij = S2.posToIJ(_orientation, pos);
+                var ij = S2.PosToIj(_orientation, pos);
                 for (var d = 0; d < 2; ++d)
                 {
                     // The dimension 0 index (i/u) is in bit 1 of ij.
@@ -364,7 +364,7 @@ namespace Google.Common.Geometry
 
         public static double averageArea(int level)
         {
-            return S2Projections.AVG_AREA.getValue(level);
+            return S2Projections.AVG_AREA.GetValue(level);
         }
 
         /**
@@ -405,7 +405,7 @@ namespace Google.Common.Geometry
             // to be 2 / (1 + sqrt(1 - r*r)) where "r" is the radius of the disc.
             // For example, when r=0 the ratio is 1, and when r=1 the ratio is 2.
             // Here we set Pi*r*r == flat_area to find the equivalent disc.
-            return flatArea*2/(1 + Math.Sqrt(1 - Math.Min(S2.M_1_PI*flatArea, 1.0)));
+            return flatArea*2/(1 + Math.Sqrt(1 - Math.Min(S2.InversePi*flatArea, 1.0)));
         }
 
         /**
@@ -420,7 +420,7 @@ namespace Google.Common.Geometry
             var v1 = getVertex(1);
             var v2 = getVertex(2);
             var v3 = getVertex(3);
-            return S2.area(v0, v1, v2) + S2.area(v0, v2, v3);
+            return S2.Area(v0, v1, v2) + S2.Area(v0, v2, v3);
         }
 
         // //////////////////////////////////////////////////////////////////////

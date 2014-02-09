@@ -180,7 +180,7 @@ namespace Google.Common.Geometry
 
         public bool isValid()
         {
-            return Math.Abs(lat().Radians) <= S2.M_PI_2 && Math.Abs(lng().Radians) <= S2.M_PI;
+            return Math.Abs(lat().Radians) <= S2.PiOver2 && Math.Abs(lng().Radians) <= S2.Pi;
         }
 
         /**
@@ -198,8 +198,8 @@ namespace Google.Common.Geometry
         {
             // drem(x, 2 * S2.M_PI) reduces its argument to the range
             // [-S2.M_PI, S2.M_PI] inclusive, which is what we want here.
-            return new S2LatLng(Math.Max(-S2.M_PI_2, Math.Min(S2.M_PI_2, lat().Radians)),
-                                Math.IEEERemainder(lng().Radians, 2*S2.M_PI));
+            return new S2LatLng(Math.Max(-S2.PiOver2, Math.Min(S2.PiOver2, lat().Radians)),
+                                Math.IEEERemainder(lng().Radians, 2*S2.Pi));
         }
 
         // Clamps the latitude to the range [-90, 90] degrees, and adds or subtracts

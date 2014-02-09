@@ -13,9 +13,9 @@ namespace S2Geometry.Tests
         [Test]
         public void testBasic()
         {
-            var llRad = S2LatLng.fromRadians(S2.M_PI_4, S2.M_PI_2);
-            assertTrue(llRad.lat().Radians == S2.M_PI_4);
-            assertTrue(llRad.lng().Radians == S2.M_PI_2);
+            var llRad = S2LatLng.fromRadians(S2.PiOver4, S2.PiOver2);
+            assertTrue(llRad.lat().Radians == S2.PiOver4);
+            assertTrue(llRad.lng().Radians == S2.PiOver2);
             assertTrue(llRad.isValid());
             var llDeg = S2LatLng.fromDegrees(45, 90);
             assertEquals(llDeg, llRad);
@@ -51,18 +51,18 @@ namespace S2Geometry.Tests
             assertDoubleNear(
                 new S2LatLng(S2LatLng.fromDegrees(90.0, 65.0).toPoint()).lat().Degrees, 90.0);
             assertEquals(
-                new S2LatLng(S2LatLng.fromRadians(-S2.M_PI_2, 1).toPoint()).lat().Radians, -S2.M_PI_2);
+                new S2LatLng(S2LatLng.fromRadians(-S2.PiOver2, 1).toPoint()).lat().Radians, -S2.PiOver2);
             assertDoubleNear(
                 Math.Abs(new S2LatLng(S2LatLng.fromDegrees(12.2, 180.0).toPoint()).lng().Degrees), 180.0);
             assertEquals(
-                Math.Abs(new S2LatLng(S2LatLng.fromRadians(0.1, -S2.M_PI).toPoint()).lng().Radians),
-                S2.M_PI);
+                Math.Abs(new S2LatLng(S2LatLng.fromRadians(0.1, -S2.Pi).toPoint()).lng().Radians),
+                S2.Pi);
 
             // Test a bunch of random points.
             for (var i = 0; i < 100000; ++i)
             {
                 var p = randomPoint();
-                assertTrue(S2.approxEquals(p, new S2LatLng(p).toPoint()));
+                assertTrue(S2.ApproxEquals(p, new S2LatLng(p).toPoint()));
             }
 
             // Test generation from E5

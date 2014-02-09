@@ -76,21 +76,21 @@ namespace Google.Common.Geometry
 
                 var allLongitudes = false;
                 double[] lat = new double[2], lng = new double[2];
-                lng[0] = -S2.M_PI;
-                lng[1] = S2.M_PI;
+                lng[0] = -S2.Pi;
+                lng[1] = S2.Pi;
 
                 // Check whether cap includes the south pole.
                 lat[0] = axisLatLng.lat().Radians - capAngle;
-                if (lat[0] <= -S2.M_PI_2)
+                if (lat[0] <= -S2.PiOver2)
                 {
-                    lat[0] = -S2.M_PI_2;
+                    lat[0] = -S2.PiOver2;
                     allLongitudes = true;
                 }
                 // Check whether cap includes the north pole.
                 lat[1] = axisLatLng.lat().Radians + capAngle;
-                if (lat[1] >= S2.M_PI_2)
+                if (lat[1] >= S2.PiOver2)
                 {
-                    lat[1] = S2.M_PI_2;
+                    lat[1] = S2.PiOver2;
                     allLongitudes = true;
                 }
                 if (!allLongitudes)
@@ -112,9 +112,9 @@ namespace Google.Common.Geometry
                     {
                         var angleA = Math.Asin(sinA/sinC);
                         lng[0] = Math.IEEERemainder(axisLatLng.lng().Radians - angleA,
-                                                    2*S2.M_PI);
+                                                    2*S2.Pi);
                         lng[1] = Math.IEEERemainder(axisLatLng.lng().Radians + angleA,
-                                                    2*S2.M_PI);
+                                                    2*S2.Pi);
                     }
                 }
                 return new S2LatLngRect(new R1Interval(lat[0], lat[1]), new S1Interval(
@@ -229,7 +229,7 @@ namespace Google.Common.Geometry
         public static S2Cap fromAxisArea(S2Point axis, double area)
         {
             // assert (S2.isUnitLength(axis));
-            return new S2Cap(axis, area/(2*S2.M_PI));
+            return new S2Cap(axis, area/(2*S2.Pi));
         }
 
         /** Return an empty cap, i.e. a cap that contains no points. */
@@ -260,7 +260,7 @@ namespace Google.Common.Geometry
 
         public double area()
         {
-            return 2*S2.M_PI*Math.Max(0.0, _height);
+            return 2*S2.Pi*Math.Max(0.0, _height);
         }
 
         /**
@@ -287,7 +287,7 @@ namespace Google.Common.Geometry
 
         public bool isValid()
         {
-            return S2.isUnitLength(_axis) && _height <= 2;
+            return S2.IsUnitLength(_axis) && _height <= 2;
         }
 
         /** Return true if the cap is empty, i.e. it contains no points. */
@@ -398,7 +398,7 @@ namespace Google.Common.Geometry
                 // optimized by doing the calculation in terms of cap heights rather
                 // than cap opening angles.
                 var angle = _axis.angle(other._axis) + other.angle().Radians;
-                if (angle >= S2.M_PI)
+                if (angle >= S2.Pi)
                 {
                     return new S2Cap(_axis, 2); //Full cap
                 }

@@ -94,7 +94,7 @@ namespace S2Geometry.Tests
                 var z = S2Point.normalize(S2Point.crossProd(x, y));
 
                 var vertices = new List<S2Point>();
-                for (double theta = 0; theta < 2*S2.M_PI; theta += Math.Pow(rand.NextDouble(), 10))
+                for (double theta = 0; theta < 2*S2.Pi; theta += Math.Pow(rand.NextDouble(), 10))
                 {
                     var p = S2Point.add(S2Point.mul(x, Math.Cos(theta)), S2Point.mul(y, Math.Sin(theta)));
                     if (vertices.Count == 0 || !p.Equals(vertices[vertices.Count - 1]))
@@ -106,7 +106,7 @@ namespace S2Geometry.Tests
                 vertices.Add(vertices[0]);
                 var line = new S2Polyline(vertices);
                 var length = line.getArclengthAngle();
-                assertTrue(Math.Abs(length.Radians - 2*S2.M_PI) < 2e-14);
+                assertTrue(Math.Abs(length.Radians - 2*S2.Pi) < 2e-14);
             }
         }
 
@@ -121,9 +121,9 @@ namespace S2Geometry.Tests
             var line = new S2Polyline(vertices);
 
             assertEquals(line.interpolate(-0.1), vertices[0]);
-            assertTrue(S2.approxEquals(
-                line.interpolate(0.1), S2Point.normalize(new S2Point(1, Math.Tan(0.2*S2.M_PI/2), 0))));
-            assertTrue(S2.approxEquals(line.interpolate(0.25), S2Point.normalize(new S2Point(1, 1, 0))));
+            assertTrue(S2.ApproxEquals(
+                line.interpolate(0.1), S2Point.normalize(new S2Point(1, Math.Tan(0.2*S2.Pi/2), 0))));
+            assertTrue(S2.ApproxEquals(line.interpolate(0.25), S2Point.normalize(new S2Point(1, 1, 0))));
 
             assertEquals(line.interpolate(0.5), vertices[1]);
             assertEquals(line.interpolate(0.75), vertices[2]);
@@ -159,31 +159,31 @@ namespace S2Geometry.Tests
 
             testPoint = S2LatLng.fromDegrees(0.5, -0.5).toPoint();
             edgeIndex = line.getNearestEdgeIndex(testPoint);
-            assertTrue(S2.approxEquals(
+            assertTrue(S2.ApproxEquals(
                 line.projectToEdge(testPoint, edgeIndex), S2LatLng.fromDegrees(0, 0).toPoint()));
             assertEquals(0, edgeIndex);
 
             testPoint = S2LatLng.fromDegrees(0.5, 0.5).toPoint();
             edgeIndex = line.getNearestEdgeIndex(testPoint);
-            assertTrue(S2.approxEquals(
+            assertTrue(S2.ApproxEquals(
                 line.projectToEdge(testPoint, edgeIndex), S2LatLng.fromDegrees(0, 0.5).toPoint()));
             assertEquals(0, edgeIndex);
 
             testPoint = S2LatLng.fromDegrees(0.5, 1).toPoint();
             edgeIndex = line.getNearestEdgeIndex(testPoint);
-            assertTrue(S2.approxEquals(
+            assertTrue(S2.ApproxEquals(
                 line.projectToEdge(testPoint, edgeIndex), S2LatLng.fromDegrees(0, 1).toPoint()));
             assertEquals(0, edgeIndex);
 
             testPoint = S2LatLng.fromDegrees(-0.5, 2.5).toPoint();
             edgeIndex = line.getNearestEdgeIndex(testPoint);
-            assertTrue(S2.approxEquals(
+            assertTrue(S2.ApproxEquals(
                 line.projectToEdge(testPoint, edgeIndex), S2LatLng.fromDegrees(0, 2).toPoint()));
             assertEquals(1, edgeIndex);
 
             testPoint = S2LatLng.fromDegrees(2, 2).toPoint();
             edgeIndex = line.getNearestEdgeIndex(testPoint);
-            assertTrue(S2.approxEquals(
+            assertTrue(S2.ApproxEquals(
                 line.projectToEdge(testPoint, edgeIndex), S2LatLng.fromDegrees(1, 2).toPoint()));
             assertEquals(2, edgeIndex);
         }

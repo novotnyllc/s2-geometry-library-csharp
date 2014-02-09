@@ -974,7 +974,7 @@ namespace Google.Common.Geometry
                 // assert (S2.POS_TO_ORIENTATION[0] == S2.SWAP_MASK);
                 if ((lowestOnBit() & 0x1111111111111110L) != 0)
                 {
-                    bits ^= S2.SWAP_MASK;
+                    bits ^= S2.SwapMask;
                 }
                 orientation = bits;
             }
@@ -1163,8 +1163,8 @@ namespace Google.Common.Geometry
                 // Initialize each sub-cell recursively.
                 for (var subPos = 0; subPos < 4; subPos++)
                 {
-                    var ij = S2.posToIJ(orientation, subPos);
-                    var orientationMask = S2.posToOrientation(subPos);
+                    var ij = S2.PosToIj(orientation, subPos);
+                    var orientationMask = S2.PosToOrientation(subPos);
                     initLookupCell(level, i + (ij >> 1), j + (ij & 1), origOrientation, pos + subPos, orientation ^ orientationMask);
                 }
             }
