@@ -47,7 +47,7 @@ namespace Google.Common.Geometry
 
         public bool Contains(S2Cell cell)
         {
-            return contains(cell.id());
+            return contains(cell.Id);
         }
 
         public S2Cap CapBound
@@ -63,7 +63,7 @@ namespace Google.Common.Geometry
                 var centroid = new S2Point(0, 0, 0);
                 foreach (var id in this)
                 {
-                    var area = S2Cell.averageArea(id.level());
+                    var area = S2Cell.AverageArea(id.level());
                     centroid = centroid + (id.toPoint() * area);
                 }
                 if (centroid.Equals(new S2Point(0, 0, 0)))
@@ -106,7 +106,7 @@ namespace Google.Common.Geometry
 
         public bool MayIntersect(S2Cell cell)
         {
-            return intersects(cell.id());
+            return intersects(cell.Id);
         }
 
         public override bool Equals(object obj)
@@ -631,7 +631,7 @@ namespace Google.Common.Geometry
 
         public double averageBasedArea()
         {
-            return S2Cell.averageArea(S2CellId.MAX_LEVEL)*leafCellsCovered();
+            return S2Cell.AverageArea(S2CellId.MAX_LEVEL)*leafCellsCovered();
         }
 
         /**
@@ -646,7 +646,7 @@ namespace Google.Common.Geometry
             double area = 0;
             foreach (var cellId in _cellIds)
             {
-                area += new S2Cell(cellId).approxArea();
+                area += new S2Cell(cellId).ApproxArea();
             }
             return area;
         }
@@ -663,7 +663,7 @@ namespace Google.Common.Geometry
             double area = 0;
             foreach (var cellId in _cellIds)
             {
-                area += new S2Cell(cellId).exactArea();
+                area += new S2Cell(cellId).ExactArea();
             }
             return area;
         }

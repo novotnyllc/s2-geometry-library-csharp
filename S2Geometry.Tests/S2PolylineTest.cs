@@ -139,7 +139,7 @@ namespace S2Geometry.Tests
             var line = new S2Polyline(vertices);
             for (var face = 0; face < 6; ++face)
             {
-                var cell = S2Cell.fromFacePosLevel(face, (byte)0, 0);
+                var cell = S2Cell.FromFacePosLevel(face, (byte)0, 0);
                 assertEquals(line.MayIntersect(cell), (face & 1) == 0);
             }
         }

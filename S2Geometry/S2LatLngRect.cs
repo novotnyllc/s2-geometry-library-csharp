@@ -559,11 +559,11 @@ namespace Google.Common.Geometry
             {
                 return false;
             }
-            if (contains(cell.getCenter()))
+            if (contains(cell.Center))
             {
                 return true;
             }
-            if (cell.contains(getCenter().toPoint()))
+            if (cell.Contains(getCenter().toPoint()))
             {
                 return true;
             }
@@ -583,7 +583,7 @@ namespace Google.Common.Geometry
             var cellLl = new S2LatLng[4];
             for (var i = 0; i < 4; ++i)
             {
-                cellV[i] = cell.getVertex(i); // Must be normalized.
+                cellV[i] = cell.GetVertex(i); // Must be normalized.
                 cellLl[i] = new S2LatLng(cellV[i]);
                 if (contains(cellLl[i]))
                 {

@@ -211,7 +211,7 @@ namespace Google.Common.Geometry
             var vertices = new S2Point[4];
             for (var k = 0; k < 4; ++k)
             {
-                vertices[k] = cell.getVertex(k);
+                vertices[k] = cell.GetVertex(k);
                 if (!Contains(vertices[k]))
                 {
                     return false;
@@ -229,7 +229,7 @@ namespace Google.Common.Geometry
             var vertices = new S2Point[4];
             for (var k = 0; k < 4; ++k)
             {
-                vertices[k] = cell.getVertex(k);
+                vertices[k] = cell.GetVertex(k);
                 if (Contains(vertices[k]))
                 {
                     return true;
@@ -433,7 +433,7 @@ namespace Google.Common.Geometry
 
             // Optimization: return true if the cell contains the cap axis. (This
             // allows half of the edge checks below to be skipped.)
-            if (cell.contains(_axis))
+            if (cell.Contains(_axis))
             {
                 return true;
             }
@@ -445,7 +445,7 @@ namespace Google.Common.Geometry
             var sin2Angle = _height*(2 - _height); // sin^2(capAngle)
             for (var k = 0; k < 4; ++k)
             {
-                var edge = cell.getEdgeRaw(k);
+                var edge = cell.GetEdgeRaw(k);
                 var dot = _axis.DotProd(edge);
                 if (dot > 0)
                 {

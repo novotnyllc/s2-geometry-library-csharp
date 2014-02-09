@@ -75,7 +75,7 @@ namespace Google.Common.Geometry
         {
             for (var face = 0; face < 6; ++face)
             {
-                FACE_CELLS[face] = S2Cell.fromFacePosLevel(face, (byte)0, 0);
+                FACE_CELLS[face] = S2Cell.FromFacePosLevel(face, (byte)0, 0);
             }
         }
 
@@ -309,7 +309,7 @@ namespace Google.Common.Geometry
             }
 
             var isTerminal = false;
-            if (cell.level() >= _minLevel)
+            if (cell.Level >= _minLevel)
             {
                 if (interiorCovering)
                 {
@@ -317,14 +317,14 @@ namespace Google.Common.Geometry
                     {
                         isTerminal = true;
                     }
-                    else if (cell.level() + _levelMod > _maxLevel)
+                    else if (cell.Level + _levelMod > _maxLevel)
                     {
                         return null;
                     }
                 }
                 else
                 {
-                    if (cell.level() + _levelMod > _maxLevel || region.Contains(cell))
+                    if (cell.Level + _levelMod > _maxLevel || region.Contains(cell))
                     {
                         isTerminal = true;
                     }
@@ -363,14 +363,14 @@ namespace Google.Common.Geometry
 
             if (candidate.isTerminal)
             {
-                result.Add(candidate.cell.id());
+                result.Add(candidate.cell.Id);
                 return;
             }
             // assert (candidate.numChildren == 0);
 
             // Expand one level at a time until we hit min_level_ to ensure that
             // we don't skip over it.
-            var numLevels = (candidate.cell.level() < _minLevel) ? 1 : _levelMod;
+            var numLevels = (candidate.cell.Level < _minLevel) ? 1 : _levelMod;
             var numTerminals = expandChildren(candidate, candidate.cell, numLevels);
 
             if (candidate.numChildren == 0)
@@ -378,7 +378,7 @@ namespace Google.Common.Geometry
                 // Do nothing
             }
             else if (!interiorCovering && numTerminals == 1 << maxChildrenShift()
-                     && candidate.cell.level() >= _minLevel)
+                     && candidate.cell.Level >= _minLevel)
             {
                 // Optimization: add the parent cell rather than all of its children.
                 // We can't do this for interior coverings, since the children just
@@ -395,7 +395,7 @@ namespace Google.Common.Geometry
                 // at the same level, we prefer the cells with the smallest number of
                 // intersecting children. Finally, we prefer cells that have the smallest
                 // number of children that cannot be refined any further.
-                var priority = -((((candidate.cell.level() << maxChildrenShift()) + candidate.numChildren)
+                var priority = -((((candidate.cell.Level << maxChildrenShift()) + candidate.numChildren)
                                   << maxChildrenShift()) + numTerminals);
                 var entry = new QueueEntry(priority, candidate);
                 candidateQueue.Enqueue(entry);
@@ -417,7 +417,7 @@ namespace Google.Common.Geometry
             {
                 childCells[i] = new S2Cell();
             }
-            cell.subdivide(childCells);
+            cell.Subdivide(childCells);
             var numTerminals = 0;
             for (var i = 0; i < 4; ++i)
             {
@@ -514,7 +514,7 @@ namespace Google.Common.Geometry
                 var qe = candidateQueue.Dequeue();
                 var candidate = qe.candidate;
                 // logger.info("Pop: " + candidate.cell.id());
-                if (candidate.cell.level() < _minLevel || candidate.numChildren == 1
+                if (candidate.cell.Level < _minLevel || candidate.numChildren == 1
                     || result.Count + (interiorCovering ? 0 : candidateQueue.Count) + candidate.numChildren
                     <= _maxCells)
                 {

@@ -119,7 +119,7 @@ namespace Google.Common.Geometry
             // check all the vertices.
             for (var i = 0; i < numVertices(); ++i)
             {
-                if (cell.contains(vertex(i)))
+                if (cell.Contains(vertex(i)))
                 {
                     return true;
                 }
@@ -127,7 +127,7 @@ namespace Google.Common.Geometry
             var cellVertices = new S2Point[4];
             for (var i = 0; i < 4; ++i)
             {
-                cellVertices[i] = cell.getVertex(i);
+                cellVertices[i] = cell.GetVertex(i);
             }
             for (var j = 0; j < 4; ++j)
             {

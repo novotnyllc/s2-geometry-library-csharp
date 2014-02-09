@@ -523,7 +523,7 @@ namespace Google.Common.Geometry
             var vertices = new S2Point[4];
             for (var i = 0; i < 4; ++i)
             {
-                vertices[i] = cell.getVertex(i);
+                vertices[i] = cell.GetVertex(i);
             }
             for (var i = 0; i < 4; ++i)
             {
@@ -580,7 +580,7 @@ namespace Google.Common.Geometry
                             children[i] = new S2Cell();
                         }
                     }
-                    new S2Cell(cell).subdivide(children);
+                    new S2Cell(cell).Subdivide(children);
                     foreach (var child in children)
                     {
                         // TODO(user): Do the check for the four cells at once,
@@ -592,7 +592,7 @@ namespace Google.Common.Geometry
                         // cannot be fully contained in a cell.
                         if (edgeIntersectsCellBoundary(a, b, child))
                         {
-                            cover.Add(child.id());
+                            cover.Add(child.Id);
                         }
                     }
                 }

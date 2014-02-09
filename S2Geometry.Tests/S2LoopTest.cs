@@ -105,8 +105,8 @@ namespace S2Geometry.Tests
                 var cell = new S2Cell(id);
                 for (var k = 0; k < 4; ++k)
                 {
-                    var a = cell.getVertex(k);
-                    var b = cell.getVertex((k + 1) & 3);
+                    var a = cell.GetVertex(k);
+                    var b = cell.GetVertex((k + 1) & 3);
                     if (!edges.ContainsKey(b))
                     {
                         edges.Add(b, new HashSet<S2Point>());
@@ -433,11 +433,11 @@ namespace S2Geometry.Tests
                 for (var id = S2CellId.begin(level); !id.Equals(S2CellId.end(level)); id = id.next())
                 {
                     var cell = new S2Cell(id);
-                    points.Add(cell.getCenter());
+                    points.Add(cell.Center);
                     for (var k = 0; k < 4; ++k)
                     {
-                        loopVertices.Add(cell.getVertex(k));
-                        points.Add(cell.getVertex(k));
+                        loopVertices.Add(cell.GetVertex(k));
+                        points.Add(cell.GetVertex(k));
                     }
                     loops.Add(new S2Loop(loopVertices));
                     loopVertices.Clear();

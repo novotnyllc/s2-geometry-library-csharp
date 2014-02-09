@@ -73,30 +73,30 @@ namespace S2Geometry.Tests
 
         private static void gatherStats(S2Cell cell)
         {
-            var s = levelStats[cell.level()];
-            var exactArea = cell.exactArea();
-            var approxArea = cell.approxArea();
+            var s = levelStats[cell.Level];
+            var exactArea = cell.ExactArea();
+            var approxArea = cell.ApproxArea();
             double minEdge = 100, maxEdge = 0, avgEdge = 0;
             double minDiag = 100, maxDiag = 0;
             double minWidth = 100, maxWidth = 0;
             double minAngleSpan = 100, maxAngleSpan = 0;
             for (var i = 0; i < 4; ++i)
             {
-                var edge = cell.getVertexRaw(i).Angle(cell.getVertexRaw((i + 1) & 3));
+                var edge = cell.GetVertexRaw(i).Angle(cell.GetVertexRaw((i + 1) & 3));
                 minEdge = Math.Min(edge, minEdge);
                 maxEdge = Math.Max(edge, maxEdge);
                 avgEdge += 0.25*edge;
-                var mid = cell.getVertexRaw(i) + cell.getVertexRaw((i + 1) & 3);
-                var width = S2.PiOver2 - mid.Angle(cell.getEdgeRaw(i ^ 2));
+                var mid = cell.GetVertexRaw(i) + cell.GetVertexRaw((i + 1) & 3);
+                var width = S2.PiOver2 - mid.Angle(cell.GetEdgeRaw(i ^ 2));
                 minWidth = Math.Min(width, minWidth);
                 maxWidth = Math.Max(width, maxWidth);
                 if (i < 2)
                 {
-                    var diag = cell.getVertexRaw(i).Angle(cell.getVertexRaw(i ^ 2));
+                    var diag = cell.GetVertexRaw(i).Angle(cell.GetVertexRaw(i ^ 2));
                     minDiag = Math.Min(diag, minDiag);
                     maxDiag = Math.Max(diag, maxDiag);
-                    var angleSpan = cell.getEdgeRaw(i).Angle(
-                        -cell.getEdgeRaw(i ^ 2));
+                    var angleSpan = cell.GetEdgeRaw(i).Angle(
+                        -cell.GetEdgeRaw(i ^ 2));
                     minAngleSpan = Math.Min(angleSpan, minAngleSpan);
                     maxAngleSpan = Math.Max(angleSpan, maxAngleSpan);
                 }
@@ -127,7 +127,7 @@ namespace S2Geometry.Tests
         public void testSubdivide(S2Cell cell)
         {
             gatherStats(cell);
-            if (cell.isLeaf())
+            if (cell.IsLeaf)
             {
                 return;
             }
@@ -137,42 +137,42 @@ namespace S2Geometry.Tests
             {
                 children[i] = new S2Cell();
             }
-            Assert.True(cell.subdivide(children));
-            var childId = cell.id().childBegin();
+            Assert.True(cell.Subdivide(children));
+            var childId = cell.Id.childBegin();
             double exactArea = 0;
             double approxArea = 0;
             double averageArea = 0;
             for (var i = 0; i < 4; ++i, childId = childId.next())
             {
-                exactArea += children[i].exactArea();
-                approxArea += children[i].approxArea();
-                averageArea += children[i].averageArea();
+                exactArea += children[i].ExactArea();
+                approxArea += children[i].ApproxArea();
+                averageArea += children[i].AverageArea();
 
                 // Check that the child geometry is consistent with its cell id.
-                JavaAssert.Equal(children[i].id(), childId);
-                Assert.True(children[i].getCenter().Aequal(childId.toPoint(), 1e-15));
+                JavaAssert.Equal(children[i].Id, childId);
+                Assert.True(children[i].Center.Aequal(childId.toPoint(), 1e-15));
                 var direct = new S2Cell(childId);
-                JavaAssert.Equal(children[i].face(), direct.face());
-                JavaAssert.Equal(children[i].level(), direct.level());
-                JavaAssert.Equal(children[i].orientation(), direct.orientation());
-                JavaAssert.Equal(children[i].getCenterRaw(), direct.getCenterRaw());
+                JavaAssert.Equal(children[i].Face, direct.Face);
+                JavaAssert.Equal(children[i].Level, direct.Level);
+                JavaAssert.Equal(children[i].Orientation, direct.Orientation);
+                JavaAssert.Equal(children[i].CenterRaw, direct.CenterRaw);
                 for (var k = 0; k < 4; ++k)
                 {
-                    JavaAssert.Equal(children[i].getVertexRaw(k), direct.getVertexRaw(k));
-                    JavaAssert.Equal(children[i].getEdgeRaw(k), direct.getEdgeRaw(k));
+                    JavaAssert.Equal(children[i].GetVertexRaw(k), direct.GetVertexRaw(k));
+                    JavaAssert.Equal(children[i].GetEdgeRaw(k), direct.GetEdgeRaw(k));
                 }
 
                 // Test Contains() and MayIntersect().
                 Assert.True(cell.Contains(children[i]));
                 Assert.True(cell.MayIntersect(children[i]));
                 Assert.True(!children[i].Contains(cell));
-                Assert.True(cell.contains(children[i].getCenterRaw()));
+                Assert.True(cell.Contains(children[i].CenterRaw));
                 for (var j = 0; j < 4; ++j)
                 {
-                    Assert.True(cell.contains(children[i].getVertexRaw(j)));
+                    Assert.True(cell.Contains(children[i].GetVertexRaw(j)));
                     if (j != i)
                     {
-                        Assert.True(!children[i].contains(children[j].getCenterRaw()));
+                        Assert.True(!children[i].Contains(children[j].CenterRaw));
                         Assert.True(!children[i].MayIntersect(children[j]));
                     }
                 }
@@ -180,43 +180,43 @@ namespace S2Geometry.Tests
                 // Test GetCapBound and GetRectBound.
                 var parentCap = cell.CapBound;
                 var parentRect = cell.RectBound;
-                if (cell.contains(new S2Point(0, 0, 1))
-                    || cell.contains(new S2Point(0, 0, -1)))
+                if (cell.Contains(new S2Point(0, 0, 1))
+                    || cell.Contains(new S2Point(0, 0, -1)))
                 {
                     Assert.True(parentRect.Lng.IsFull);
                 }
                 var childCap = children[i].CapBound;
                 var childRect = children[i].RectBound;
-                Assert.True(childCap.Contains(children[i].getCenter()));
-                Assert.True(childRect.contains(children[i].getCenterRaw()));
-                Assert.True(parentCap.Contains(children[i].getCenter()));
-                Assert.True(parentRect.contains(children[i].getCenterRaw()));
+                Assert.True(childCap.Contains(children[i].Center));
+                Assert.True(childRect.contains(children[i].CenterRaw));
+                Assert.True(parentCap.Contains(children[i].Center));
+                Assert.True(parentRect.contains(children[i].CenterRaw));
                 for (var j = 0; j < 4; ++j)
                 {
-                    Assert.True(childCap.Contains(children[i].getVertex(j)));
-                    Assert.True(childRect.contains(children[i].getVertex(j)));
-                    Assert.True(childRect.contains(children[i].getVertexRaw(j)));
-                    Assert.True(parentCap.Contains(children[i].getVertex(j)));
-                    if (!parentRect.contains(children[i].getVertex(j)))
+                    Assert.True(childCap.Contains(children[i].GetVertex(j)));
+                    Assert.True(childRect.contains(children[i].GetVertex(j)));
+                    Assert.True(childRect.contains(children[i].GetVertexRaw(j)));
+                    Assert.True(parentCap.Contains(children[i].GetVertex(j)));
+                    if (!parentRect.contains(children[i].GetVertex(j)))
                     {
                         Console.WriteLine("cell: " + cell + " i: " + i + " j: " + j);
                         Console.WriteLine("Children " + i + ": " + children[i]);
                         Console.WriteLine("Parent rect: " + parentRect);
-                        Console.WriteLine("Vertex raw(j) " + children[i].getVertex(j));
-                        Console.WriteLine("Latlng of vertex: " + new S2LatLng(children[i].getVertex(j)));
+                        Console.WriteLine("Vertex raw(j) " + children[i].GetVertex(j));
+                        Console.WriteLine("Latlng of vertex: " + new S2LatLng(children[i].GetVertex(j)));
                         Console.WriteLine("RectBound: " + cell.RectBound);
                     }
-                    Assert.True(parentRect.contains(children[i].getVertex(j)));
-                    if (!parentRect.contains(children[i].getVertexRaw(j)))
+                    Assert.True(parentRect.contains(children[i].GetVertex(j)));
+                    if (!parentRect.contains(children[i].GetVertexRaw(j)))
                     {
                         Console.WriteLine("cell: " + cell + " i: " + i + " j: " + j);
                         Console.WriteLine("Children " + i + ": " + children[i]);
                         Console.WriteLine("Parent rect: " + parentRect);
-                        Console.WriteLine("Vertex raw(j) " + children[i].getVertexRaw(j));
-                        Console.WriteLine("Latlng of vertex: " + new S2LatLng(children[i].getVertexRaw(j)));
+                        Console.WriteLine("Vertex raw(j) " + children[i].GetVertexRaw(j));
+                        Console.WriteLine("Latlng of vertex: " + new S2LatLng(children[i].GetVertexRaw(j)));
                         Console.WriteLine("RectBound: " + cell.RectBound);
                     }
-                    Assert.True(parentRect.contains(children[i].getVertexRaw(j)));
+                    Assert.True(parentRect.contains(children[i].GetVertexRaw(j)));
                     if (j != i)
                     {
                         // The bounding caps and rectangles should be tight enough so that
@@ -225,11 +225,11 @@ namespace S2Geometry.Tests
                         var rectCount = 0;
                         for (var k = 0; k < 4; ++k)
                         {
-                            if (childCap.Contains(children[j].getVertex(k)))
+                            if (childCap.Contains(children[j].GetVertex(k)))
                             {
                                 ++capCount;
                             }
-                            if (childRect.contains(children[j].getVertexRaw(k)))
+                            if (childRect.contains(children[j].GetVertexRaw(k)))
                             {
                                 ++rectCount;
                             }
@@ -249,18 +249,18 @@ namespace S2Geometry.Tests
                 // Also subdivide one corner cell, one edge cell, and one center cell
                 // so that we have a better chance of sample the minimum metric values.
                 var forceSubdivide = false;
-                var center = S2Projections.getNorm(children[i].face());
-                var edge = center + S2Projections.getUAxis(children[i].face());
-                var corner = edge + S2Projections.getVAxis(children[i].face());
+                var center = S2Projections.getNorm(children[i].Face);
+                var edge = center + S2Projections.getUAxis(children[i].Face);
+                var corner = edge + S2Projections.getVAxis(children[i].Face);
                 for (var j = 0; j < 4; ++j)
                 {
-                    var p = children[i].getVertexRaw(j);
+                    var p = children[i].GetVertexRaw(j);
                     if (p.Equals(center) || p.Equals(edge) || p.Equals(corner))
                     {
                         forceSubdivide = true;
                     }
                 }
-                if (forceSubdivide || cell.level() < (DEBUG_MODE ? 5 : 6)
+                if (forceSubdivide || cell.Level < (DEBUG_MODE ? 5 : 6)
                     || random(DEBUG_MODE ? 10 : 4) == 0)
                 {
                     testSubdivide(children[i]);
@@ -278,11 +278,11 @@ namespace S2Geometry.Tests
             // For AverageArea(), the areas themselves are not very accurate, but
             // the average area of a parent is exactly 4 times the area of a child.
 
-            Assert.True(Math.Abs(Math.Log(exactArea/cell.exactArea())) <= Math
+            Assert.True(Math.Abs(Math.Log(exactArea/cell.ExactArea())) <= Math
                                                                               .Abs(Math.Log(1 + 1e-6)));
-            Assert.True(Math.Abs(Math.Log(approxArea/cell.approxArea())) <= Math
+            Assert.True(Math.Abs(Math.Log(approxArea/cell.ApproxArea())) <= Math
                                                                                 .Abs(Math.Log(1.03)));
-            Assert.True(Math.Abs(Math.Log(averageArea/cell.averageArea())) <= Math
+            Assert.True(Math.Abs(Math.Log(averageArea/cell.AverageArea())) <= Math
                                                                                   .Abs(Math.Log(1 + 1e-15)));
         }
 
@@ -334,8 +334,8 @@ namespace S2Geometry.Tests
         public void expandChildren1(S2Cell cell)
         {
             var children = new S2Cell[4];
-            Assert.True(cell.subdivide(children));
-            if (children[0].level() < MAX_LEVEL)
+            Assert.True(cell.Subdivide(children));
+            if (children[0].Level < MAX_LEVEL)
             {
                 for (var pos = 0; pos < 4; ++pos)
                 {
@@ -346,11 +346,11 @@ namespace S2Geometry.Tests
 
         public void expandChildren2(S2Cell cell)
         {
-            var id = cell.id().childBegin();
+            var id = cell.Id.childBegin();
             for (var pos = 0; pos < 4; ++pos, id = id.next())
             {
                 var child = new S2Cell(id);
-                if (child.level() < MAX_LEVEL)
+                if (child.Level < MAX_LEVEL)
                 {
                     expandChildren2(child);
                 }
@@ -366,39 +366,39 @@ namespace S2Geometry.Tests
             {
                 var id = S2CellId.fromFacePosLevel(face, 0, 0);
                 var cell = new S2Cell(id);
-                JavaAssert.Equal(cell.id(), id);
-                JavaAssert.Equal(cell.face(), face);
-                JavaAssert.Equal(cell.level(), 0);
+                JavaAssert.Equal(cell.Id, id);
+                JavaAssert.Equal(cell.Face, face);
+                JavaAssert.Equal(cell.Level, 0);
                 // Top-level faces have alternating orientations to get RHS coordinates.
-                JavaAssert.Equal(cell.orientation(), face & S2.SwapMask);
-                Assert.True(!cell.isLeaf());
+                JavaAssert.Equal(cell.Orientation, face & S2.SwapMask);
+                Assert.True(!cell.IsLeaf);
                 for (var k = 0; k < 4; ++k)
                 {
-                    if (edgeCounts.ContainsKey(cell.getEdgeRaw(k)))
+                    if (edgeCounts.ContainsKey(cell.GetEdgeRaw(k)))
                     {
-                        edgeCounts[cell.getEdgeRaw(k)] = edgeCounts[cell
-                                                                        .getEdgeRaw(k)] + 1;
+                        edgeCounts[cell.GetEdgeRaw(k)] = edgeCounts[cell
+                                                                        .GetEdgeRaw(k)] + 1;
                     }
                     else
                     {
-                        edgeCounts[cell.getEdgeRaw(k)] = 1;
+                        edgeCounts[cell.GetEdgeRaw(k)] = 1;
                     }
 
-                    if (vertexCounts.ContainsKey(cell.getVertexRaw(k)))
+                    if (vertexCounts.ContainsKey(cell.GetVertexRaw(k)))
                     {
-                        vertexCounts[cell.getVertexRaw(k)] = vertexCounts[cell
-                                                                              .getVertexRaw(k)] + 1;
+                        vertexCounts[cell.GetVertexRaw(k)] = vertexCounts[cell
+                                                                              .GetVertexRaw(k)] + 1;
                     }
                     else
                     {
-                        vertexCounts[cell.getVertexRaw(k)] = 1;
+                        vertexCounts[cell.GetVertexRaw(k)] = 1;
                     }
-                    assertDoubleNear(cell.getVertexRaw(k).DotProd(cell.getEdgeRaw(k)), 0);
-                    assertDoubleNear(cell.getVertexRaw((k + 1) & 3).DotProd(
-                        cell.getEdgeRaw(k)), 0);
+                    assertDoubleNear(cell.GetVertexRaw(k).DotProd(cell.GetEdgeRaw(k)), 0);
+                    assertDoubleNear(cell.GetVertexRaw((k + 1) & 3).DotProd(
+                        cell.GetEdgeRaw(k)), 0);
                     assertDoubleNear(S2Point.Normalize(
-                        S2Point.CrossProd(cell.getVertexRaw(k), cell
-                                                                    .getVertexRaw((k + 1) & 3))).DotProd(cell.getEdge(k)), 1.0);
+                        S2Point.CrossProd(cell.GetVertexRaw(k), cell
+                                                                    .GetVertexRaw((k + 1) & 3))).DotProd(cell.GetEdge(k)), 1.0);
                 }
             }
             // Check that edges have multiplicity 2 and vertices have multiplicity 3.
@@ -417,7 +417,7 @@ namespace S2Geometry.Tests
         {
             for (var face = 0; face < 6; ++face)
             {
-                testSubdivide(S2Cell.fromFacePosLevel(face, (byte)0, 0));
+                testSubdivide(S2Cell.FromFacePosLevel(face, (byte)0, 0));
             }
 
             // The maximum edge *ratio* is the ratio of the longest edge of any cell to
@@ -447,8 +447,8 @@ namespace S2Geometry.Tests
                     "%5d  %6.3f %6.3f %6.3f %6.3f %6.3f %6.3f %6.3f %6.3f %6.3f\n", i,
                     s.maxArea/s.minArea, s.maxEdge/s.minEdge, s.maxEdgeAspect,
                     s.maxDiag/s.minDiag, s.maxDiagAspect, s.minApproxRatio,
-                    s.maxApproxRatio, S2Cell.averageArea(i)/s.maxArea, S2Cell
-                                                                           .averageArea(i)
+                    s.maxApproxRatio, S2Cell.AverageArea(i)/s.maxArea, S2Cell
+                                                                           .AverageArea(i)
                                                                        /s.minArea);
             }
 

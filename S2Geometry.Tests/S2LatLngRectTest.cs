@@ -45,8 +45,8 @@ namespace S2Geometry.Tests
             var vertexContained = false;
             for (var i = 0; i < 4; ++i)
             {
-                if (r.contains(cell.getVertexRaw(i))
-                    || (!r.isEmpty() && cell.contains(r.getVertex(i).toPoint())))
+                if (r.contains(cell.GetVertexRaw(i))
+                    || (!r.isEmpty() && cell.Contains(r.getVertex(i).toPoint())))
                 {
                     vertexContained = true;
                 }
@@ -361,36 +361,36 @@ namespace S2Geometry.Tests
             // Contains(S2Cell), MayIntersect(S2Cell), Intersects(S2Cell)
 
             // Special cases.
-            testCellOps(empty, S2Cell.fromFacePosLevel(3, (byte)0, 0), 0);
-            testCellOps(full, S2Cell.fromFacePosLevel(2, (byte)0, 0), 4);
-            testCellOps(full, S2Cell.fromFacePosLevel(5, (byte)0, 25), 4);
+            testCellOps(empty, S2Cell.FromFacePosLevel(3, (byte)0, 0), 0);
+            testCellOps(full, S2Cell.FromFacePosLevel(2, (byte)0, 0), 4);
+            testCellOps(full, S2Cell.FromFacePosLevel(5, (byte)0, 25), 4);
 
             // This rectangle includes the first quadrant of face 0. It's expanded
             // slightly because cell bounding rectangles are slightly conservative.
             var r4 = rectFromDegrees(-45.1, -45.1, 0.1, 0.1);
-            testCellOps(r4, S2Cell.fromFacePosLevel(0, (byte)0, 0), 3);
-            testCellOps(r4, S2Cell.fromFacePosLevel(0, (byte)0, 1), 4);
-            testCellOps(r4, S2Cell.fromFacePosLevel(1, (byte)0, 1), 0);
+            testCellOps(r4, S2Cell.FromFacePosLevel(0, (byte)0, 0), 3);
+            testCellOps(r4, S2Cell.FromFacePosLevel(0, (byte)0, 1), 4);
+            testCellOps(r4, S2Cell.FromFacePosLevel(1, (byte)0, 1), 0);
 
             // This rectangle intersects the first quadrant of face 0.
             var r5 = rectFromDegrees(-10, -45, 10, 0);
-            testCellOps(r5, S2Cell.fromFacePosLevel(0, (byte)0, 0), 3);
-            testCellOps(r5, S2Cell.fromFacePosLevel(0, (byte)0, 1), 3);
-            testCellOps(r5, S2Cell.fromFacePosLevel(1, (byte)0, 1), 0);
+            testCellOps(r5, S2Cell.FromFacePosLevel(0, (byte)0, 0), 3);
+            testCellOps(r5, S2Cell.FromFacePosLevel(0, (byte)0, 1), 3);
+            testCellOps(r5, S2Cell.FromFacePosLevel(1, (byte)0, 1), 0);
 
             // Rectangle consisting of a single point.
-            testCellOps(rectFromDegrees(4, 4, 4, 4), S2Cell.fromFacePosLevel(0, (byte)0, 0), 3);
+            testCellOps(rectFromDegrees(4, 4, 4, 4), S2Cell.FromFacePosLevel(0, (byte)0, 0), 3);
 
             // Rectangles that intersect the bounding rectangle of a face
             // but not the face itself.
-            testCellOps(rectFromDegrees(41, -87, 42, -79), S2Cell.fromFacePosLevel(2, (byte)0, 0), 1);
-            testCellOps(rectFromDegrees(-41, 160, -40, -160), S2Cell.fromFacePosLevel(5, (byte)0, 0), 1);
+            testCellOps(rectFromDegrees(41, -87, 42, -79), S2Cell.FromFacePosLevel(2, (byte)0, 0), 1);
+            testCellOps(rectFromDegrees(-41, 160, -40, -160), S2Cell.FromFacePosLevel(5, (byte)0, 0), 1);
             {
                 // This is the leaf cell at the top right hand corner of face 0.
                 // It has two angles of 60 degrees and two of 120 degrees.
                 var cell0tr = new S2Cell(new S2Point(1 + 1e-12, 1, 1));
                 var bound0tr = cell0tr.RectBound;
-                var v0 = new S2LatLng(cell0tr.getVertexRaw(0));
+                var v0 = new S2LatLng(cell0tr.GetVertexRaw(0));
                 testCellOps(
                     rectFromDegrees(v0.lat().Degrees - 1e-8, v0.lng().Degrees - 1e-8,
                                     v0.lat().Degrees - 2e-10, v0.lng().Degrees + 1e-10), cell0tr, 1);
@@ -399,10 +399,10 @@ namespace S2Geometry.Tests
             // Rectangles that intersect a face but where no vertex of one region
             // is contained by the other region. The first one passes through
             // a corner of one of the face cells.
-            testCellOps(rectFromDegrees(-37, -70, -36, -20), S2Cell.fromFacePosLevel(5, (byte)0, 0), 2);
+            testCellOps(rectFromDegrees(-37, -70, -36, -20), S2Cell.FromFacePosLevel(5, (byte)0, 0), 2);
             {
                 // These two intersect like a diamond and a square.
-                var cell202 = S2Cell.fromFacePosLevel(2, (byte)0, 2);
+                var cell202 = S2Cell.FromFacePosLevel(2, (byte)0, 2);
                 var bound202 = cell202.RectBound;
                 testCellOps(
                     rectFromDegrees(bound202.lo().lat().Degrees + 3, bound202.lo().lng().Degrees + 3,

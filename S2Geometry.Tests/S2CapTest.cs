@@ -80,7 +80,7 @@ namespace S2Geometry.Tests
             for (var face = 0; face < 6; ++face)
             {
                 // The cell consisting of the entire face.
-                var rootCell = S2Cell.fromFacePosLevel(face, (byte)0, 0);
+                var rootCell = S2Cell.FromFacePosLevel(face, (byte)0, 0);
 
                 // A leaf cell at the midpoint of the v=1 edge.
                 var edgeCell = new S2Cell(S2Projections.faceUvToXyz(face, 0, 1 - EPS));
@@ -95,14 +95,14 @@ namespace S2Geometry.Tests
                 // Check intersections with the bounding caps of the leaf cells that are
                 // adjacent to 'corner_cell' along the Hilbert curve. Because this corner
                 // is at (u=1,v=1), the curve stays locally within the same cube face.
-                var first = cornerCell.id().prev().prev().prev();
-                var last = cornerCell.id().next().next().next().next();
+                var first = cornerCell.Id.prev().prev().prev();
+                var last = cornerCell.Id.next().next().next().next();
                 for (var id = first; id.lessThan(last); id = id.next())
                 {
                     var cell = new S2Cell(id);
-                    JavaAssert.Equal(cell.CapBound.Contains(cornerCell), id.Equals(cornerCell.id()));
+                    JavaAssert.Equal(cell.CapBound.Contains(cornerCell), id.Equals(cornerCell.Id));
                     JavaAssert.Equal(
-                        cell.CapBound.MayIntersect(cornerCell), id.parent().contains(cornerCell.id()));
+                        cell.CapBound.MayIntersect(cornerCell), id.parent().contains(cornerCell.Id));
                 }
 
                 var antiFace = (face + 3)%6; // Opposite face.
@@ -113,18 +113,18 @@ namespace S2Geometry.Tests
                     var covering = S2Cap.FromAxisAngle(center, S1Angle.FromRadians(kFaceRadius + EPS));
                     JavaAssert.Equal(covering.Contains(rootCell), capFace == face);
                     JavaAssert.Equal(covering.MayIntersect(rootCell), capFace != antiFace);
-                    JavaAssert.Equal(covering.Contains(edgeCell), center.DotProd(edgeCell.getCenter()) > 0.1);
+                    JavaAssert.Equal(covering.Contains(edgeCell), center.DotProd(edgeCell.Center) > 0.1);
                     JavaAssert.Equal(covering.Contains(edgeCell), covering.MayIntersect(edgeCell));
                     JavaAssert.Equal(covering.Contains(cornerCell), capFace == face);
                     JavaAssert.Equal(
-                        covering.MayIntersect(cornerCell), center.DotProd(cornerCell.getCenter()) > 0);
+                        covering.MayIntersect(cornerCell), center.DotProd(cornerCell.Center) > 0);
 
                     // A cap that barely intersects the edges of 'cap_face'.
                     var bulging = S2Cap.FromAxisAngle(center, S1Angle.FromRadians(S2.PiOver4 + EPS));
                     Assert.True(!bulging.Contains(rootCell));
                     JavaAssert.Equal(bulging.MayIntersect(rootCell), capFace != antiFace);
                     JavaAssert.Equal(bulging.Contains(edgeCell), capFace == face);
-                    JavaAssert.Equal(bulging.MayIntersect(edgeCell), center.DotProd(edgeCell.getCenter()) > 0.1);
+                    JavaAssert.Equal(bulging.MayIntersect(edgeCell), center.DotProd(edgeCell.Center) > 0.1);
                     Assert.True(!bulging.Contains(cornerCell));
                     Assert.True(!bulging.MayIntersect(cornerCell));
 

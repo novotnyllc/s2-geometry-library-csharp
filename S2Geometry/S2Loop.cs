@@ -112,7 +112,7 @@ namespace Google.Common.Geometry
             _depth = 0;
             for (var i = 0; i < 4; ++i)
             {
-                vertices[i] = cell.getVertex(i);
+                vertices[i] = cell.GetVertex(i);
             }
             initOrigin();
             initFirstLogicalVertex();
