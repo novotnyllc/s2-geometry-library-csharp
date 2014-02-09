@@ -814,7 +814,7 @@ namespace Google.Common.Geometry
 
             public double getValue(int level)
             {
-                return FpUtils.scalb(_deriv, _dim*(1 - level));
+                return FpUtils.Scalb(_deriv, _dim*(1 - level));
             }
 
             /**

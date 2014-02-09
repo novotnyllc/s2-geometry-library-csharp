@@ -9,56 +9,56 @@ namespace Google.Common.Geometry
 {
     // Data from here
     //http://grepcode.com/file_/repository.grepcode.com/java/root/jdk/openjdk/6-b14/sun/misc/DoubleConsts.java/?v=source
-    internal class DoubleConsts
+    internal static class DoubleConsts
     {
         /**
      * The number of logical bits in the significand of a
      * <code>double</code> number, including the implicit bit.
      */
-        public const int SIGNIFICAND_WIDTH = 53;
+        public const int SignificandWidth = 53;
 
         /**
      * Maximum exponent a finite <code>double</code> number may have.
      * It is equal to the value returned by
      * <code>Math.ilogb(Double.MAX_VALUE)</code>.
      */
-        public const int MAX_EXPONENT = 1023;
+        public const int MaxExponent = 1023;
 
         /**
      * Minimum exponent a normalized <code>double</code> number may
      * have.  It is equal to the value returned by
      * <code>Math.ilogb(Double.MIN_NORMAL)</code>.
      */
-        public const int MIN_EXPONENT = -1022;
+        public const int MinExponent = -1022;
 
         /**
      * Bit mask to isolate the exponent field of a
      * <code>double</code>.
      */
-        public const long EXP_BIT_MASK = 0x7FF0000000000000L;
+        public const long ExpBitMask = 0x7FF0000000000000L;
 
         /**
      * Bias used in representing a <code>double</code> exponent.
      */
-        public const int EXP_BIAS = 1023;
+        public const int ExpBias = 1023;
     }
 
     // Data from here http://grepcode.com/file_/repository.grepcode.com/java/root/jdk/openjdk/6-b14/sun/misc/FpUtils.java/?v=source
-    internal class FpUtils
+    internal static class FpUtils
     {
-        private static readonly double twoToTheDoubleScaleUp = powerOfTwoD(512);
-        private static readonly double twoToTheDoubleScaleDown = powerOfTwoD(-512);
+        private static readonly double twoToTheDoubleScaleUp = PowerOfTwoD(512);
+        private static readonly double twoToTheDoubleScaleDown = PowerOfTwoD(-512);
 
         /**
     * Returns a floating-point power of two in the normal range.
     */
 
-        private static double powerOfTwoD(int n)
+        private static double PowerOfTwoD(int n)
         {
-            Debug.Assert(n >= DoubleConsts.MIN_EXPONENT && n <= DoubleConsts.MAX_EXPONENT);
-            return BitConverter.Int64BitsToDouble((((long)n + (long)DoubleConsts.EXP_BIAS) <<
-                                                   (DoubleConsts.SIGNIFICAND_WIDTH - 1))
-                                                  & DoubleConsts.EXP_BIT_MASK);
+            Debug.Assert(n >= DoubleConsts.MinExponent && n <= DoubleConsts.MaxExponent);
+            return BitConverter.Int64BitsToDouble((((long)n + (long)DoubleConsts.ExpBias) <<
+                                                   (DoubleConsts.SignificandWidth - 1))
+                                                  & DoubleConsts.ExpBitMask);
         }
 
         /**
@@ -95,7 +95,7 @@ namespace Google.Common.Geometry
     * @author Joseph D. Darcy
     */
 
-        public static double scalb(double d, int scale_factor)
+        public static double Scalb(double d, int scaleFactor)
         {
             /*
          * This method does not need to be declared strictfp to
@@ -139,41 +139,41 @@ namespace Google.Common.Geometry
             // nonzero value by it would be guaranteed to over or
             // underflow; due to rounding, scaling down takes takes an
             // additional power of two which is reflected here
-            var MAX_SCALE = DoubleConsts.MAX_EXPONENT + -DoubleConsts.MIN_EXPONENT +
-                            DoubleConsts.SIGNIFICAND_WIDTH + 1;
-            var exp_adjust = 0;
-            var scale_increment = 0;
-            var exp_delta = Double.NaN;
+            const int MAX_SCALE = DoubleConsts.MaxExponent + -DoubleConsts.MinExponent +
+                                  DoubleConsts.SignificandWidth + 1;
+            var expAdjust = 0;
+            var scaleIncrement = 0;
+            var expDelta = Double.NaN;
 
             // Make sure scaling factor is in a reasonable range
 
-            if (scale_factor < 0)
+            if (scaleFactor < 0)
             {
-                scale_factor = Math.Max(scale_factor, -MAX_SCALE);
-                scale_increment = -512;
-                exp_delta = twoToTheDoubleScaleDown;
+                scaleFactor = Math.Max(scaleFactor, -MAX_SCALE);
+                scaleIncrement = -512;
+                expDelta = twoToTheDoubleScaleDown;
             }
             else
             {
-                scale_factor = Math.Min(scale_factor, MAX_SCALE);
-                scale_increment = 512;
-                exp_delta = twoToTheDoubleScaleUp;
+                scaleFactor = Math.Min(scaleFactor, MAX_SCALE);
+                scaleIncrement = 512;
+                expDelta = twoToTheDoubleScaleUp;
             }
 
             // Calculate (scale_factor % +/-512), 512 = 2^9, using
             // technique from "Hacker's Delight" section 10-2.
-            var u = unchecked ((uint)(scale_factor >> 9 - 1));
+            var u = unchecked ((uint)(scaleFactor >> 9 - 1));
             u = u >> 32 - 9;
             var t = unchecked ((int)u);
-            exp_adjust = ((scale_factor + t) & (512 - 1)) - t;
+            expAdjust = ((scaleFactor + t) & (512 - 1)) - t;
 
-            d *= powerOfTwoD(exp_adjust);
-            scale_factor -= exp_adjust;
+            d *= PowerOfTwoD(expAdjust);
+            scaleFactor -= expAdjust;
 
-            while (scale_factor != 0)
+            while (scaleFactor != 0)
             {
-                d *= exp_delta;
-                scale_factor -= scale_increment;
+                d *= expDelta;
+                scaleFactor -= scaleIncrement;
             }
             return d;
         }
