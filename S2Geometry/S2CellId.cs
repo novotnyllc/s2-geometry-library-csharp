@@ -1007,7 +1007,7 @@ namespace Google.Common.Geometry
 
         public ulong lowestOnBit()
         {
-            return unchecked ((ulong)((long)_id & -(long)_id));
+            return (ulong)((long)_id & -(long)_id);
         }
 
         /**

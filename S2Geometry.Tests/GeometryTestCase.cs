@@ -20,13 +20,17 @@ namespace S2Geometry.Tests
             rand = new Random(123456);
         }
 
-        protected long LongRandom(long min = long.MinValue, long max = long.MaxValue)
+        protected long LongRandom()
         {
-            var buf = new byte[8];
-            rand.NextBytes(buf);
-            var longRand = BitConverter.ToInt64(buf, 0);
+            // This is how Java's nextLong works
+            var bytes = new byte[4];
+            rand.NextBytes(bytes);
+            var bytes1 = new byte[4];
+            rand.NextBytes(bytes1);
 
-            return (Math.Abs(longRand%(max - min)) + min);
+            var i1 = BitConverter.ToInt32(bytes, 0);
+            var i2 = BitConverter.ToInt32(bytes1, 0);
+            return ((long)(i1 << 32)) + i2;
         }
 
         public void assertDoubleNear(double a, double b)

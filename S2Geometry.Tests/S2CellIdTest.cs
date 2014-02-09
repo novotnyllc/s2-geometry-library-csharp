@@ -67,6 +67,14 @@ namespace S2Geometry.Tests
 
         private const int MAX_WALK_LEVEL = 8;
 
+        [Test]
+        [Ignore]
+        public void testNeighborLevel29()
+        {
+            // Note: These parameters fail on the Java version too. Not sure if this is a valid Cell anyway
+            testAllNeighbors(new S2CellId(0x6000000000000004UL), 29);
+        }
+
         public void testAllNeighbors(S2CellId id, int level)
         {
             Assert.True(level >= id.level() && level < S2CellId.MAX_LEVEL);
@@ -273,16 +281,17 @@ namespace S2Geometry.Tests
             for (var i = 0; i < 1000; ++i)
             {
                 var id1 = getRandomCellId();
+                S2CellId toTest = id1;
                 if (id1.isLeaf())
                 {
-                    id1 = id1.parent();
+                    toTest = id1.parent();
                 }
 
                 // TestAllNeighbors computes approximately 2**(2*(diff+1)) cell id1s,
                 // so it's not reasonable to use large values of "diff".
-                var maxDiff = Math.Min(6, S2CellId.MAX_LEVEL - id1.level() - 1);
-                var level = id1.level() + random(maxDiff);
-                testAllNeighbors(id1, level);
+                var maxDiff = Math.Min(6, S2CellId.MAX_LEVEL - toTest.level() - 1);
+                var level = toTest.level() + random(maxDiff);
+                testAllNeighbors(toTest, level);
             }
         }
 
