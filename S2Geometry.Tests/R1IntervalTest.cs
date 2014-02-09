@@ -16,7 +16,7 @@ namespace S2Geometry.Tests
   * to the expected results of contains(), interiorContains(), Intersects(),
   * and InteriorIntersects() respectively.
   */
-        
+
         private void testIntervalOps(R1Interval x, R1Interval y, String expectedRelation)
         {
             JavaAssert.Equal(x.contains(y), expectedRelation[0] == 'T');
@@ -32,18 +32,18 @@ namespace S2Geometry.Tests
         public void R1IntervalBasicTest()
         {
             // Constructors and accessors.
-            R1Interval unit = new R1Interval(0, 1);
-            R1Interval negunit = new R1Interval(-1, 0);
+            var unit = new R1Interval(0, 1);
+            var negunit = new R1Interval(-1, 0);
             JavaAssert.Equal(unit.lo(), 0.0);
             JavaAssert.Equal(unit.hi(), 1.0);
             JavaAssert.Equal(negunit.lo(), -1.0);
             JavaAssert.Equal(negunit.hi(), 0.0);
 
             // is_empty()
-            R1Interval half = new R1Interval(0.5, 0.5);
+            var half = new R1Interval(0.5, 0.5);
             Assert.True(!unit.isEmpty());
             Assert.True(!half.isEmpty());
-            R1Interval empty = R1Interval.empty();
+            var empty = R1Interval.empty();
             Assert.True(empty.isEmpty());
 
             // GetCenter(), GetLength()

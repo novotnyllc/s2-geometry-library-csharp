@@ -42,16 +42,6 @@ namespace Google.Common.Geometry
    * TODO(dbeaumont): Replace this with "DoubleUtils.getExponent(v) - 1" ?
    */
 
-        internal static int exp(double v)
-        {
-            if (v == 0)
-            {
-                return 0;
-            }
-            long bits = BitConverter.DoubleToInt64Bits(v);
-            return (int)((EXPONENT_MASK & bits) >> EXPONENT_SHIFT) - 1022;
-        }
-
         /** Mapping Hilbert traversal order to orientation adjustment mask. */
 
         private static readonly int[] POS_TO_ORIENTATION =
@@ -69,13 +59,6 @@ namespace Google.Common.Geometry
    *     {@link #INVERT_MASK}.
    * @throws IllegalArgumentException if position is out of bounds.
    */
-
-        public static int posToOrientation(int position)
-        {
-            Preconditions.checkArgument(0 <= position && position < 4);
-
-            return POS_TO_ORIENTATION[position];
-        }
 
         /** Mapping from cell orientation + Hilbert traversal to IJ-index. */
 
@@ -100,6 +83,34 @@ namespace Google.Common.Geometry
    * @throws IllegalArgumentException if either parameter is out of bounds.
    */
 
+        /** Mapping from Hilbert traversal order + cell orientation to IJ-index. */
+
+        private static readonly int[][] IJ_TO_POS = new int[][]
+        {
+            // (0,0) (0,1) (1,0) (1,1)
+            new[] {0, 1, 3, 2}, // canonical order
+            new[] {0, 3, 1, 2}, // axes swapped
+            new[] {2, 3, 1, 0}, // bits inverted
+            new[] {2, 1, 3, 0}, // swapped & inverted
+        };
+
+        internal static int exp(double v)
+        {
+            if (v == 0)
+            {
+                return 0;
+            }
+            var bits = BitConverter.DoubleToInt64Bits(v);
+            return (int)((EXPONENT_MASK & bits) >> EXPONENT_SHIFT) - 1022;
+        }
+
+        public static int posToOrientation(int position)
+        {
+            Preconditions.checkArgument(0 <= position && position < 4);
+
+            return POS_TO_ORIENTATION[position];
+        }
+
         public static int posToIJ(int orientation, int position)
         {
             //Preconditions.checkArgument(0 <= orientation && orientation < 4);
@@ -111,17 +122,6 @@ namespace Google.Common.Geometry
 
             return POS_TO_IJ[orientation][position];
         }
-
-        /** Mapping from Hilbert traversal order + cell orientation to IJ-index. */
-
-        private static readonly int[][] IJ_TO_POS = new int[][]
-        {
-            // (0,0) (0,1) (1,0) (1,1)
-            new[] {0, 1, 3, 2}, // canonical order
-            new[] {0, 3, 1, 2}, // axes swapped
-            new[] {2, 3, 1, 0}, // bits inverted
-            new[] {2, 1, 3, 0}, // swapped & inverted
-        };
 
         /**
    * Returns the order in which a specified subcell is visited by the Hilbert
@@ -145,104 +145,6 @@ namespace Google.Common.Geometry
         /**
    * Defines an area or a length cell metric.
    */
-
-        public class Metric
-        {
-
-            private readonly double _deriv;
-            private readonly int _dim;
-
-            /**
-     * Defines a cell metric of the given dimension (1 == length, 2 == area).
-     */
-
-            public Metric(int dim, double deriv)
-            {
-                this._deriv = deriv;
-                this._dim = dim;
-            }
-
-            /**
-     * The "deriv" value of a metric is a derivative, and must be multiplied by
-     * a length or area in (s,t)-space to get a useful value.
-     */
-
-            public double deriv()
-            {
-                return _deriv;
-            }
-
-            /** Return the value of a metric for cells at the given level. */
-
-            public double getValue(int level)
-            {
-
-                return FpUtils.scalb(_deriv, _dim*(1 - level));
-            }
-
-            /**
-     * Return the level at which the metric has approximately the given value.
-     * For example, S2::kAvgEdge.GetClosestLevel(0.1) returns the level at which
-     * the average cell edge length is approximately 0.1. The return value is
-     * always a valid level.
-     */
-
-            public int getClosestLevel(double value)
-            {
-                return getMinLevel(M_SQRT2*value);
-            }
-
-            /**
-     * Return the minimum level such that the metric is at most the given value,
-     * or S2CellId::kMaxLevel if there is no such level. For example,
-     * S2::kMaxDiag.GetMinLevel(0.1) returns the minimum level such that all
-     * cell diagonal lengths are 0.1 or smaller. The return value is always a
-     * valid level.
-     */
-
-            public int getMinLevel(double value)
-            {
-                if (value <= 0)
-                {
-                    return S2CellId.MAX_LEVEL;
-                }
-
-                // This code is equivalent to computing a floating-point "level"
-                // value and rounding up.
-                int exponent = exp(value/((1 << _dim)*_deriv));
-                int level = Math.Max(0,
-                                     Math.Min(S2CellId.MAX_LEVEL, -((exponent - 1) >> (_dim - 1))));
-                // assert (level == S2CellId.MAX_LEVEL || getValue(level) <= value);
-                // assert (level == 0 || getValue(level - 1) > value);
-                return level;
-            }
-
-            /**
-     * Return the maximum level such that the metric is at least the given
-     * value, or zero if there is no such level. For example,
-     * S2.kMinWidth.GetMaxLevel(0.1) returns the maximum level such that all
-     * cells have a minimum width of 0.1 or larger. The return value is always a
-     * valid level.
-     */
-
-            public int getMaxLevel(double value)
-            {
-                if (value <= 0)
-                {
-                    return S2CellId.MAX_LEVEL;
-                }
-
-                // This code is equivalent to computing a floating-point "level"
-                // value and rounding down.
-                int exponent = exp((1 << _dim)*_deriv/value);
-                int level = Math.Max(0,
-                                     Math.Min(S2CellId.MAX_LEVEL, ((exponent - 1) >> (_dim - 1))));
-                // assert (level == 0 || getValue(level) >= value);
-                // assert (level == S2CellId.MAX_LEVEL || getValue(level + 1) < value);
-                return level;
-            }
-
-        }
 
         /**
    * Return a unique "origin" on the sphere for operations that need a fixed
@@ -283,12 +185,12 @@ namespace Google.Common.Geometry
             // since we need to exclude pairs of line segments that would
             // otherwise "intersect" by crossing two antipodal points.
 
-            S2Point ab = S2Point.crossProd(a, b);
-            S2Point cd = S2Point.crossProd(c, d);
-            double acb = -ab.dotProd(c);
-            double cbd = -cd.dotProd(b);
-            double bda = ab.dotProd(d);
-            double dac = cd.dotProd(a);
+            var ab = S2Point.crossProd(a, b);
+            var cd = S2Point.crossProd(c, d);
+            var acb = -ab.dotProd(c);
+            var cbd = -cd.dotProd(b);
+            var bda = ab.dotProd(d);
+            var dac = cd.dotProd(a);
 
             return (acb*cbd > 0) && (cbd*bda > 0) && (bda*dac > 0);
         }
@@ -318,7 +220,7 @@ namespace Google.Common.Geometry
             // "a" and "b" even if they differ only in the lowest bit of one component.
 
             // assert (isUnitLength(a) && isUnitLength(b));
-            S2Point x = S2Point.crossProd(S2Point.add(b, a), S2Point.sub(b, a));
+            var x = S2Point.crossProd(S2Point.add(b, a), S2Point.sub(b, a));
             if (!x.Equals(new S2Point(0, 0, 0)))
             {
                 return x;
@@ -388,19 +290,19 @@ namespace Google.Common.Geometry
             // quantities to 64 bits. Otherwise it may compute a value of dmin > 0
             // simply because it chose to spill one of the intermediate values to
             // memory but not one of the others.
-            double sa = b.angle(c);
-            double sb = c.angle(a);
-            double sc = a.angle(b);
-            double s = 0.5*(sa + sb + sc);
+            var sa = b.angle(c);
+            var sb = c.angle(a);
+            var sc = a.angle(b);
+            var s = 0.5*(sa + sb + sc);
             if (s >= 3e-4)
             {
                 // Consider whether Girard's formula might be more accurate.
-                double s2 = s*s;
-                double dmin = s - Math.Max(sa, Math.Max(sb, sc));
+                var s2 = s*s;
+                var dmin = s - Math.Max(sa, Math.Max(sb, sc));
                 if (dmin < 1e-2*s*s2*s2)
                 {
                     // This triangle is skinny enough to consider Girard's formula.
-                    double area = girardArea(a, b, c);
+                    var area = girardArea(a, b, c);
                     if (dmin < s*(0.1*area))
                     {
                         return area;
@@ -428,9 +330,9 @@ namespace Google.Common.Geometry
             // more accurate, faster to compute, and handles a == b == c without
             // a special case.
 
-            S2Point ab = S2Point.crossProd(a, b);
-            S2Point bc = S2Point.crossProd(b, c);
-            S2Point ac = S2Point.crossProd(a, c);
+            var ab = S2Point.crossProd(a, b);
+            var bc = S2Point.crossProd(b, c);
+            var ac = S2Point.crossProd(a, c);
             return Math.Max(0.0, ab.angle(ac) - ab.angle(bc) + bc.angle(ac));
         }
 
@@ -504,18 +406,18 @@ namespace Google.Common.Geometry
             // formula which this margin is too narrow to contain :)
 
             // assert (isUnitLength(a) && isUnitLength(b) && isUnitLength(c));
-            double sina = S2Point.crossProd(b, c).norm();
-            double sinb = S2Point.crossProd(c, a).norm();
-            double sinc = S2Point.crossProd(a, b).norm();
-            double ra = (sina == 0) ? 1 : (Math.Asin(sina)/sina);
-            double rb = (sinb == 0) ? 1 : (Math.Asin(sinb)/sinb);
-            double rc = (sinc == 0) ? 1 : (Math.Asin(sinc)/sinc);
+            var sina = S2Point.crossProd(b, c).norm();
+            var sinb = S2Point.crossProd(c, a).norm();
+            var sinc = S2Point.crossProd(a, b).norm();
+            var ra = (sina == 0) ? 1 : (Math.Asin(sina)/sina);
+            var rb = (sinb == 0) ? 1 : (Math.Asin(sinb)/sinb);
+            var rc = (sinc == 0) ? 1 : (Math.Asin(sinc)/sinc);
 
             // Now compute a point M such that M.X = rX * det(ABC) / 2 for X in A,B,C.
-            S2Point x = new S2Point(a.x, b.x, c.x);
-            S2Point y = new S2Point(a.y, b.y, c.y);
-            S2Point z = new S2Point(a.z, b.z, c.z);
-            S2Point r = new S2Point(ra, rb, rc);
+            var x = new S2Point(a.x, b.x, c.x);
+            var y = new S2Point(a.y, b.y, c.y);
+            var z = new S2Point(a.z, b.z, c.z);
+            var r = new S2Point(ra, rb, rc);
             return new S2Point(0.5*S2Point.crossProd(y, z).dotProd(r),
                                0.5*S2Point.crossProd(z, x).dotProd(r), 0.5*S2Point.crossProd(x, y).dotProd(r));
         }
@@ -601,9 +503,9 @@ namespace Google.Common.Geometry
             // is greater than 2*14*(2**-54), the determinant will have the same sign
             // even if the arguments are rotated (which produces a mathematically
             // equivalent result but with potentially different rounding errors).
-            double kMinAbsValue = 1.6e-15; // 2 * 14 * 2**-54
+            var kMinAbsValue = 1.6e-15; // 2 * 14 * 2**-54
 
-            double det = aCrossB.dotProd(c);
+            var det = aCrossB.dotProd(c);
 
             // Double-check borderline cases in debug mode.
             // assert ((Math.Abs(det) < kMinAbsValue) || (Math.Abs(det) > 1000 * kMinAbsValue)
@@ -666,12 +568,12 @@ namespace Google.Common.Geometry
             double sab = (a.dotProd(b) > 0) ? -1 : 1;
             double sbc = (b.dotProd(c) > 0) ? -1 : 1;
             double sca = (c.dotProd(a) > 0) ? -1 : 1;
-            S2Point vab = S2Point.add(a, S2Point.mul(b, sab));
-            S2Point vbc = S2Point.add(b, S2Point.mul(c, sbc));
-            S2Point vca = S2Point.add(c, S2Point.mul(a, sca));
-            double dab = vab.norm2();
-            double dbc = vbc.norm2();
-            double dca = vca.norm2();
+            var vab = S2Point.add(a, S2Point.mul(b, sab));
+            var vbc = S2Point.add(b, S2Point.mul(c, sbc));
+            var vca = S2Point.add(c, S2Point.mul(a, sca));
+            var dab = vab.norm2();
+            var dbc = vbc.norm2();
+            var dca = vca.norm2();
 
             // Sort the difference vectors to find the longest edge, and use the
             // opposite vertex as the origin. If two difference vectors are the same
@@ -724,7 +626,7 @@ namespace Google.Common.Geometry
             // checking whether the points are ordered CCW around the origin first in
             // the Y-Z plane, then in the Z-X plane, and then in the X-Y plane.
 
-            int ccw =
+            var ccw =
                 planarOrderedCCW(new R2Vector(a.y, a.z), new R2Vector(b.y, b.z), new R2Vector(c.y, c.z));
             if (ccw == 0)
             {
@@ -745,9 +647,9 @@ namespace Google.Common.Geometry
         {
             // Return +1 if the edge AB is CCW around the origin, etc.
             double sab = (a.dotProd(b) > 0) ? -1 : 1;
-            R2Vector vab = R2Vector.add(a, R2Vector.mul(b, sab));
-            double da = a.norm2();
-            double db = b.norm2();
+            var vab = R2Vector.add(a, R2Vector.mul(b, sab));
+            var da = a.norm2();
+            var db = b.norm2();
             double sign;
             if (da < db || (da == db && a.lessThan(b)))
             {
@@ -770,7 +672,7 @@ namespace Google.Common.Geometry
 
         public static int planarOrderedCCW(R2Vector a, R2Vector b, R2Vector c)
         {
-            int sum = 0;
+            var sum = 0;
             sum += planarCCW(a, b);
             sum += planarCCW(b, c);
             sum += planarCCW(c, a);
@@ -806,7 +708,7 @@ namespace Google.Common.Geometry
             // if A == B or B == C, and otherwise false if A == C. Recall that
             // RobustCCW(x,y,z) == -RobustCCW(z,y,x) for all x,y,z.
 
-            int sum = 0;
+            var sum = 0;
             if (robustCCW(b, o, a) >= 0)
             {
                 ++sum;
@@ -854,7 +756,7 @@ namespace Google.Common.Geometry
         {
             // This is a bit less efficient because we compute all 3 cross products, but
             // it ensures that turnAngle(a,b,c) == -turnAngle(c,b,a) for all a,b,c.
-            double outAngle = S2Point.crossProd(b, a).angle(S2Point.crossProd(c, b));
+            var outAngle = S2Point.crossProd(b, a).angle(S2Point.crossProd(c, b));
             return (robustCCW(a, b, c) > 0) ? outAngle : -outAngle;
         }
 
@@ -881,6 +783,101 @@ namespace Google.Common.Geometry
         public static bool approxEquals(double a, double b)
         {
             return approxEquals(a, b, 1e-15);
+        }
+
+        public class Metric
+        {
+            private readonly double _deriv;
+            private readonly int _dim;
+
+            /**
+     * Defines a cell metric of the given dimension (1 == length, 2 == area).
+     */
+
+            public Metric(int dim, double deriv)
+            {
+                _deriv = deriv;
+                _dim = dim;
+            }
+
+            /**
+     * The "deriv" value of a metric is a derivative, and must be multiplied by
+     * a length or area in (s,t)-space to get a useful value.
+     */
+
+            public double deriv()
+            {
+                return _deriv;
+            }
+
+            /** Return the value of a metric for cells at the given level. */
+
+            public double getValue(int level)
+            {
+                return FpUtils.scalb(_deriv, _dim*(1 - level));
+            }
+
+            /**
+     * Return the level at which the metric has approximately the given value.
+     * For example, S2::kAvgEdge.GetClosestLevel(0.1) returns the level at which
+     * the average cell edge length is approximately 0.1. The return value is
+     * always a valid level.
+     */
+
+            public int getClosestLevel(double value)
+            {
+                return getMinLevel(M_SQRT2*value);
+            }
+
+            /**
+     * Return the minimum level such that the metric is at most the given value,
+     * or S2CellId::kMaxLevel if there is no such level. For example,
+     * S2::kMaxDiag.GetMinLevel(0.1) returns the minimum level such that all
+     * cell diagonal lengths are 0.1 or smaller. The return value is always a
+     * valid level.
+     */
+
+            public int getMinLevel(double value)
+            {
+                if (value <= 0)
+                {
+                    return S2CellId.MAX_LEVEL;
+                }
+
+                // This code is equivalent to computing a floating-point "level"
+                // value and rounding up.
+                var exponent = exp(value/((1 << _dim)*_deriv));
+                var level = Math.Max(0,
+                                     Math.Min(S2CellId.MAX_LEVEL, -((exponent - 1) >> (_dim - 1))));
+                // assert (level == S2CellId.MAX_LEVEL || getValue(level) <= value);
+                // assert (level == 0 || getValue(level - 1) > value);
+                return level;
+            }
+
+            /**
+     * Return the maximum level such that the metric is at least the given
+     * value, or zero if there is no such level. For example,
+     * S2.kMinWidth.GetMaxLevel(0.1) returns the maximum level such that all
+     * cells have a minimum width of 0.1 or larger. The return value is always a
+     * valid level.
+     */
+
+            public int getMaxLevel(double value)
+            {
+                if (value <= 0)
+                {
+                    return S2CellId.MAX_LEVEL;
+                }
+
+                // This code is equivalent to computing a floating-point "level"
+                // value and rounding down.
+                var exponent = exp((1 << _dim)*_deriv/value);
+                var level = Math.Max(0,
+                                     Math.Min(S2CellId.MAX_LEVEL, ((exponent - 1) >> (_dim - 1))));
+                // assert (level == 0 || getValue(level) >= value);
+                // assert (level == S2CellId.MAX_LEVEL || getValue(level + 1) < value);
+                return level;
+            }
         }
     }
 }

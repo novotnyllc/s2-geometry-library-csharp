@@ -14,6 +14,15 @@ namespace Google.Common.Geometry
 
     public sealed class S2Edge : IEquatable<S2Edge>
     {
+        private readonly S2Point end;
+        private readonly S2Point start;
+
+        public S2Edge(S2Point start, S2Point end)
+        {
+            this.start = start;
+            this.end = end;
+        }
+
         public bool Equals(S2Edge other)
         {
             if (ReferenceEquals(null, other)) return false;
@@ -46,15 +55,6 @@ namespace Google.Common.Geometry
             return !Equals(left, right);
         }
 
-        private readonly S2Point start;
-        private readonly S2Point end;
-
-        public S2Edge(S2Point start, S2Point end)
-        {
-            this.start = start;
-            this.end = end;
-        }
-
         public S2Point getStart()
         {
             return start;
@@ -70,7 +70,5 @@ namespace Google.Common.Geometry
             return String.Format("Edge: ({0} -> {1})\n   or [{2} -> {3}]",
                                  start.toDegreesString(), end.toDegreesString(), start, end);
         }
-
-
     }
 }

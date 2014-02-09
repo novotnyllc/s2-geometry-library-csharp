@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace Google.Common.Geometry
 {
-
     /**
      * An S2Region represents a two-dimensional region over the unit sphere. It is
      * an abstract interface with various concrete subtypes.
@@ -18,6 +17,7 @@ namespace Google.Common.Geometry
      *
      *
      */
+
     public interface IS2Region
     {
         /** Return a bounding spherical cap. */

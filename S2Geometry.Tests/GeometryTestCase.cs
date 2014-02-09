@@ -79,7 +79,7 @@ namespace S2Geometry.Tests
         {
             var face = random(S2CellId.NUM_FACES);
 
-            ulong pos = (ulong)LongRandom() & ((1L << (2*S2CellId.MAX_LEVEL)) - 1);
+            var pos = (ulong)LongRandom() & ((1L << (2*S2CellId.MAX_LEVEL)) - 1);
             return S2CellId.fromFacePosLevel(face, pos, level);
         }
 

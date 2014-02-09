@@ -50,7 +50,7 @@ namespace Google.Common.Geometry
         public const int MAX_SIZE = 1 << MAX_LEVEL;
 
         // Constant related to unsigned long's
-     
+
         // The following lookup tables are used to convert efficiently between an
         // (i,j) cell index and the corresponding position along the Hilbert curve.
         // "lookup_pos" maps 4 bits of "i", 4 bits of "j", and 2 bits representing the
@@ -175,6 +175,7 @@ namespace Google.Common.Geometry
         {
             return x._id <= y._id;
         }
+
         public static bool operator >=(S2CellId x, S2CellId y)
         {
             return x._id >= y._id;
@@ -194,7 +195,7 @@ namespace Google.Common.Geometry
 
         public static S2CellId sentinel()
         {
-            return new S2CellId(~0UL); 
+            return new S2CellId(~0UL);
         }
 
         /**
@@ -421,6 +422,7 @@ namespace Google.Common.Geometry
         }
 
         /** Return true if the given cell intersects this one. */
+
         public bool intersects(S2CellId other)
         {
             // assert (isValid() && other.isValid());
@@ -430,7 +432,7 @@ namespace Google.Common.Geometry
         public S2CellId parent()
         {
             // assert (isValid() && level() > 0);
-            ulong newLsb = lowestOnBit() << 2;
+            var newLsb = lowestOnBit() << 2;
 
             // cast to long so we can flip the bits
             var i = (ulong)((long)_id & -(long)newLsb) | newLsb;
@@ -453,7 +455,7 @@ namespace Google.Common.Geometry
 
         public S2CellId child(int position)
         {
-            ulong newLsb = lowestOnBit() >> 2;
+            var newLsb = lowestOnBit() >> 2;
             return new S2CellId(_id + (ulong)(2*position + 1 - 4)*newLsb);
         }
 
@@ -754,7 +756,7 @@ namespace Google.Common.Geometry
             // Determine the i- and j-offsets to the closest neighboring cell in each
             // direction. This involves looking at the next bit of "i" and "j" to
             // determine which quadrant of this->parent(level) this cell lies in.
-            var halfsize = 1 << (MAX_LEVEL - (level +1));
+            var halfsize = 1 << (MAX_LEVEL - (level + 1));
             var size = halfsize << 1;
             bool isame, jsame;
             int ioffset, joffset;
@@ -990,7 +992,7 @@ namespace Google.Common.Geometry
      * bits); System.out.println("lookup_ij[bits] is " + lookup_ij[bits]);
      */
             bits = LOOKUP_IJ[bits];
-            i = i+ ((bits >> (LOOKUP_BITS + 2)) << (k*LOOKUP_BITS));
+            i = i + ((bits >> (LOOKUP_BITS + 2)) << (k*LOOKUP_BITS));
             /*
      * System.out.println("left is " + ((bits >> 2) & ((1 << kLookupBits) -
      * 1))); System.out.println("right is " + (k * kLookupBits));
@@ -998,7 +1000,7 @@ namespace Google.Common.Geometry
      * is: " + ((((bits >> 2) & ((1 << kLookupBits) - 1))) << (k *
      * kLookupBits)));
      */
-            j = j+ ((((bits >> 2) & ((1 << LOOKUP_BITS) - 1))) << (k*LOOKUP_BITS));
+            j = j + ((((bits >> 2) & ((1 << LOOKUP_BITS) - 1))) << (k*LOOKUP_BITS));
             bits &= (SWAP_MASK | INVERT_MASK);
             return bits;
         }

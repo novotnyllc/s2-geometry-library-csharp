@@ -67,14 +67,6 @@ namespace S2Geometry.Tests
 
         private const int MAX_WALK_LEVEL = 8;
 
-        [Test]
-        [Ignore]
-        public void testNeighborLevel29()
-        {
-            // Note: These parameters fail on the Java version too. Not sure if this is a valid Cell anyway
-            testAllNeighbors(new S2CellId(0x6000000000000004UL), 29);
-        }
-
         public void testAllNeighbors(S2CellId id, int level)
         {
             Assert.True(level >= id.level() && level < S2CellId.MAX_LEVEL);
@@ -103,11 +95,10 @@ namespace S2Geometry.Tests
 
         [Test]
         public void S2CellIdTestBasic()
-        {           
-
+        {
             Trace.WriteLine("TestBasic");
             // Check default constructor.
-            S2CellId id = new S2CellId();
+            var id = new S2CellId();
             //JavaAssert.Equal(id.id(), 0);
             //Assert.True(!id.isValid());
 
@@ -145,18 +136,18 @@ namespace S2Geometry.Tests
             //JavaAssert.Equal(id.childEnd(S2CellId.MAX_LEVEL), id.rangeMax().next());
 
             // Check wrapping from beginning of Hilbert curve to end and vice versa.
-           // JavaAssert.Equal(S2CellId.begin(0).prevWrap(), S2CellId.end(0).prev());
+            // JavaAssert.Equal(S2CellId.begin(0).prevWrap(), S2CellId.end(0).prev());
 
             JavaAssert.Equal(S2CellId.begin(S2CellId.MAX_LEVEL).prevWrap(),
-                S2CellId.fromFacePosLevel(5, ~0UL >> S2CellId.FACE_BITS, S2CellId.MAX_LEVEL));
+                             S2CellId.fromFacePosLevel(5, ~0UL >> S2CellId.FACE_BITS, S2CellId.MAX_LEVEL));
 
             JavaAssert.Equal(S2CellId.end(4).prev().nextWrap(), S2CellId.begin(4));
             JavaAssert.Equal(S2CellId.end(S2CellId.MAX_LEVEL).prev().nextWrap(),
-                S2CellId.fromFacePosLevel(0, 0, S2CellId.MAX_LEVEL));
+                             S2CellId.fromFacePosLevel(0, 0, S2CellId.MAX_LEVEL));
 
             // Check that cells are represented by the position of their center
             // along the Hilbert curve.
-            JavaAssert.Equal(id.rangeMin().id() + id.rangeMax().id(), 2 * id.id());
+            JavaAssert.Equal(id.rangeMin().id() + id.rangeMax().id(), 2*id.id());
         }
 
         [Test]
@@ -241,6 +232,14 @@ namespace S2Geometry.Tests
         }
 
         [Test]
+        [Ignore("Not necessrily valid values. Fails on Java too.")]
+        public void testNeighborLevel29()
+        {
+            // Note: These parameters fail on the Java version too. Not sure if this is a valid Cell anyway
+            testAllNeighbors(new S2CellId(0x6000000000000004UL), 29);
+        }
+
+        [Test]
         public void testNeighbors()
         {
             Trace.WriteLine("TestNeighbors");
@@ -281,7 +280,7 @@ namespace S2Geometry.Tests
             for (var i = 0; i < 1000; ++i)
             {
                 var id1 = getRandomCellId();
-                S2CellId toTest = id1;
+                var toTest = id1;
                 if (id1.isLeaf())
                 {
                     toTest = id1.parent();

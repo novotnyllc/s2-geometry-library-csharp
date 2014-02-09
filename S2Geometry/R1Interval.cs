@@ -7,12 +7,21 @@ using System.Threading.Tasks;
 namespace Google.Common.Geometry
 {
     /// <summary>
-    /// An R1Interval represents a closed, bounded interval on the real line. It is
-    /// capable of representing the empty interval (containing no points) and
-    /// zero-length intervals (containing a single point).
+    ///     An R1Interval represents a closed, bounded interval on the real line. It is
+    ///     capable of representing the empty interval (containing no points) and
+    ///     zero-length intervals (containing a single point).
     /// </summary>
     public sealed class R1Interval : IEquatable<R1Interval>
     {
+        private readonly double _hi;
+        private readonly double _lo;
+
+        public R1Interval(double lo, double hi)
+        {
+            _lo = lo;
+            _hi = hi;
+        }
+
         public bool Equals(R1Interval other)
         {
             if (ReferenceEquals(null, other)) return false;
@@ -24,7 +33,7 @@ namespace Google.Common.Geometry
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
+            if (obj.GetType() != GetType()) return false;
             return Equals((R1Interval)obj);
         }
 
@@ -44,17 +53,6 @@ namespace Google.Common.Geometry
         public static bool operator !=(R1Interval left, R1Interval right)
         {
             return !Equals(left, right);
-        }
-
-        private readonly double _lo;
-        private readonly double _hi;
-
-        /** Interval constructor. If lo > hi, the interval is empty. */
-
-        public R1Interval(double lo, double hi)
-        {
-            this._lo = lo;
-            this._hi = hi;
         }
 
         /**
@@ -201,7 +199,7 @@ namespace Google.Common.Geometry
         {
             if (isEmpty())
             {
-                return R1Interval.fromPoint(p);
+                return fromPoint(p);
             }
             else if (p < lo())
             {
@@ -260,7 +258,7 @@ namespace Google.Common.Geometry
         {
             return new R1Interval(Math.Max(lo(), y.lo()), Math.Min(hi(), y.hi()));
         }
-        
+
         public bool approxEquals(R1Interval y)
         {
             return approxEquals(y, 1e-15);
@@ -289,6 +287,5 @@ namespace Google.Common.Geometry
         {
             return "[" + lo() + ", " + hi() + "]";
         }
-
     }
 }

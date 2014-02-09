@@ -20,11 +20,11 @@ namespace S2Geometry.Tests
             JavaAssert.Equal(S1Angle.degrees(180).radians(), Math.PI);
             JavaAssert.Equal(S1Angle.degrees(180).degrees(), 180.0);
 
-            JavaAssert.Equal(S1Angle.radians(Math.PI / 2).degrees(), 90.0);
+            JavaAssert.Equal(S1Angle.radians(Math.PI/2).degrees(), 90.0);
 
             // Check negative angles.
-            JavaAssert.Equal(S1Angle.radians(-Math.PI / 2).degrees(), -90.0);
-            JavaAssert.Equal(S1Angle.degrees(-45).radians(), -Math.PI / 4);
+            JavaAssert.Equal(S1Angle.radians(-Math.PI/2).degrees(), -90.0);
+            JavaAssert.Equal(S1Angle.degrees(-45).radians(), -Math.PI/4);
 
             // Check that E5/E6/E7 representations work as expected.
             JavaAssert.Equal(S1Angle.e5(2000000), S1Angle.degrees(20));

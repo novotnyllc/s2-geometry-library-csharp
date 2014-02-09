@@ -13,19 +13,19 @@ namespace S2Geometry.Tests
         [Test]
         public void testBasic()
         {
-            S2LatLng llRad = S2LatLng.fromRadians(S2.M_PI_4, S2.M_PI_2);
+            var llRad = S2LatLng.fromRadians(S2.M_PI_4, S2.M_PI_2);
             assertTrue(llRad.lat().radians() == S2.M_PI_4);
             assertTrue(llRad.lng().radians() == S2.M_PI_2);
             assertTrue(llRad.isValid());
-            S2LatLng llDeg = S2LatLng.fromDegrees(45, 90);
+            var llDeg = S2LatLng.fromDegrees(45, 90);
             assertEquals(llDeg, llRad);
             assertTrue(llDeg.isValid());
             assertTrue(!S2LatLng.fromDegrees(-91, 0).isValid());
             assertTrue(!S2LatLng.fromDegrees(0, 181).isValid());
 
-            S2LatLng bad = S2LatLng.fromDegrees(120, 200);
+            var bad = S2LatLng.fromDegrees(120, 200);
             assertTrue(!bad.isValid());
-            S2LatLng better = bad.normalized();
+            var better = bad.normalized();
             assertTrue(better.isValid());
             assertEquals(better.lat(), S1Angle.degrees(90));
             assertDoubleNear(better.lng().radians(), S1Angle.degrees(-160).radians());
@@ -59,14 +59,14 @@ namespace S2Geometry.Tests
                 S2.M_PI);
 
             // Test a bunch of random points.
-            for (int i = 0; i < 100000; ++i)
+            for (var i = 0; i < 100000; ++i)
             {
-                S2Point p = randomPoint();
+                var p = randomPoint();
                 assertTrue(S2.approxEquals(p, new S2LatLng(p).toPoint()));
             }
 
             // Test generation from E5
-            S2LatLng test = S2LatLng.fromE5(123456, 98765);
+            var test = S2LatLng.fromE5(123456, 98765);
             assertDoubleNear(test.lat().degrees(), 1.23456);
             assertDoubleNear(test.lng().degrees(), 0.98765);
         }
