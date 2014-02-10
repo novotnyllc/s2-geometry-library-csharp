@@ -60,14 +60,7 @@ namespace Google.Common.Geometry
 
     public static class S2Projections
     {
-        public enum Projections
-        {
-            S2_LINEAR_PROJECTION,
-            S2_TAN_PROJECTION,
-            S2_QUADRATIC_PROJECTION
-        }
-
-        private static readonly Projections S2_PROJECTION = Projections.S2_QUADRATIC_PROJECTION;
+        private const Projections Projection = Projections.Quadratic;
 
         // All of the values below were obtained by a combination of hand analysis and
         // Mathematica. In general, S2_TAN_PROJECTION produces the most uniform
@@ -79,22 +72,22 @@ namespace Google.Common.Geometry
         // The minimum area of any cell at level k is at least MIN_AREA.GetValue(k),
         // and the maximum is at most MAX_AREA.GetValue(k). The average area of all
         // cells at level k is exactly AVG_AREA.GetValue(k).
-        public static S2.Metric MIN_AREA = new S2.Metric(2,
-                                                         S2_PROJECTION == Projections.S2_LINEAR_PROJECTION ? 1/(3*Math.Sqrt(3)) : // 0.192
-                                                             S2_PROJECTION == Projections.S2_TAN_PROJECTION ? (S2.Pi*S2.Pi)
+        public static readonly S2CellMetric MinArea = new S2CellMetric(2,
+                                                         Projection == Projections.Linear ? 1/(3*Math.Sqrt(3)) : // 0.192
+                                                             Projection == Projections.Tan ? (S2.Pi*S2.Pi)
                                                                                                               /(16*S2.Sqrt2) : // 0.436
-                                                                 S2_PROJECTION == Projections.S2_QUADRATIC_PROJECTION
+                                                                 Projection == Projections.Quadratic
                                                                      ? 2*S2.Sqrt2/9 : // 0.314
                                                                      0);
 
-        public static S2.Metric MAX_AREA = new S2.Metric(2,
-                                                         S2_PROJECTION == Projections.S2_LINEAR_PROJECTION ? 1 : // 1.000
-                                                             S2_PROJECTION == Projections.S2_TAN_PROJECTION ? S2.Pi*S2.Pi/16 : // 0.617
-                                                                 S2_PROJECTION == Projections.S2_QUADRATIC_PROJECTION
+        public static readonly S2CellMetric MaxArea = new S2CellMetric(2,
+                                                         Projection == Projections.Linear ? 1 : // 1.000
+                                                             Projection == Projections.Tan ? S2.Pi*S2.Pi/16 : // 0.617
+                                                                 Projection == Projections.Quadratic
                                                                      ? 0.65894981424079037 : // 0.659
                                                                      0);
 
-        public static S2.Metric AVG_AREA = new S2.Metric(2, S2.Pi/6); // 0.524)
+        public static readonly S2CellMetric AvgArea = new S2CellMetric(2, S2.Pi/6); // 0.524)
 
 
         // Each cell is bounded by four planes passing through its four edges and
@@ -104,20 +97,20 @@ namespace Google.Common.Geometry
         // example, the maximum angle between opposite bounding planes for a cell at
         // level k is MAX_ANGLE_SPAN.GetValue(k), and the average angle span for all
         // cells at level k is approximately AVG_ANGLE_SPAN.GetValue(k).
-        public static S2.Metric MIN_ANGLE_SPAN = new S2.Metric(1,
-                                                               S2_PROJECTION == Projections.S2_LINEAR_PROJECTION ? 0.5 : // 0.500
-                                                                   S2_PROJECTION == Projections.S2_TAN_PROJECTION ? S2.Pi/4 : // 0.785
-                                                                       S2_PROJECTION == Projections.S2_QUADRATIC_PROJECTION ? 2.0/3 : // 0.667
+        public static readonly S2CellMetric MinAngleSpan = new S2CellMetric(1,
+                                                               Projection == Projections.Linear ? 0.5 : // 0.500
+                                                                   Projection == Projections.Tan ? S2.Pi/4 : // 0.785
+                                                                       Projection == Projections.Quadratic ? 2.0/3 : // 0.667
                                                                            0);
 
-        public static S2.Metric MAX_ANGLE_SPAN = new S2.Metric(1,
-                                                               S2_PROJECTION == Projections.S2_LINEAR_PROJECTION ? 1 : // 1.000
-                                                                   S2_PROJECTION == Projections.S2_TAN_PROJECTION ? S2.Pi/4 : // 0.785
-                                                                       S2_PROJECTION == Projections.S2_QUADRATIC_PROJECTION
+        public static readonly S2CellMetric MaxAngleSpan = new S2CellMetric(1,
+                                                               Projection == Projections.Linear ? 1 : // 1.000
+                                                                   Projection == Projections.Tan ? S2.Pi/4 : // 0.785
+                                                                       Projection == Projections.Quadratic
                                                                            ? 0.85244858959960922 : // 0.852
                                                                            0);
 
-        public static S2.Metric AVG_ANGLE_SPAN = new S2.Metric(1, S2.Pi/4); // 0.785
+        public static readonly S2CellMetric AvgAngleSpan = new S2CellMetric(1, S2.Pi / 4); // 0.785
 
 
         // The width of geometric figure is defined as the distance between two
@@ -138,18 +131,18 @@ namespace Google.Common.Geometry
         // The width is useful for bounding the minimum or maximum distance from a
         // point on one edge of a cell to the closest point on the opposite edge.
         // For example, this is useful when "growing" regions by a fixed distance.
-        public static S2.Metric MIN_WIDTH = new S2.Metric(1,
-                                                          (S2_PROJECTION == Projections.S2_LINEAR_PROJECTION ? 1/Math.Sqrt(6) : // 0.408
-                                                               S2_PROJECTION == Projections.S2_TAN_PROJECTION ? S2.Pi/(4*S2.Sqrt2) : // 0.555
-                                                                   S2_PROJECTION == Projections.S2_QUADRATIC_PROJECTION ? S2.Sqrt2/3 : // 0.471
+        public static readonly S2CellMetric MinWidth = new S2CellMetric(1,
+                                                          (Projection == Projections.Linear ? 1/Math.Sqrt(6) : // 0.408
+                                                               Projection == Projections.Tan ? S2.Pi/(4*S2.Sqrt2) : // 0.555
+                                                                   Projection == Projections.Quadratic ? S2.Sqrt2/3 : // 0.471
                                                                        0));
 
-        public static S2.Metric MAX_WIDTH = new S2.Metric(1, MAX_ANGLE_SPAN.Deriv());
+        public static readonly S2CellMetric MaxWidth = new S2CellMetric(1, MaxAngleSpan.Deriv());
 
-        public static S2.Metric AVG_WIDTH = new S2.Metric(1,
-                                                          S2_PROJECTION == Projections.S2_LINEAR_PROJECTION ? 0.70572967292222848 : // 0.706
-                                                              S2_PROJECTION == Projections.S2_TAN_PROJECTION ? 0.71865931946258044 : // 0.719
-                                                                  S2_PROJECTION == Projections.S2_QUADRATIC_PROJECTION
+        public static readonly S2CellMetric AvgWidth = new S2CellMetric(1,
+                                                          Projection == Projections.Linear ? 0.70572967292222848 : // 0.706
+                                                              Projection == Projections.Tan ? 0.71865931946258044 : // 0.719
+                                                                  Projection == Projections.Quadratic
                                                                       ? 0.71726183644304969 : // 0.717
                                                                       0);
 
@@ -162,18 +155,18 @@ namespace Google.Common.Geometry
         // its edge neighbors. In particular, it can be used to bound the distance
         // between adjacent cell centers along the space-filling Hilbert curve for
         // cells at any given level.
-        public static S2.Metric MIN_EDGE = new S2.Metric(1,
-                                                         S2_PROJECTION == Projections.S2_LINEAR_PROJECTION ? S2.Sqrt2/3 : // 0.471
-                                                             S2_PROJECTION == Projections.S2_TAN_PROJECTION ? S2.Pi/(4*S2.Sqrt2) : // 0.555
-                                                                 S2_PROJECTION == Projections.S2_QUADRATIC_PROJECTION ? S2.Sqrt2/3 : // 0.471
+        public static readonly S2CellMetric MinEdge = new S2CellMetric(1,
+                                                         Projection == Projections.Linear ? S2.Sqrt2/3 : // 0.471
+                                                             Projection == Projections.Tan ? S2.Pi/(4*S2.Sqrt2) : // 0.555
+                                                                 Projection == Projections.Quadratic ? S2.Sqrt2/3 : // 0.471
                                                                      0);
 
-        public static S2.Metric MAX_EDGE = new S2.Metric(1, MAX_ANGLE_SPAN.Deriv());
+        public static readonly S2CellMetric MaxEdge = new S2CellMetric(1, MaxAngleSpan.Deriv());
 
-        public static S2.Metric AVG_EDGE = new S2.Metric(1,
-                                                         S2_PROJECTION == Projections.S2_LINEAR_PROJECTION ? 0.72001709647780182 : // 0.720
-                                                             S2_PROJECTION == Projections.S2_TAN_PROJECTION ? 0.73083351627336963 : // 0.731
-                                                                 S2_PROJECTION == Projections.S2_QUADRATIC_PROJECTION
+        public static readonly S2CellMetric AvgEdge = new S2CellMetric(1,
+                                                         Projection == Projections.Linear ? 0.72001709647780182 : // 0.720
+                                                             Projection == Projections.Tan ? 0.73083351627336963 : // 0.731
+                                                                 Projection == Projections.Quadratic
                                                                      ? 0.72960687319305303 : // 0.730
                                                                      0);
 
@@ -186,48 +179,48 @@ namespace Google.Common.Geometry
         // and also the maximum geometric width (see the discussion above). So for
         // example, the distance from an arbitrary point to the closest cell center
         // at a given level is at most half the maximum diagonal length.
-        public static S2.Metric MIN_DIAG = new S2.Metric(1,
-                                                         S2_PROJECTION == Projections.S2_LINEAR_PROJECTION ? S2.Sqrt2/3 : // 0.471
-                                                             S2_PROJECTION == Projections.S2_TAN_PROJECTION ? S2.Pi/(3*S2.Sqrt2) : // 0.740
-                                                                 S2_PROJECTION == Projections.S2_QUADRATIC_PROJECTION
+        public static readonly S2CellMetric MinDiag = new S2CellMetric(1,
+                                                         Projection == Projections.Linear ? S2.Sqrt2/3 : // 0.471
+                                                             Projection == Projections.Tan ? S2.Pi/(3*S2.Sqrt2) : // 0.740
+                                                                 Projection == Projections.Quadratic
                                                                      ? 4*S2.Sqrt2/9 : // 0.629
                                                                      0);
 
-        public static S2.Metric MAX_DIAG = new S2.Metric(1,
-                                                         S2_PROJECTION == Projections.S2_LINEAR_PROJECTION ? S2.Sqrt2 : // 1.414
-                                                             S2_PROJECTION == Projections.S2_TAN_PROJECTION ? S2.Pi/Math.Sqrt(6) : // 1.283
-                                                                 S2_PROJECTION == Projections.S2_QUADRATIC_PROJECTION
+        public static readonly S2CellMetric MaxDiag = new S2CellMetric(1,
+                                                         Projection == Projections.Linear ? S2.Sqrt2 : // 1.414
+                                                             Projection == Projections.Tan ? S2.Pi/Math.Sqrt(6) : // 1.283
+                                                                 Projection == Projections.Quadratic
                                                                      ? 1.2193272972170106 : // 1.219
                                                                      0);
 
-        public static S2.Metric AVG_DIAG = new S2.Metric(1,
-                                                         S2_PROJECTION == Projections.S2_LINEAR_PROJECTION ? 1.0159089332094063 : // 1.016
-                                                             S2_PROJECTION == Projections.S2_TAN_PROJECTION ? 1.0318115985978178 : // 1.032
-                                                                 S2_PROJECTION == Projections.S2_QUADRATIC_PROJECTION
+        public static readonly S2CellMetric AvgDiag = new S2CellMetric(1,
+                                                         Projection == Projections.Linear ? 1.0159089332094063 : // 1.016
+                                                             Projection == Projections.Tan ? 1.0318115985978178 : // 1.032
+                                                                 Projection == Projections.Quadratic
                                                                      ? 1.03021136949923584 : // 1.030
                                                                      0);
 
         // This is the maximum edge aspect ratio over all cells at any level, where
         // the edge aspect ratio of a cell is defined as the ratio of its longest
         // edge length to its shortest edge length.
-        public static double MAX_EDGE_ASPECT =
-            S2_PROJECTION == Projections.S2_LINEAR_PROJECTION ? S2.Sqrt2 : // 1.414
-                S2_PROJECTION == Projections.S2_TAN_PROJECTION ? S2.Sqrt2 : // 1.414
-                    S2_PROJECTION == Projections.S2_QUADRATIC_PROJECTION ? 1.44261527445268292 : // 1.443
+        public static readonly double MaxEdgeAspect =
+            Projection == Projections.Linear ? S2.Sqrt2 : // 1.414
+                Projection == Projections.Tan ? S2.Sqrt2 : // 1.414
+                    Projection == Projections.Quadratic ? 1.44261527445268292 : // 1.443
                         0;
 
         // This is the maximum diagonal aspect ratio over all cells at any level,
         // where the diagonal aspect ratio of a cell is defined as the ratio of its
         // longest diagonal length to its shortest diagonal length.
-        public static double MAX_DIAG_ASPECT = Math.Sqrt(3); // 1.732
+        public static readonly double MaxDiagAspect = Math.Sqrt(3); // 1.732
 
-        public static double stToUV(double s)
+        public static double StToUv(double s)
         {
-            switch (S2_PROJECTION)
+            switch (Projection)
             {
-                case Projections.S2_LINEAR_PROJECTION:
+                case Projections.Linear:
                     return s;
-                case Projections.S2_TAN_PROJECTION:
+                case Projections.Tan:
                     // Unfortunately, tan(M_PI_4) is slightly less than 1.0. This isn't due
                     // to
                     // a flaw in the implementation of tan(), it's because the derivative of
@@ -239,7 +232,7 @@ namespace Google.Common.Geometry
                     // the nearest double-precision result.
                     s = Math.Tan(S2.PiOver4*s);
                     return s + (1.0/(1L << 53))*s;
-                case Projections.S2_QUADRATIC_PROJECTION:
+                case Projections.Quadratic:
                     if (s >= 0)
                     {
                         return (1/3.0)*((1 + s)*(1 + s) - 1);
@@ -253,15 +246,15 @@ namespace Google.Common.Geometry
             }
         }
 
-        public static double uvToST(double u)
+        public static double UvToSt(double u)
         {
-            switch (S2_PROJECTION)
+            switch (Projection)
             {
-                case Projections.S2_LINEAR_PROJECTION:
+                case Projections.Linear:
                     return u;
-                case Projections.S2_TAN_PROJECTION:
+                case Projections.Tan:
                     return (4*S2.InversePi)*Math.Atan(u);
-                case Projections.S2_QUADRATIC_PROJECTION:
+                case Projections.Quadratic:
                     if (u >= 0)
                     {
                         return Math.Sqrt(1 + 3*u) - 1;
@@ -281,7 +274,7 @@ namespace Google.Common.Geometry
    * unit length).
    */
 
-        public static S2Point faceUvToXyz(int face, double u, double v)
+        public static S2Point FaceUvToXyz(int face, double u, double v)
         {
             switch (face)
             {
@@ -300,7 +293,7 @@ namespace Google.Common.Geometry
             }
         }
 
-        public static R2Vector validFaceXyzToUv(int face, S2Point p)
+        public static R2Vector ValidFaceXyzToUv(int face, S2Point p)
         {
             // assert (p.dotProd(faceUvToXyz(face, 0, 0)) > 0);
             double pu;
@@ -335,7 +328,7 @@ namespace Google.Common.Geometry
             return new R2Vector(pu, pv);
         }
 
-        public static int xyzToFace(S2Point p)
+        public static int XyzToFace(S2Point p)
         {
             var face = p.LargestAbsComponent;
             if (p[face] < 0)
@@ -345,7 +338,7 @@ namespace Google.Common.Geometry
             return face;
         }
 
-        public static R2Vector? faceXyzToUv(int face, S2Point p)
+        public static R2Vector? FaceXyzToUv(int face, S2Point p)
         {
             if (face < 3)
             {
@@ -361,10 +354,10 @@ namespace Google.Common.Geometry
                     return null;
                 }
             }
-            return validFaceXyzToUv(face, p);
+            return ValidFaceXyzToUv(face, p);
         }
 
-        public static S2Point getUNorm(int face, double u)
+        public static S2Point GetUNorm(int face, double u)
         {
             switch (face)
             {
@@ -383,7 +376,7 @@ namespace Google.Common.Geometry
             }
         }
 
-        public static S2Point getVNorm(int face, double v)
+        public static S2Point GetVNorm(int face, double v)
         {
             switch (face)
             {
@@ -402,12 +395,12 @@ namespace Google.Common.Geometry
             }
         }
 
-        public static S2Point getNorm(int face)
+        public static S2Point GetNorm(int face)
         {
-            return faceUvToXyz(face, 0, 0);
+            return FaceUvToXyz(face, 0, 0);
         }
 
-        public static S2Point getUAxis(int face)
+        public static S2Point GetUAxis(int face)
         {
             switch (face)
             {
@@ -426,7 +419,7 @@ namespace Google.Common.Geometry
             }
         }
 
-        public static S2Point getVAxis(int face)
+        public static S2Point GetVAxis(int face)
         {
             switch (face)
             {
@@ -444,5 +437,12 @@ namespace Google.Common.Geometry
                     return new S2Point(1, 0, 0);
             }
         }
+    }
+
+    public enum Projections
+    {
+        Linear,
+        Tan,
+        Quadratic
     }
 }

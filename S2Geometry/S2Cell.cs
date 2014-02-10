@@ -121,10 +121,10 @@ namespace Google.Common.Geometry
 
                 // TODO(dbeaumont): Figure out a better naming of the variables here (and elsewhere).
                 var si = (i & -cellSize)*2 + cellSize - MaxCellSize;
-                var x = S2Projections.stToUV((1.0/MaxCellSize)*si);
+                var x = S2Projections.StToUv((1.0/MaxCellSize)*si);
 
                 var sj = (j & -cellSize)*2 + cellSize - MaxCellSize;
-                var y = S2Projections.stToUV((1.0/MaxCellSize)*sj);
+                var y = S2Projections.StToUv((1.0/MaxCellSize)*sj);
 
                 return new R2Vector(x, y);
             }
@@ -152,7 +152,7 @@ namespace Google.Common.Geometry
 
                 var u = 0.5*(_uv[0][0] + _uv[0][1]);
                 var v = 0.5*(_uv[1][0] + _uv[1][1]);
-                var cap = S2Cap.FromAxisHeight(S2Point.Normalize(S2Projections.faceUvToXyz(_face, u, v)), 0);
+                var cap = S2Cap.FromAxisHeight(S2Point.Normalize(S2Projections.FaceUvToXyz(_face, u, v)), 0);
                 for (var k = 0; k < 4; ++k)
                 {
                     cap = cap.AddPoint(GetVertex(k));
@@ -180,8 +180,8 @@ namespace Google.Common.Geometry
                     // coordinate based on the axis direction and the cell's (u,v) quadrant.
                     var u = _uv[0][0] + _uv[0][1];
                     var v = _uv[1][0] + _uv[1][1];
-                    var i = S2Projections.getUAxis(_face).Z == 0 ? (u < 0 ? 1 : 0) : (u > 0 ? 1 : 0);
-                    var j = S2Projections.getVAxis(_face).Z == 0 ? (v < 0 ? 1 : 0) : (v > 0 ? 1 : 0);
+                    var i = S2Projections.GetUAxis(_face).Z == 0 ? (u < 0 ? 1 : 0) : (u > 0 ? 1 : 0);
+                    var j = S2Projections.GetVAxis(_face).Z == 0 ? (v < 0 ? 1 : 0) : (v > 0 ? 1 : 0);
 
 
                     var lat = R1Interval.FromPointPair(GetLatitude(i, j), GetLatitude(1 - i, 1 - j));
@@ -281,7 +281,7 @@ namespace Google.Common.Geometry
         public S2Point GetVertexRaw(int k)
         {
             // Vertices are returned in the order SW, SE, NE, NW.
-            return S2Projections.faceUvToXyz(_face, _uv[0][(k >> 1) ^ (k & 1)], _uv[1][k >> 1]);
+            return S2Projections.FaceUvToXyz(_face, _uv[0][(k >> 1) ^ (k & 1)], _uv[1][k >> 1]);
         }
 
         public S2Point GetEdge(int k)
@@ -294,13 +294,13 @@ namespace Google.Common.Geometry
             switch (k)
             {
                 case 0:
-                    return S2Projections.getVNorm(_face, _uv[1][0]); // South
+                    return S2Projections.GetVNorm(_face, _uv[1][0]); // South
                 case 1:
-                    return S2Projections.getUNorm(_face, _uv[0][1]); // East
+                    return S2Projections.GetUNorm(_face, _uv[0][1]); // East
                 case 2:
-                    return -S2Projections.getVNorm(_face, _uv[1][1]); // North
+                    return -S2Projections.GetVNorm(_face, _uv[1][1]); // North
                 default:
-                    return -S2Projections.getUNorm(_face, _uv[0][0]); // West
+                    return -S2Projections.GetUNorm(_face, _uv[0][0]); // West
             }
         }
 
@@ -367,7 +367,7 @@ namespace Google.Common.Geometry
 
         public static double AverageArea(int level)
         {
-            return S2Projections.AVG_AREA.GetValue(level);
+            return S2Projections.AvgArea.GetValue(level);
         }
 
         /**
@@ -446,7 +446,7 @@ namespace Google.Common.Geometry
             // We can't just call XYZtoFaceUV, because for points that lie on the
             // boundary between two faces (i.e. u or v is +1/-1) we need to return
             // true for both adjacent cells.
-            var uvPoint = S2Projections.faceXyzToUv(_face, p);
+            var uvPoint = S2Projections.FaceXyzToUv(_face, p);
             if (uvPoint == null)
             {
                 return false;
@@ -477,8 +477,8 @@ namespace Google.Common.Geometry
                 // Compute the cell bounds in scaled (i,j) coordinates.
                 var sijLo = (ij[d] & -cellSize)*2 - MaxCellSize;
                 var sijHi = sijLo + cellSize*2;
-                _uv[d][0] = S2Projections.stToUV((1.0/MaxCellSize)*sijLo);
-                _uv[d][1] = S2Projections.stToUV((1.0/MaxCellSize)*sijHi);
+                _uv[d][0] = S2Projections.StToUv((1.0/MaxCellSize)*sijLo);
+                _uv[d][1] = S2Projections.StToUv((1.0/MaxCellSize)*sijHi);
             }
         }
 
@@ -487,13 +487,13 @@ namespace Google.Common.Geometry
 
         private double GetLatitude(int i, int j)
         {
-            var p = S2Projections.faceUvToXyz(_face, _uv[0][i], _uv[1][j]);
+            var p = S2Projections.FaceUvToXyz(_face, _uv[0][i], _uv[1][j]);
             return Math.Atan2(p.Z, Math.Sqrt(p.X*p.X + p.Y*p.Y));
         }
 
         private double GetLongitude(int i, int j)
         {
-            var p = S2Projections.faceUvToXyz(_face, _uv[0][i], _uv[1][j]);
+            var p = S2Projections.FaceUvToXyz(_face, _uv[0][i], _uv[1][j]);
             return Math.Atan2(p.Y, p.X);
         }
 

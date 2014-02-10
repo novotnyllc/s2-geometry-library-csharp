@@ -607,7 +607,7 @@ namespace Google.Common.Geometry
                 // level such that a spherical cap (i.e. "disc") of the given radius
                 // fits completely inside all cells at that level.
                 _level =
-                    Math.Min(S2Projections.MIN_WIDTH.GetMaxLevel(2*searchRadius), S2CellId.MaxLevel - 1);
+                    Math.Min(S2Projections.MinWidth.GetMaxLevel(2*searchRadius), S2CellId.MaxLevel - 1);
             }
 
 

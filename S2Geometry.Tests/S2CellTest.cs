@@ -249,9 +249,9 @@ namespace S2Geometry.Tests
                 // Also subdivide one corner cell, one edge cell, and one center cell
                 // so that we have a better chance of sample the minimum metric values.
                 var forceSubdivide = false;
-                var center = S2Projections.getNorm(children[i].Face);
-                var edge = center + S2Projections.getUAxis(children[i].Face);
-                var corner = edge + S2Projections.getVAxis(children[i].Face);
+                var center = S2Projections.GetNorm(children[i].Face);
+                var edge = center + S2Projections.GetUAxis(children[i].Face);
+                var corner = edge + S2Projections.GetVAxis(children[i].Face);
                 for (var j = 0; j < 4; ++j)
                 {
                     var p = children[i].GetVertexRaw(j);
@@ -288,7 +288,7 @@ namespace S2Geometry.Tests
 
         public void testMinMaxAvg(String label, int level, double count,
                                   double absError, double minValue, double maxValue, double avgValue,
-                                  S2.Metric minMetric, S2.Metric maxMetric, S2.Metric avgMetric)
+                                  S2CellMetric minMetric, S2CellMetric maxMetric, S2CellMetric avgMetric)
         {
             // All metrics are minimums, maximums, or averages of differential
             // quantities, and therefore will not be exact for cells at any finite
@@ -469,26 +469,26 @@ namespace S2Geometry.Tests
                 // minimums and maximums. The area calculation is accurate to about 1e-15
                 // times the cell width.
                 testMinMaxAvg("area", i, s.count, 1e-15*s.minWidth, s.minArea,
-                              s.maxArea, s.avgArea, S2Projections.MIN_AREA, S2Projections.MAX_AREA,
-                              S2Projections.AVG_AREA);
+                              s.maxArea, s.avgArea, S2Projections.MinArea, S2Projections.MaxArea,
+                              S2Projections.AvgArea);
                 testMinMaxAvg("width", i, s.count, 1e-15, s.minWidth, s.maxWidth,
-                              s.avgWidth, S2Projections.MIN_WIDTH, S2Projections.MAX_WIDTH,
-                              S2Projections.AVG_WIDTH);
+                              s.avgWidth, S2Projections.MinWidth, S2Projections.MaxWidth,
+                              S2Projections.AvgWidth);
                 testMinMaxAvg("edge", i, s.count, 1e-15, s.minEdge, s.maxEdge,
-                              s.avgEdge, S2Projections.MIN_EDGE, S2Projections.MAX_EDGE,
-                              S2Projections.AVG_EDGE);
+                              s.avgEdge, S2Projections.MinEdge, S2Projections.MaxEdge,
+                              S2Projections.AvgEdge);
                 testMinMaxAvg("diagonal", i, s.count, 1e-15, s.minDiag, s.maxDiag,
-                              s.avgDiag, S2Projections.MIN_DIAG, S2Projections.MAX_DIAG,
-                              S2Projections.AVG_DIAG);
+                              s.avgDiag, S2Projections.MinDiag, S2Projections.MaxDiag,
+                              S2Projections.AvgDiag);
                 testMinMaxAvg("angle span", i, s.count, 1e-15, s.minAngleSpan,
-                              s.maxAngleSpan, s.avgAngleSpan, S2Projections.MIN_ANGLE_SPAN,
-                              S2Projections.MAX_ANGLE_SPAN, S2Projections.AVG_ANGLE_SPAN);
+                              s.maxAngleSpan, s.avgAngleSpan, S2Projections.MinAngleSpan,
+                              S2Projections.MaxAngleSpan, S2Projections.AvgAngleSpan);
 
                 // The aspect ratio calculations are ratios of lengths and are therefore
                 // less accurate at higher subdivision levels.
-                Assert.True(s.maxEdgeAspect <= S2Projections.MAX_EDGE_ASPECT + 1e-15
+                Assert.True(s.maxEdgeAspect <= S2Projections.MaxEdgeAspect + 1e-15
                             *(1 << i));
-                Assert.True(s.maxDiagAspect <= S2Projections.MAX_DIAG_ASPECT + 1e-15
+                Assert.True(s.maxDiagAspect <= S2Projections.MaxDiagAspect + 1e-15
                             *(1 << i));
             }
         }

@@ -83,10 +83,10 @@ namespace S2Geometry.Tests
                 var rootCell = S2Cell.FromFacePosLevel(face, (byte)0, 0);
 
                 // A leaf cell at the midpoint of the v=1 edge.
-                var edgeCell = new S2Cell(S2Projections.faceUvToXyz(face, 0, 1 - EPS));
+                var edgeCell = new S2Cell(S2Projections.FaceUvToXyz(face, 0, 1 - EPS));
 
                 // A leaf cell at the u=1, v=1 corner.
-                var cornerCell = new S2Cell(S2Projections.faceUvToXyz(face, 1 - EPS, 1 - EPS));
+                var cornerCell = new S2Cell(S2Projections.FaceUvToXyz(face, 1 - EPS, 1 - EPS));
 
                 // Quick check for full and empty caps.
                 Assert.True(S2Cap.Full.Contains(rootCell));
@@ -109,7 +109,7 @@ namespace S2Geometry.Tests
                 for (var capFace = 0; capFace < 6; ++capFace)
                 {
                     // A cap that barely contains all of 'cap_face'.
-                    var center = S2Projections.getNorm(capFace);
+                    var center = S2Projections.GetNorm(capFace);
                     var covering = S2Cap.FromAxisAngle(center, S1Angle.FromRadians(kFaceRadius + EPS));
                     JavaAssert.Equal(covering.Contains(rootCell), capFace == face);
                     JavaAssert.Equal(covering.MayIntersect(rootCell), capFace != antiFace);

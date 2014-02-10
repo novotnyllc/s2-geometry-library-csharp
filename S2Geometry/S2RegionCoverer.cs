@@ -455,7 +455,7 @@ namespace Google.Common.Geometry
                 // Find the maximum level such that the bounding cap contains at most one
                 // cell vertex at that level.
                 var cap = region.CapBound;
-                var level = Math.Min(S2Projections.MIN_WIDTH.GetMaxLevel(2*cap.Angle.Radians),
+                var level = Math.Min(S2Projections.MinWidth.GetMaxLevel(2*cap.Angle.Radians),
                                      Math.Min(maxLevel(), S2CellId.MaxLevel - 1));
                 if (levelMod() > 1 && level > minLevel())
                 {

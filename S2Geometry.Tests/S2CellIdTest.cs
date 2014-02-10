@@ -190,7 +190,7 @@ namespace S2Geometry.Tests
             // path over the surface of the sphere, i.e. there are no
             // discontinuous jumps from one region to another.
 
-            var maxDist = S2Projections.MAX_EDGE.GetValue(MAX_WALK_LEVEL);
+            var maxDist = S2Projections.MaxEdge.GetValue(MAX_WALK_LEVEL);
             var end = S2CellId.End(MAX_WALK_LEVEL);
             var id = S2CellId.Begin(MAX_WALK_LEVEL);
             for (; !id.Equals(end); id = id.Next)
@@ -200,12 +200,12 @@ namespace S2Geometry.Tests
                 // Check that the ToPointRaw() returns the center of each cell
                 // in (s,t) coordinates.
                 var p = id.ToPointRaw();
-                var face = S2Projections.xyzToFace(p);
-                var uv = S2Projections.validFaceXyzToUv(face, p);
+                var face = S2Projections.XyzToFace(p);
+                var uv = S2Projections.ValidFaceXyzToUv(face, p);
                 assertDoubleNear(Math.IEEERemainder(
-                    S2Projections.uvToST(uv.X), 1.0/(1 << MAX_WALK_LEVEL)), 0);
+                    S2Projections.UvToSt(uv.X), 1.0/(1 << MAX_WALK_LEVEL)), 0);
                 assertDoubleNear(Math.IEEERemainder(
-                    S2Projections.uvToST(uv.Y), 1.0/(1 << MAX_WALK_LEVEL)), 0);
+                    S2Projections.UvToSt(uv.Y), 1.0/(1 << MAX_WALK_LEVEL)), 0);
             }
         }
 
@@ -220,7 +220,7 @@ namespace S2Geometry.Tests
             // the cells at the corners of each face are stretched -- they have 60 and
             // 120 degree angles.)
 
-            var maxDist = 0.5*S2Projections.MAX_DIAG.GetValue(S2CellId.MaxLevel);
+            var maxDist = 0.5*S2Projections.MaxDiag.GetValue(S2CellId.MaxLevel);
             for (var i = 0; i < 1000000; ++i)
             {
                 // randomPoint();

@@ -782,52 +782,53 @@ namespace Google.Common.Geometry
         {
             return ApproxEquals(a, b, 1e-15);
         }
+    }
 
-        public class Metric
-        {
-            private readonly double _deriv;
-            private readonly int _dim;
+    public struct S2CellMetric
+    {
+        private readonly double _deriv;
+        private readonly int _dim;
 
-            /**
+        /**
      * Defines a cell metric of the given dimension (1 == length, 2 == area).
      */
 
-            public Metric(int dim, double deriv)
-            {
-                _deriv = deriv;
-                _dim = dim;
-            }
+        public S2CellMetric(int dim, double deriv)
+        {
+            _deriv = deriv;
+            _dim = dim;
+        }
 
-            /**
+        /**
      * The "deriv" value of a metric is a derivative, and must be multiplied by
      * a length or area in (s,t)-space to get a useful value.
      */
 
-            public double Deriv()
-            {
-                return _deriv;
-            }
+        public double Deriv()
+        {
+            return _deriv;
+        }
 
-            /** Return the value of a metric for cells at the given level. */
+        /** Return the value of a metric for cells at the given level. */
 
-            public double GetValue(int level)
-            {
-                return FpUtils.Scalb(_deriv, _dim*(1 - level));
-            }
+        public double GetValue(int level)
+        {
+            return FpUtils.Scalb(_deriv, _dim*(1 - level));
+        }
 
-            /**
+        /**
      * Return the level at which the metric has approximately the given value.
      * For example, S2::kAvgEdge.GetClosestLevel(0.1) returns the level at which
      * the average cell edge length is approximately 0.1. The return value is
      * always a valid level.
      */
 
-            public int GetClosestLevel(double value)
-            {
-                return GetMinLevel(Sqrt2*value);
-            }
+        public int GetClosestLevel(double value)
+        {
+            return GetMinLevel(S2.Sqrt2*value);
+        }
 
-            /**
+        /**
      * Return the minimum level such that the metric is at most the given value,
      * or S2CellId::kMaxLevel if there is no such level. For example,
      * S2::kMaxDiag.GetMinLevel(0.1) returns the minimum level such that all
@@ -835,24 +836,24 @@ namespace Google.Common.Geometry
      * valid level.
      */
 
-            public int GetMinLevel(double value)
+        public int GetMinLevel(double value)
+        {
+            if (value <= 0)
             {
-                if (value <= 0)
-                {
-                    return S2CellId.MaxLevel;
-                }
-
-                // This code is equivalent to computing a floating-point "level"
-                // value and rounding up.
-                var exponent = Exp(value/((1 << _dim)*_deriv));
-                var level = Math.Max(0,
-                                     Math.Min(S2CellId.MaxLevel, -((exponent - 1) >> (_dim - 1))));
-                // assert (level == S2CellId.MAX_LEVEL || getValue(level) <= value);
-                // assert (level == 0 || getValue(level - 1) > value);
-                return level;
+                return S2CellId.MaxLevel;
             }
 
-            /**
+            // This code is equivalent to computing a floating-point "level"
+            // value and rounding up.
+            var exponent = S2.Exp(value/((1 << _dim)*_deriv));
+            var level = Math.Max(0,
+                                 Math.Min(S2CellId.MaxLevel, -((exponent - 1) >> (_dim - 1))));
+            // assert (level == S2CellId.MAX_LEVEL || getValue(level) <= value);
+            // assert (level == 0 || getValue(level - 1) > value);
+            return level;
+        }
+
+        /**
      * Return the maximum level such that the metric is at least the given
      * value, or zero if there is no such level. For example,
      * S2.kMinWidth.GetMaxLevel(0.1) returns the maximum level such that all
@@ -860,22 +861,21 @@ namespace Google.Common.Geometry
      * valid level.
      */
 
-            public int GetMaxLevel(double value)
+        public int GetMaxLevel(double value)
+        {
+            if (value <= 0)
             {
-                if (value <= 0)
-                {
-                    return S2CellId.MaxLevel;
-                }
-
-                // This code is equivalent to computing a floating-point "level"
-                // value and rounding down.
-                var exponent = Exp((1 << _dim)*_deriv/value);
-                var level = Math.Max(0,
-                                     Math.Min(S2CellId.MaxLevel, ((exponent - 1) >> (_dim - 1))));
-                // assert (level == 0 || getValue(level) >= value);
-                // assert (level == S2CellId.MAX_LEVEL || getValue(level + 1) < value);
-                return level;
+                return S2CellId.MaxLevel;
             }
+
+            // This code is equivalent to computing a floating-point "level"
+            // value and rounding down.
+            var exponent = S2.Exp((1 << _dim)*_deriv/value);
+            var level = Math.Max(0,
+                                 Math.Min(S2CellId.MaxLevel, ((exponent - 1) >> (_dim - 1))));
+            // assert (level == 0 || getValue(level) >= value);
+            // assert (level == S2CellId.MAX_LEVEL || getValue(level + 1) < value);
+            return level;
         }
     }
 }

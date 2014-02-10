@@ -411,10 +411,10 @@ namespace Google.Common.Geometry
 
         public static S2CellId FromPoint(S2Point p)
         {
-            var face = S2Projections.xyzToFace(p);
-            var uv = S2Projections.validFaceXyzToUv(face, p);
-            var i = StToIj(S2Projections.uvToST(uv.X));
-            var j = StToIj(S2Projections.uvToST(uv.Y));
+            var face = S2Projections.XyzToFace(p);
+            var uv = S2Projections.ValidFaceXyzToUv(face, p);
+            var i = StToIj(S2Projections.UvToSt(uv.X));
+            var j = StToIj(S2Projections.UvToSt(uv.Y));
             return FromFaceIj(face, i, j);
         }
 
@@ -1049,9 +1049,9 @@ namespace Google.Common.Geometry
         private static S2Point FaceSiTiToXyz(int face, int si, int ti)
         {
             const double kScale = 1.0/MaxSize;
-            var u = S2Projections.stToUV(kScale*si);
-            var v = S2Projections.stToUV(kScale*ti);
-            return S2Projections.faceUvToXyz(face, u, v);
+            var u = S2Projections.StToUv(kScale*si);
+            var v = S2Projections.StToUv(kScale*ti);
+            return S2Projections.FaceUvToXyz(face, u, v);
         }
 
         /**
@@ -1076,9 +1076,9 @@ namespace Google.Common.Geometry
 
             // Find the leaf cell coordinates on the adjacent face, and convert
             // them to a cell id at the appropriate level.
-            var p = S2Projections.faceUvToXyz(face, s, t);
-            face = S2Projections.xyzToFace(p);
-            var st = S2Projections.validFaceXyzToUv(face, p);
+            var p = S2Projections.FaceUvToXyz(face, s, t);
+            face = S2Projections.XyzToFace(p);
+            var st = S2Projections.ValidFaceXyzToUv(face, p);
             return FromFaceIj(face, StToIj(st.X), StToIj(st.Y));
         }
 
