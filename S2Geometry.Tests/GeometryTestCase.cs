@@ -227,7 +227,7 @@ namespace S2Geometry.Tests
             {
 //Splitter.on(';').omitEmptyStrings().split(str)) {
                 var loop = makeLoop(token);
-                loop.normalize();
+                loop.Normalize();
                 loops.Add(loop);
             }
 

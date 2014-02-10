@@ -76,7 +76,7 @@ namespace Google.Common.Geometry
             loops = new List<S2Loop>();
             bound = loop.RectBound;
             hasHoles = false;
-            numVertices = loop.numVertices();
+            numVertices = loop.NumVertices;
 
             loops.Add(loop);
         }
@@ -207,7 +207,7 @@ namespace Google.Common.Geometry
             foreach (var loop in loops)
             {
                 insertLoop(loop, null, loopMap);
-                numVertices += loop.numVertices();
+                numVertices += loop.NumVertices;
             }
             loops.Clear();
 
@@ -234,7 +234,7 @@ namespace Google.Common.Geometry
             bound = S2LatLngRect.Empty;
             for (var i = 0; i < numLoops(); ++i)
             {
-                if (loop(i).sign() < 0)
+                if (loop(i).Sign < 0)
                 {
                     hasHoles = true;
                 }
@@ -275,9 +275,9 @@ namespace Google.Common.Geometry
                 for (var i = 0; i < loops.Count; ++i)
                 {
                     var lp = loops[i];
-                    for (var j = 0; j < lp.numVertices(); ++j)
+                    for (var j = 0; j < lp.NumVertices; ++j)
                     {
-                        var key = new UndirectedEdge(lp.vertex(j), lp.vertex(j + 1));
+                        var key = new UndirectedEdge(lp.Vertex(j), lp.Vertex(j + 1));
                         var value = new LoopVertexIndexPair(i, j);
                         if (edges.ContainsKey(key))
                         {
@@ -299,7 +299,7 @@ namespace Google.Common.Geometry
             // two loops cross.
             for (var i = 0; i < loops.Count; ++i)
             {
-                if (!loops[i].isNormalized())
+                if (!loops[i].IsNormalized)
                 {
                     Debug.WriteLine("Loop " + i + " encloses more than half the sphere");
                     return false;
@@ -308,7 +308,7 @@ namespace Google.Common.Geometry
                 {
                     // This test not only checks for edge crossings, it also detects
                     // cases where the two boundaries cross at a shared vertex.
-                    if (loops[i].containsOrCrosses(loops[j]) < 0)
+                    if (loops[i].ContainsOrCrosses(loops[j]) < 0)
                     {
                         Debug.WriteLine("Loop " + i + " crosses loop " + j);
                         return false;
@@ -334,12 +334,12 @@ namespace Google.Common.Geometry
 
         public int getParent(int k)
         {
-            var depth = loop(k).depth();
+            var depth = loop(k).Depth;
             if (depth == 0)
             {
                 return -1; // Optimization.
             }
-            while (--k >= 0 && loop(k).depth() >= depth)
+            while (--k >= 0 && loop(k).Depth >= depth)
             {
                 // spin
             }
@@ -360,8 +360,8 @@ namespace Google.Common.Geometry
             {
                 return numLoops() - 1;
             }
-            var depth = loop(k).depth();
-            while (++k < numLoops() && loop(k).depth() > depth)
+            var depth = loop(k).Depth;
+            while (++k < numLoops() && loop(k).Depth > depth)
             {
                 // spin
             }
@@ -374,10 +374,10 @@ namespace Google.Common.Geometry
             var centroidSum = new S2Point(0, 0, 0);
             for (var i = 0; i < numLoops(); ++i)
             {
-                var areaCentroid = doCentroid ? (S2AreaCentroid?) loop(i).getAreaAndCentroid() : null;
-                var loopArea = doCentroid ? areaCentroid.Value.Area : loop(i).getArea();
+                var areaCentroid = doCentroid ? (S2AreaCentroid?) loop(i).AreaAndCentroid : null;
+                var loopArea = doCentroid ? areaCentroid.Value.Area : loop(i).Area;
 
-                var loopSign = loop(i).sign();
+                var loopSign = loop(i).Sign;
                 areaSum += loopSign*loopArea;
                 if (doCentroid)
                 {
@@ -447,7 +447,7 @@ namespace Google.Common.Geometry
             var minDistance = S1Angle.FromRadians(Math.PI);
             for (var i = 0; i < numLoops(); i++)
             {
-                minDistance = S1Angle.Min(minDistance, loop(i).getDistance(p));
+                minDistance = S1Angle.Min(minDistance, loop(i).GetDistance(p));
             }
 
             return minDistance;
@@ -465,7 +465,7 @@ namespace Google.Common.Geometry
             // Note that S2Loop.contains does its own bounding rectangle check.
             if (numLoops() == 1 && b.numLoops() == 1)
             {
-                return loop(0).contains(b.loop(0));
+                return loop(0).Contains(b.loop(0));
             }
 
             // Otherwise if neither polygon has holes, we can still use the more
@@ -520,7 +520,7 @@ namespace Google.Common.Geometry
             // Note that S2Loop.intersects does its own bounding rectangle check.
             if (numLoops() == 1 && b.numLoops() == 1)
             {
-                return loop(0).intersects(b.loop(0));
+                return loop(0).Intersects(b.loop(0));
             }
 
             // Otherwise if neither polygon has holes, we can still use the more
@@ -536,7 +536,7 @@ namespace Google.Common.Geometry
                 {
                     for (var j = 0; j < b.numLoops(); ++j)
                     {
-                        if (loop(i).intersects(b.loop(j)))
+                        if (loop(i).Intersects(b.loop(j)))
                         {
                             return true;
                         }
@@ -656,13 +656,13 @@ namespace Google.Common.Geometry
             var intersections = new List<ParametrizedS2Point>();
             foreach (var aLoop in a.loops)
             {
-                var n = aLoop.numVertices();
-                var dir = (aLoop.isHole() ^ reverseA) ? -1 : 1;
-                var inside = b.contains(aLoop.vertex(0)) ^ invertB;
+                var n = aLoop.NumVertices;
+                var dir = (aLoop.IsHole ^ reverseA) ? -1 : 1;
+                var inside = b.contains(aLoop.Vertex(0)) ^ invertB;
                 for (var j = (dir > 0) ? 0 : n; n > 0; --n, j += dir)
                 {
-                    var a0 = aLoop.vertex(j);
-                    var a1 = aLoop.vertex(j + dir);
+                    var a0 = aLoop.Vertex(j);
+                    var a1 = aLoop.Vertex(j + dir);
                     intersections.Clear();
                     clipEdge(a0, a1, bIndex, addSharedEdges, intersections);
 
@@ -859,7 +859,7 @@ namespace Google.Common.Geometry
             for (var i = 0; i < numLoops(); ++i)
             {
                 var child = loop(i);
-                if (child.depth() == 0)
+                if (child.Depth == 0)
                 {
                     continue;
                 }
@@ -867,16 +867,16 @@ namespace Google.Common.Geometry
                 if (parent != lastParent)
                 {
                     vertices.Clear();
-                    for (var j = 0; j < parent.numVertices(); ++j)
+                    for (var j = 0; j < parent.NumVertices; ++j)
                     {
-                        vertices.Add(parent.vertex(j));
+                        vertices.Add(parent.Vertex(j));
                     }
                     lastParent = parent;
                 }
                 var count = 0;
-                for (var j = 0; j < child.numVertices(); ++j)
+                for (var j = 0; j < child.NumVertices; ++j)
                 {
-                    var item = child.vertex(j);
+                    var item = child.Vertex(j);
                     if (vertices.Any(p => p.Equals(item)))
                     {
                         ++count;
@@ -916,7 +916,7 @@ namespace Google.Common.Geometry
                 for (var j = 0; j < numLoops(); ++j)
                 {
                     var bLoop = b.loop(j);
-                    if (bLoop.depth() == aLoop.depth() && bLoop.boundaryApproxEquals(aLoop, maxError))
+                    if (bLoop.Depth == aLoop.Depth && bLoop.BoundaryApproxEquals(aLoop, maxError))
                     {
                         success = true;
                         break;
@@ -942,7 +942,7 @@ namespace Google.Common.Geometry
         {
             if (numLoops() == 1)
             {
-                return loop(0).contains(p); // Optimization.
+                return loop(0).Contains(p); // Optimization.
             }
             if (!bound.Contains(p))
             {
@@ -951,7 +951,7 @@ namespace Google.Common.Geometry
             var inside = false;
             for (var i = 0; i < numLoops(); ++i)
             {
-                inside ^= loop(i).contains(p);
+                inside ^= loop(i).Contains(p);
                 if (inside && !hasHoles)
                 {
                     break; // Shells are disjoint.
@@ -983,7 +983,7 @@ namespace Google.Common.Geometry
 
             foreach (var child in children)
             {
-                if (child.containsNested(newLoop))
+                if (child.ContainsNested(newLoop))
                 {
                     insertLoop(newLoop, child, loopMap);
                     return;
@@ -1002,7 +1002,7 @@ namespace Google.Common.Geometry
             for (var i = 0; i < children.Count;)
             {
                 var child = children[i];
-                if (newLoop.containsNested(child))
+                if (newLoop.ContainsNested(child))
                 {
                     if (newChildren == null)
                     {
@@ -1024,7 +1024,7 @@ namespace Google.Common.Geometry
         {
             if (loop != null)
             {
-                loop.setDepth(depth);
+                loop.Depth = depth;
                 loops.Add(loop);
             }
             List<S2Loop> children = null;
@@ -1044,7 +1044,7 @@ namespace Google.Common.Geometry
             var inside = false;
             for (var i = 0; i < numLoops(); ++i)
             {
-                var result = loop(i).containsOrCrosses(b);
+                var result = loop(i).ContainsOrCrosses(b);
                 if (result < 0)
                 {
                     return -1; // The loop boundaries intersect.
@@ -1063,7 +1063,7 @@ namespace Google.Common.Geometry
         {
             for (var i = 0; i < numLoops(); ++i)
             {
-                if (loop(i).contains(b))
+                if (loop(i).Contains(b))
                 {
                     return true;
                 }
@@ -1077,7 +1077,7 @@ namespace Google.Common.Geometry
         {
             for (var j = 0; j < b.numLoops(); ++j)
             {
-                if (b.loop(j).sign() < 0)
+                if (b.loop(j).Sign < 0)
                 {
                     continue;
                 }
@@ -1099,7 +1099,7 @@ namespace Google.Common.Geometry
         {
             for (var j = 0; j < b.numLoops(); ++j)
             {
-                if (b.loop(j).sign() > 0)
+                if (b.loop(j).Sign > 0)
                 {
                     continue;
                 }
@@ -1118,7 +1118,7 @@ namespace Google.Common.Geometry
         {
             for (var j = 0; j < b.numLoops(); ++j)
             {
-                if (b.loop(j).sign() < 0)
+                if (b.loop(j).Sign < 0)
                 {
                     continue;
                 }
@@ -1143,9 +1143,9 @@ namespace Google.Common.Geometry
             {
                 var s2Loop = loop(i);
                 sb.Append("loop <\n");
-                for (var v = 0; v < s2Loop.numVertices(); ++v)
+                for (var v = 0; v < s2Loop.NumVertices; ++v)
                 {
-                    var s2Point = s2Loop.vertex(v);
+                    var s2Point = s2Loop.Vertex(v);
                     sb.Append(s2Point.ToDegreesString());
                     sb.Append("\n"); // end of vertex
                 }
@@ -1302,7 +1302,7 @@ namespace Google.Common.Geometry
                 var vertices = new int[poly.numLoops()];
                 for (var i = 0; i < vertices.Length; i++)
                 {
-                    vertices[i] = poly.loop(i).numVertices();
+                    vertices[i] = poly.loop(i).NumVertices;
                 }
                 return vertices;
             }
@@ -1315,18 +1315,18 @@ namespace Google.Common.Geometry
                 var loop = poly.loop(loopIndex);
                 int fromIndex;
                 int toIndex;
-                if (loop.isHole() ^ reverse)
+                if (loop.IsHole ^ reverse)
                 {
-                    fromIndex = loop.numVertices() - 1 - vertexInLoop;
-                    toIndex = 2*loop.numVertices() - 2 - vertexInLoop;
+                    fromIndex = loop.NumVertices - 1 - vertexInLoop;
+                    toIndex = 2*loop.NumVertices - 2 - vertexInLoop;
                 }
                 else
                 {
                     fromIndex = vertexInLoop;
                     toIndex = vertexInLoop + 1;
                 }
-                var from = loop.vertex(fromIndex);
-                var to = loop.vertex(toIndex);
+                var from = loop.Vertex(fromIndex);
+                var to = loop.Vertex(toIndex);
                 return new S2Edge(from, to);
             }
         }

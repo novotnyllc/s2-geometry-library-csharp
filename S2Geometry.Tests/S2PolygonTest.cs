@@ -129,7 +129,7 @@ namespace S2Geometry.Tests
         private void assertPointApproximatelyEquals(
             S2Loop s2Loop, int vertexIndex, double lat, double lng, double error)
         {
-            var latLng = new S2LatLng(s2Loop.vertex(vertexIndex));
+            var latLng = new S2LatLng(s2Loop.Vertex(vertexIndex));
             assertDoubleNear(latLng.LatDegrees, lat, error);
             assertDoubleNear(latLng.LngDegrees, lng, error);
         }
@@ -237,15 +237,15 @@ namespace S2Geometry.Tests
             // All of the vertices of a polygon should be distance 0
             for (var i = 0; i < shell.numLoops(); i++)
             {
-                for (var j = 0; j < shell.loop(i).numVertices(); j++)
+                for (var j = 0; j < shell.loop(i).NumVertices; j++)
                 {
-                    assertEquals(0d, shell.getDistance(shell.loop(i).vertex(j)).Radians, epsilon);
+                    assertEquals(0d, shell.getDistance(shell.loop(i).Vertex(j)).Radians, epsilon);
                 }
             }
 
             // A non-vertex point on an edge should be distance 0
             assertEquals(0d, rect.getDistance(
-                S2Point.Normalize(rect.loop(0).vertex(0) + rect.loop(0).vertex(1))).Radians,
+                S2Point.Normalize(rect.loop(0).Vertex(0) + rect.loop(0).Vertex(1))).Radians,
                          epsilon);
 
             var origin = S2LatLng.FromDegrees(0, 0).ToPoint();
@@ -333,8 +333,8 @@ namespace S2Geometry.Tests
                 return;
             }
             var s2Loop = union.loop(0);
-            assertEquals(8, s2Loop.numVertices());
-            if (s2Loop.numVertices() != 8)
+            assertEquals(8, s2Loop.NumVertices);
+            if (s2Loop.NumVertices != 8)
             {
                 return;
             }

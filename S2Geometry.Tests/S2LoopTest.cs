@@ -65,21 +65,21 @@ namespace S2Geometry.Tests
         {
             base.SetUp();
             southHemi = new S2Loop(northHemi);
-            southHemi.invert();
+            southHemi.Invert();
 
             eastHemi = new S2Loop(westHemi);
-            eastHemi.invert();
+            eastHemi.Invert();
 
             farHemi = new S2Loop(nearHemi);
-            farHemi.invert();
+            farHemi.Invert();
         }
 
         private S2Loop rotate(S2Loop loop)
         {
             var vertices = new List<S2Point>();
-            for (var i = 1; i <= loop.numVertices(); ++i)
+            for (var i = 1; i <= loop.NumVertices; ++i)
             {
-                vertices.Add(loop.vertex(i));
+                vertices.Add(loop.Vertex(i));
             }
             return new S2Loop(vertices);
         }
@@ -150,34 +150,34 @@ namespace S2Geometry.Tests
         private void assertRelation(
             S2Loop a, S2Loop b, int containsOrCrosses, bool intersects, bool nestable)
         {
-            assertEquals(a.contains(b), containsOrCrosses == 1);
-            assertEquals(a.intersects(b), intersects);
+            assertEquals(a.Contains(b), containsOrCrosses == 1);
+            assertEquals(a.Intersects(b), intersects);
             if (nestable)
             {
-                assertEquals(a.containsNested(b), a.contains(b));
+                assertEquals(a.ContainsNested(b), a.Contains(b));
             }
             if (containsOrCrosses >= -1)
             {
-                assertEquals(a.containsOrCrosses(b), containsOrCrosses);
+                assertEquals(a.ContainsOrCrosses(b), containsOrCrosses);
             }
         }
 
         private void dumpCrossings(S2Loop loop)
         {
-            Console.WriteLine("Ortho(v1): " + S2.Ortho(loop.vertex(1)));
-            Console.WriteLine("Contains(kOrigin): {0}\n", loop.contains(S2.Origin));
-            for (var i = 1; i <= loop.numVertices(); ++i)
+            Console.WriteLine("Ortho(v1): " + S2.Ortho(loop.Vertex(1)));
+            Console.WriteLine("Contains(kOrigin): {0}\n", loop.Contains(S2.Origin));
+            for (var i = 1; i <= loop.NumVertices; ++i)
             {
-                var a = S2.Ortho(loop.vertex(i));
-                var b = loop.vertex(i - 1);
-                var c = loop.vertex(i + 1);
-                var o = loop.vertex(i);
+                var a = S2.Ortho(loop.Vertex(i));
+                var b = loop.Vertex(i - 1);
+                var c = loop.Vertex(i + 1);
+                var o = loop.Vertex(i);
                 Console.WriteLine("Vertex {0}: [%.17g, %.17g, %.17g], "
                                   + "%d%dR=%d, %d%d%d=%d, R%d%d=%d, inside: %b\n",
                                   i,
-                                  loop.vertex(i).X,
-                                  loop.vertex(i).Y,
-                                  loop.vertex(i).Z,
+                                  loop.Vertex(i).X,
+                                  loop.Vertex(i).Y,
+                                  loop.Vertex(i).Z,
                                   i - 1,
                                   i,
                                   S2.RobustCcw(b, o, a),
@@ -190,38 +190,38 @@ namespace S2Geometry.Tests
                                   S2.RobustCcw(a, o, c),
                                   S2.OrderedCcw(a, b, c, o));
             }
-            for (var i = 0; i < loop.numVertices() + 2; ++i)
+            for (var i = 0; i < loop.NumVertices + 2; ++i)
             {
                 var orig = S2.Origin;
                 S2Point dest;
-                if (i < loop.numVertices())
+                if (i < loop.NumVertices)
                 {
-                    dest = loop.vertex(i);
+                    dest = loop.Vertex(i);
                     Console.WriteLine("Origin->{0} crosses:", i);
                 }
                 else
                 {
                     dest = new S2Point(0, 0, 1);
-                    if (i == loop.numVertices() + 1)
+                    if (i == loop.NumVertices + 1)
                     {
-                        orig = loop.vertex(1);
+                        orig = loop.Vertex(1);
                     }
                     Console.WriteLine("Case {0}:", i);
                 }
-                for (var j = 0; j < loop.numVertices(); ++j)
+                for (var j = 0; j < loop.NumVertices; ++j)
                 {
                     Console.WriteLine(
-                        " " + S2EdgeUtil.EdgeOrVertexCrossing(orig, dest, loop.vertex(j), loop.vertex(j + 1)));
+                        " " + S2EdgeUtil.EdgeOrVertexCrossing(orig, dest, loop.Vertex(j), loop.Vertex(j + 1)));
                 }
                 Console.WriteLine();
             }
             for (var i = 0; i <= 2; i += 2)
             {
                 Console.WriteLine("Origin->v1 crossing v{0}->v1: ", i);
-                var a = S2.Ortho(loop.vertex(1));
-                var b = loop.vertex(i);
+                var a = S2.Ortho(loop.Vertex(1));
+                var b = loop.Vertex(i);
                 var c = S2.Origin;
-                var o = loop.vertex(1);
+                var o = loop.Vertex(1);
                 Console.WriteLine("{0}1R={1}, M1{2}={3}, R1M={4}, crosses: {5}\n",
                                   i,
                                   S2.RobustCcw(b, o, a),
@@ -280,19 +280,19 @@ namespace S2Geometry.Tests
                 var contained = (aBegin <= bBegin && bEnd <= aEnd);
                 var intersects = (aBegin < bEnd && bBegin < aEnd);
                 Console.WriteLine(
-                    "Checking " + a.numVertices() + " vs. " + b.numVertices() + ", contained = " + contained
+                    "Checking " + a.NumVertices + " vs. " + b.NumVertices + ", contained = " + contained
                     + ", intersects = " + intersects);
 
-                assertEquals(contained, a.contains(b));
-                assertEquals(intersects, a.intersects(b));
+                assertEquals(contained, a.Contains(b));
+                assertEquals(intersects, a.Intersects(b));
             }
         }
 
         [Test]
         public void testAreaCentroid()
         {
-            assertDoubleNear(northHemi.getArea(), 2*S2.Pi);
-            assertDoubleNear(eastHemi.getArea(), 2*S2.Pi);
+            assertDoubleNear(northHemi.Area, 2*S2.Pi);
+            assertDoubleNear(eastHemi.Area, 2*S2.Pi);
 
             // Construct spherical caps of random height, and approximate their boundary
             // with closely spaces vertices. Then check that the area and centroid are
@@ -333,10 +333,10 @@ namespace S2Geometry.Tests
                 }
 
                 var loop = new S2Loop(vertices);
-                var areaCentroid = loop.getAreaAndCentroid();
+                var areaCentroid = loop.AreaAndCentroid;
 
-                var area = loop.getArea();
-                var centroid = loop.getCentroid();
+                var area = loop.Area;
+                var centroid = loop.Centroid;
                 var expectedArea = 2*S2.Pi*height;
                 assertTrue(areaCentroid.Area == area);
                 assertTrue(centroid.Equals(areaCentroid.Centroid));
@@ -363,11 +363,11 @@ namespace S2Geometry.Tests
             assertEquals(antarctic80.RectBound,
                          new S2LatLngRect(S2LatLng.FromDegrees(-90, -180), S2LatLng.FromDegrees(-80, 180)));
 
-            arctic80.invert();
+            arctic80.Invert();
             // The highest latitude of each edge is attained at its midpoint.
-            var mid = (arctic80.vertex(0) + arctic80.vertex(1)) * 0.5;
+            var mid = (arctic80.Vertex(0) + arctic80.Vertex(1)) * 0.5;
             assertDoubleNear(arctic80.RectBound.LatHi.Radians, new S2LatLng(mid).Lat.Radians);
-            arctic80.invert();
+            arctic80.Invert();
 
             assertTrue(southHemi.RectBound.Lng.IsFull);
             assertEquals(southHemi.RectBound.Lat, new R1Interval(-S2.PiOver2, 0));
@@ -406,17 +406,17 @@ namespace S2Geometry.Tests
         [Test]
         public void testContains()
         {
-            assertTrue(candyCane.contains(S2LatLng.FromDegrees(5, 71).ToPoint()));
+            assertTrue(candyCane.Contains(S2LatLng.FromDegrees(5, 71).ToPoint()));
             for (var i = 0; i < 4; ++i)
             {
-                assertTrue(northHemi.contains(new S2Point(0, 0, 1)));
-                assertTrue(!northHemi.contains(new S2Point(0, 0, -1)));
-                assertTrue(!southHemi.contains(new S2Point(0, 0, 1)));
-                assertTrue(southHemi.contains(new S2Point(0, 0, -1)));
-                assertTrue(!westHemi.contains(new S2Point(0, 1, 0)));
-                assertTrue(westHemi.contains(new S2Point(0, -1, 0)));
-                assertTrue(eastHemi.contains(new S2Point(0, 1, 0)));
-                assertTrue(!eastHemi.contains(new S2Point(0, -1, 0)));
+                assertTrue(northHemi.Contains(new S2Point(0, 0, 1)));
+                assertTrue(!northHemi.Contains(new S2Point(0, 0, -1)));
+                assertTrue(!southHemi.Contains(new S2Point(0, 0, 1)));
+                assertTrue(southHemi.Contains(new S2Point(0, 0, -1)));
+                assertTrue(!westHemi.Contains(new S2Point(0, 1, 0)));
+                assertTrue(westHemi.Contains(new S2Point(0, -1, 0)));
+                assertTrue(eastHemi.Contains(new S2Point(0, 1, 0)));
+                assertTrue(!eastHemi.Contains(new S2Point(0, -1, 0)));
                 northHemi = rotate(northHemi);
                 southHemi = rotate(southHemi);
                 eastHemi = rotate(eastHemi);
@@ -447,7 +447,7 @@ namespace S2Geometry.Tests
                     var count = 0;
                     for (var j = 0; j < loops.Count; ++j)
                     {
-                        if (loops[j].contains(point))
+                        if (loops[j].Contains(point))
                         {
                             ++count;
                         }
@@ -479,13 +479,13 @@ namespace S2Geometry.Tests
             var s3 = makeLoop("1:0, 2:1, 3:0, 2:-1");
 
             // All the vertices should be distance 0
-            for (var i = 0; i < s1.numVertices(); i++)
+            for (var i = 0; i < s1.NumVertices; i++)
             {
-                assertEquals(0d, s1.getDistance(s1.vertex(i)).Radians, epsilon);
+                assertEquals(0d, s1.GetDistance(s1.Vertex(i)).Radians, epsilon);
             }
 
             // A point on one of the edges should be distance 0
-            assertEquals(0d, s1.getDistance(S2LatLng.FromDegrees(0.5, 1).ToPoint()).Radians, epsilon);
+            assertEquals(0d, s1.GetDistance(S2LatLng.FromDegrees(0.5, 1).ToPoint()).Radians, epsilon);
 
             // In all three cases, the closest point to the origin is (0,1), which is at
             // a distance of 1 degree.
@@ -493,17 +493,17 @@ namespace S2Geometry.Tests
             // equator, since that makes the math significantly simpler. Otherwise, the
             // distance wouldn't actually be 1 degree.
             var origin = S2LatLng.FromDegrees(0, 0).ToPoint();
-            assertEquals(1d, s1.getDistance(origin).Degrees, epsilon);
-            assertEquals(1d, s2.getDistance(origin).Degrees, epsilon);
-            assertEquals(1d, s3.getDistance(origin).Degrees, epsilon);
+            assertEquals(1d, s1.GetDistance(origin).Degrees, epsilon);
+            assertEquals(1d, s2.GetDistance(origin).Degrees, epsilon);
+            assertEquals(1d, s3.GetDistance(origin).Degrees, epsilon);
         }
 
         [Test]
         public void testIsValid()
         {
-            assertTrue(loopA.isValid());
-            assertTrue(loopB.isValid());
-            assertFalse(bowtie.isValid());
+            assertTrue(loopA.IsValid);
+            assertTrue(loopB.IsValid);
+            assertFalse(bowtie.IsValid);
         }
 
         [Test]
@@ -594,7 +594,7 @@ namespace S2Geometry.Tests
             var c = new S2Point(-0.9257244057938284, 0.17357332608634282, 0.3360158106235289);
             var d = new S2Point(-0.9278712595449962, 0.17397586116468677, 0.32982923679138537);
 
-            assertTrue(S2Loop.isValid(new List<S2Point>(new[] {a, b, c, d})));
+            assertTrue(S2Loop.IsValidLoop(new List<S2Point>(new[] {a, b, c, d})));
         }
 
         /**

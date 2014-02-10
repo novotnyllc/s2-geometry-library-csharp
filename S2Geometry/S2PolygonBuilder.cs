@@ -121,11 +121,11 @@ namespace Google.Common.Geometry
 
         public void addLoop(S2Loop loop)
         {
-            var sign = loop.sign();
-            for (var i = loop.numVertices(); i > 0; --i)
+            var sign = loop.Sign;
+            for (var i = loop.NumVertices; i > 0; --i)
             {
                 // Vertex indices need to be in the range [0, 2*num_vertices()-1].
-                addEdge(loop.vertex(i), loop.vertex(i + sign));
+                addEdge(loop.Vertex(i), loop.Vertex(i + sign));
             }
         }
 
@@ -196,12 +196,12 @@ namespace Google.Common.Geometry
                 // This is guaranteed to assemble a loop that is interior to the previous
                 // one and will therefore eventually terminate.
 
-                while (_options.getUndirectedEdges() && !loop.isNormalized())
+                while (_options.getUndirectedEdges() && !loop.IsNormalized)
                 {
-                    loop = assembleLoop(loop.vertex(1), loop.vertex(0), unusedEdges);
+                    loop = assembleLoop(loop.Vertex(1), loop.Vertex(0), unusedEdges);
                 }
                 loops.Add(loop);
-                eraseLoop(loop, loop.numVertices());
+                eraseLoop(loop, loop.NumVertices);
             }
             return unusedEdges.Count == 0;
         }
@@ -234,7 +234,7 @@ namespace Google.Common.Geometry
             {
                 for (var i = 0; i < loops.Count; ++i)
                 {
-                    loops[i].normalize();
+                    loops[i].Normalize();
                 }
             }
             if (_options.getValidate() && !S2Polygon.isValid(loops))
@@ -243,7 +243,7 @@ namespace Google.Common.Geometry
                 {
                     foreach (var loop in loops)
                     {
-                        rejectLoop(loop, loop.numVertices(), unusedEdges);
+                        rejectLoop(loop, loop.NumVertices, unusedEdges);
                     }
                 }
                 return false;
@@ -326,7 +326,7 @@ namespace Google.Common.Geometry
         {
             for (int i = n - 1, j = 0; j < n; i = j++)
             {
-                eraseEdge(v.vertex(i), v.vertex(j));
+                eraseEdge(v.Vertex(i), v.Vertex(j));
             }
         }
 
@@ -396,7 +396,7 @@ namespace Google.Common.Geometry
                     var start = index[v2];
                     path = path.GetRange(start, path.Count - start);
 
-                    if (_options.getValidate() && !S2Loop.isValid(path))
+                    if (_options.getValidate() && !S2Loop.IsValidLoop(path))
                     {
                         // We've constructed a loop that crosses itself, which can only happen
                         // if there is bad input data. Throw away the whole loop.
@@ -416,7 +416,7 @@ namespace Google.Common.Geometry
         {
             for (int i = n - 1, j = 0; j < n; i = j++)
             {
-                unusedEdges.Add(new S2Edge(v.vertex(i), v.vertex(j)));
+                unusedEdges.Add(new S2Edge(v.Vertex(i), v.Vertex(j)));
             }
         }
 

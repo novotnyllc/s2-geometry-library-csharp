@@ -297,18 +297,18 @@ namespace S2Geometry.Tests
         {
             // Return true if two loops have the same cyclic vertex sequence.
 
-            if (a.numVertices() != b.numVertices())
+            if (a.NumVertices != b.NumVertices)
             {
                 return false;
             }
-            for (var offset = 0; offset < a.numVertices(); ++offset)
+            for (var offset = 0; offset < a.NumVertices; ++offset)
             {
-                if (S2.ApproxEquals(a.vertex(offset), b.vertex(0), maxError))
+                if (S2.ApproxEquals(a.Vertex(offset), b.Vertex(0), maxError))
                 {
                     var success = true;
-                    for (var i = 0; i < a.numVertices(); ++i)
+                    for (var i = 0; i < a.NumVertices; ++i)
                     {
-                        if (!S2.ApproxEquals(a.vertex(i + offset), b.vertex(i), maxError))
+                        if (!S2.ApproxEquals(a.Vertex(i + offset), b.Vertex(i), maxError))
                         {
                             success = false;
                             break;
@@ -350,9 +350,9 @@ namespace S2Geometry.Tests
                 }
                 Console.Error.WriteLine(label + " loop " + i + ":\n");
                 var loop = actual[i];
-                for (var j = 0; j < loop.numVertices(); ++j)
+                for (var j = 0; j < loop.NumVertices; ++j)
                 {
-                    var p = loop.vertex(j);
+                    var p = loop.Vertex(j);
                     Console.Error.WriteLine("   [" + p.X + ", " + p.Y + ", " + p.Z + "]\n");
                 }
                 found = true;

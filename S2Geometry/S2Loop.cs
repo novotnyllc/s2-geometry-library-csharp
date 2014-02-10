@@ -35,7 +35,7 @@ namespace Google.Common.Geometry
    * Max angle that intersections can be off by and yet still be considered
    * colinear.
    */
-        public const double MAX_INTERSECTION_ERROR = 1e-15;
+        private const double MaxIntersectionError = 1e-15;
 
         /**
    * Edge index used for performance-critical operations. For example,
@@ -44,19 +44,19 @@ namespace Google.Common.Geometry
    * query point against every edge in the loop.
    */
         private readonly int _numVertices;
-        private readonly S2Point[] vertices;
-        private int _depth;
+        private readonly S2Point[] _vertices;
 
         /**
    * The index (into "vertices") of the vertex that comes first in the total
    * ordering of all vertices in this loop.
    */
 
-        private S2LatLngRect bound;
-        private int firstLogicalVertex;
-        private S2EdgeIndex index;
-        private bool originInside;
-        private Dictionary<S2Point, int> vertexToIndex;
+        private S2LatLngRect _bound;
+        private int _depth;
+        private int _firstLogicalVertex;
+        private S2EdgeIndex _index;
+        private bool _originInside;
+        private Dictionary<S2Point, int> _vertexToIndex;
 
         /**
    * Initialize a loop connecting the given vertices. The last vertex is
@@ -66,24 +66,23 @@ namespace Google.Common.Geometry
    * @param vertices
    */
 
-        public S2Loop(List<S2Point> vertices)
+        public S2Loop(IEnumerable<S2Point> vertices)
         {
-            _numVertices = vertices.Count;
-            this.vertices = new S2Point[_numVertices];
-            bound = S2LatLngRect.Full;
+            _vertices = vertices.ToArray();
+            _numVertices = _vertices.Length;
+            _bound = S2LatLngRect.Full;
             _depth = 0;
 
             // if (debugMode) {
             //  assert (isValid(vertices, DEFAULT_MAX_ADJACENT));
             // }
 
-            vertices.CopyTo(this.vertices);
 
             // initOrigin() must be called before InitBound() because the latter
             // function expects Contains() to work properly.
-            initOrigin();
-            initBound();
-            initFirstLogicalVertex();
+            InitOrigin();
+            InitBound();
+            InitFirstLogicalVertex();
         }
 
         /**
@@ -104,18 +103,18 @@ namespace Google.Common.Geometry
 
         public S2Loop(S2Cell cell, S2LatLngRect bound)
         {
-            this.bound = bound;
+            _bound = bound;
             _numVertices = 4;
-            vertices = new S2Point[_numVertices];
-            vertexToIndex = null;
-            index = null;
+            _vertices = new S2Point[_numVertices];
+            _vertexToIndex = null;
+            _index = null;
             _depth = 0;
             for (var i = 0; i < 4; ++i)
             {
-                vertices[i] = cell.GetVertex(i);
+                _vertices[i] = cell.GetVertex(i);
             }
-            initOrigin();
-            initFirstLogicalVertex();
+            InitOrigin();
+            InitFirstLogicalVertex();
         }
 
         /**
@@ -125,30 +124,202 @@ namespace Google.Common.Geometry
         public S2Loop(S2Loop src)
         {
             _numVertices = src._numVertices;
-            vertices = (S2Point[])src.vertices.Clone();
-            vertexToIndex = src.vertexToIndex;
-            index = src.index;
-            firstLogicalVertex = src.firstLogicalVertex;
-            bound = src.RectBound;
-            originInside = src.originInside;
+            _vertices = (S2Point[])src._vertices.Clone();
+            _vertexToIndex = src._vertexToIndex;
+            _index = src._index;
+            _firstLogicalVertex = src._firstLogicalVertex;
+            _bound = src.RectBound;
+            _originInside = src._originInside;
             _depth = src._depth;
+        }
+
+        public int Depth
+        {
+            get { return _depth; }
+            set { _depth = value; }
+        }
+
+        /**
+   * Return true if this loop represents a hole in its containing polygon.
+   */
+
+        public bool IsHole
+        {
+            get { return (_depth & 1) != 0; }
+        }
+
+        /**
+   * The sign of a loop is -1 if the loop represents a hole in its containing
+   * polygon, and +1 otherwise.
+   */
+
+        public int Sign
+        {
+            get { return IsHole ? -1 : 1; }
+        }
+
+        public int NumVertices
+        {
+            get { return _numVertices; }
+        }
+
+        public bool IsNormalized
+        {
+            get
+            {
+                // We allow a bit of error so that exact hemispheres are
+                // considered normalized.
+                return Area <= 2*S2.Pi + 1e-14;
+            }
+        }
+
+        public S2AreaCentroid AreaAndCentroid
+        {
+            get { return GetAreaCentroid(true); }
+        }
+
+        /**
+   * Return the area of the polygon interior, i.e. the region on the left side
+   * of an odd number of loops. The return value is between 0 and 4*Pi.
+   */
+
+        public double Area
+        {
+            get { return GetAreaCentroid(false).Area; }
+        }
+
+        /**
+   * Return the true centroid of the polygon multiplied by the area of the
+   * polygon (see {@link S2} for details on centroids). Note that the centroid
+   * may not be contained by the polygon.
+   */
+
+        public S2Point? Centroid
+        {
+            get { return GetAreaCentroid(true).Centroid; }
+        }
+
+        public bool IsValid
+        {
+            get
+            {
+                if (_numVertices < 3)
+                {
+                    Debug.WriteLine("Degenerate loop");
+                    return false;
+                }
+
+                // All vertices must be unit length.
+                for (var i = 0; i < _numVertices; ++i)
+                {
+                    if (!S2.IsUnitLength(Vertex(i)))
+                    {
+                        Debug.WriteLine("Vertex " + i + " is not unit length");
+                        return false;
+                    }
+                }
+
+                // Loops are not allowed to have any duplicate vertices.
+                var vmap = new Dictionary<S2Point, int>();
+                for (var i = 0; i < _numVertices; ++i)
+                {
+                    var key = Vertex(i);
+                    var contains = vmap.ContainsKey(key);
+                    if (contains)
+                    {
+                        var prevIndex = vmap[key];
+                        Debug.WriteLine("Duplicate vertices: " + prevIndex + " and " + i);
+                    }
+                    // update always
+                    vmap[key] = i;
+                    if (contains)
+                        return false;
+                }
+
+
+                // Non-adjacent edges are not allowed to intersect.
+                // var crosses = false;
+                var it = GetEdgeIterator(_numVertices);
+                for (var a1 = 0; a1 < _numVertices; a1++)
+                {
+                    var a2 = (a1 + 1)%_numVertices;
+                    var crosser = new EdgeCrosser(Vertex(a1), Vertex(a2), Vertex(0));
+                    var previousIndex = -2;
+                    it.GetCandidates(Vertex(a1), Vertex(a2));
+                    foreach (var b1 in it) // it.GetCandidates(vertex(a1), vertex(a2)); it.HasNext; it.Next())
+                    {
+                        //var b1 = it.Index;
+                        var b2 = (b1 + 1)%_numVertices;
+                        // If either 'a' index equals either 'b' index, then these two edges
+                        // share a vertex. If a1==b1 then it must be the case that a2==b2, e.g.
+                        // the two edges are the same. In that case, we skip the test, since we
+                        // don't want to test an edge against itself. If a1==b2 or b1==a2 then
+                        // we have one edge ending at the start of the other, or in other words,
+                        // the edges share a vertex -- and in S2 space, where edges are always
+                        // great circle segments on a sphere, edges can only intersect at most
+                        // once, so we don't need to do further checks in that case either.
+                        if (a1 != b2 && a2 != b1 && a1 != b1)
+                        {
+                            // WORKAROUND(shakusa, ericv): S2.robustCCW() currently
+                            // requires arbitrary-precision arithmetic to be truly robust. That
+                            // means it can give the wrong answers in cases where we are trying
+                            // to determine edge intersections. The workaround is to ignore
+                            // intersections between edge pairs where all four points are
+                            // nearly colinear.
+                            var abc = S2.Angle(Vertex(a1), Vertex(a2), Vertex(b1));
+                            var abcNearlyLinear = S2.ApproxEquals(abc, 0D, MaxIntersectionError) ||
+                                                  S2.ApproxEquals(abc, S2.Pi, MaxIntersectionError);
+                            var abd = S2.Angle(Vertex(a1), Vertex(a2), Vertex(b2));
+                            var abdNearlyLinear = S2.ApproxEquals(abd, 0D, MaxIntersectionError) ||
+                                                  S2.ApproxEquals(abd, S2.Pi, MaxIntersectionError);
+                            if (abcNearlyLinear && abdNearlyLinear)
+                            {
+                                continue;
+                            }
+
+                            if (previousIndex != b1)
+                            {
+                                crosser.RestartAt(Vertex(b1));
+                            }
+
+                            // Beware, this may return the loop is valid if there is a
+                            // "vertex crossing".
+                            // TODO(user): Fix that.
+                            var crosses = crosser.RobustCrossing(Vertex(b2)) > 0;
+                            previousIndex = b2;
+                            if (crosses)
+                            {
+                                Debug.WriteLine("Edges " + a1 + " and " + b1 + " cross");
+                                Debug.WriteLine("Edge locations in degrees: " + "{0}-{1} and {2}-{3}",
+                                                new S2LatLng(Vertex(a1)).ToStringDegrees(),
+                                                new S2LatLng(Vertex(a2)).ToStringDegrees(),
+                                                new S2LatLng(Vertex(b1)).ToStringDegrees(),
+                                                new S2LatLng(Vertex(b2)).ToStringDegrees());
+                                return false;
+                            }
+                        }
+                    }
+                }
+
+                return true;
+            }
         }
 
         public int CompareTo(S2Loop other)
         {
-            if (numVertices() != other.numVertices())
+            if (NumVertices != other.NumVertices)
             {
-                return numVertices() - other.numVertices();
+                return NumVertices - other.NumVertices;
             }
             // Compare the two loops' vertices, starting with each loop's
             // firstLogicalVertex. This allows us to always catch cases where logically
             // identical loops have different vertex orderings (e.g. ABCD and BCDA).
-            var maxVertices = numVertices();
-            var iThis = firstLogicalVertex;
-            var iOther = other.firstLogicalVertex;
+            var maxVertices = NumVertices;
+            var iThis = _firstLogicalVertex;
+            var iOther = other._firstLogicalVertex;
             for (var i = 0; i < maxVertices; ++i, ++iThis, ++iOther)
             {
-                var compare = vertex(iThis).CompareTo(other.vertex(iOther));
+                var compare = Vertex(iThis).CompareTo(other.Vertex(iOther));
                 if (compare != 0)
                 {
                     return compare;
@@ -159,7 +330,7 @@ namespace Google.Common.Geometry
 
         public S2Cap CapBound
         {
-            get { return bound.CapBound; }
+            get { return _bound.CapBound; }
         }
 
 
@@ -167,7 +338,7 @@ namespace Google.Common.Geometry
 
         public S2LatLngRect RectBound
         {
-            get { return bound; }
+            get { return _bound; }
         }
 
         /**
@@ -183,12 +354,12 @@ namespace Google.Common.Geometry
             // the fact than an S2Cell is convex.
 
             var cellBound = cell.RectBound;
-            if (!bound.Contains(cellBound))
+            if (!_bound.Contains(cellBound))
             {
                 return false;
             }
             var cellLoop = new S2Loop(cell, cellBound);
-            return contains(cellLoop);
+            return Contains(cellLoop);
         }
 
         /**
@@ -204,68 +375,34 @@ namespace Google.Common.Geometry
             // the fact than an S2Cell is convex.
 
             var cellBound = cell.RectBound;
-            if (!bound.Intersects(cellBound))
+            if (!_bound.Intersects(cellBound))
             {
                 return false;
             }
-            return new S2Loop(cell, cellBound).intersects(this);
-        }
-
-        public int depth()
-        {
-            return _depth;
+            return new S2Loop(cell, cellBound).Intersects(this);
         }
 
         /**
-   * The depth of a loop is defined as its nesting level within its containing
-   * polygon. "Outer shell" loops have depth 0, holes within those loops have
-   * depth 1, shells within those holes have depth 2, etc. This field is only
-   * used by the S2Polygon implementation.
-   *
-   * @param depth
-   */
-
-        public void setDepth(int depth)
-        {
-            _depth = depth;
-        }
-
-        /**
-   * Return true if this loop represents a hole in its containing polygon.
-   */
-
-        public bool isHole()
-        {
-            return (_depth & 1) != 0;
-        }
-
-        /**
-   * The sign of a loop is -1 if the loop represents a hole in its containing
-   * polygon, and +1 otherwise.
-   */
-
-        public int sign()
-        {
-            return isHole() ? -1 : 1;
-        }
-
-        public int numVertices()
-        {
-            return _numVertices;
-        }
+* The depth of a loop is defined as its nesting level within its containing
+* polygon. "Outer shell" loops have depth 0, holes within those loops have
+* depth 1, shells within those holes have depth 2, etc. This field is only
+* used by the S2Polygon implementation.
+*
+* @param depth
+*/
 
         /**
    * For convenience, we make two entire copies of the vertex list available:
    * vertex(n..2*n-1) is mapped to vertex(0..n-1), where n == numVertices().
    */
 
-        public S2Point vertex(int i)
+        public S2Point Vertex(int i)
         {
             try
             {
-                return vertices[i >= vertices.Length ? i - vertices.Length : i];
+                return _vertices[i >= _vertices.Length ? i - _vertices.Length : i];
             }
-            catch (IndexOutOfRangeException e)
+            catch (IndexOutOfRangeException)
             {
                 throw new InvalidOperationException("Invalid vertex index");
             }
@@ -280,40 +417,33 @@ namespace Google.Common.Geometry
    * a total ordering of all vertices (by way of S2Point's compareTo function).
    */
 
-        private void initFirstLogicalVertex()
+        private void InitFirstLogicalVertex()
         {
             var first = 0;
             for (var i = 1; i < _numVertices; ++i)
             {
-                if (vertex(i).CompareTo(vertex(first)) < 0)
+                if (Vertex(i).CompareTo(Vertex(first)) < 0)
                 {
                     first = i;
                 }
             }
-            firstLogicalVertex = first;
+            _firstLogicalVertex = first;
         }
 
         /**
    * Return true if the loop area is at most 2*Pi.
    */
 
-        public bool isNormalized()
-        {
-            // We allow a bit of error so that exact hemispheres are
-            // considered normalized.
-            return getArea() <= 2*S2.Pi + 1e-14;
-        }
-
         /**
    * Invert the loop if necessary so that the area enclosed by the loop is at
    * most 2*Pi.
    */
 
-        public void normalize()
+        public void Normalize()
         {
-            if (!isNormalized())
+            if (!IsNormalized)
             {
-                invert();
+                Invert();
             }
         }
 
@@ -322,38 +452,38 @@ namespace Google.Common.Geometry
    * region represented by the loop.
    */
 
-        public void invert()
+        public void Invert()
         {
-            var last = numVertices() - 1;
+            var last = NumVertices - 1;
             for (var i = (last - 1)/2; i >= 0; --i)
             {
-                var t = vertices[i];
-                vertices[i] = vertices[last - i];
-                vertices[last - i] = t;
+                var t = _vertices[i];
+                _vertices[i] = _vertices[last - i];
+                _vertices[last - i] = t;
             }
-            vertexToIndex = null;
-            index = null;
-            originInside ^= true;
-            if (bound.Lat.Lo > -S2.PiOver2 && bound.Lat.Hi < S2.PiOver2)
+            _vertexToIndex = null;
+            _index = null;
+            _originInside ^= true;
+            if (_bound.Lat.Lo > -S2.PiOver2 && _bound.Lat.Hi < S2.PiOver2)
             {
                 // The complement of this loop contains both poles.
-                bound = S2LatLngRect.Full;
+                _bound = S2LatLngRect.Full;
             }
             else
             {
-                initBound();
+                InitBound();
             }
-            initFirstLogicalVertex();
+            InitFirstLogicalVertex();
         }
 
         /**
    * Helper method to get area and optionally centroid.
    */
 
-        private S2AreaCentroid getAreaCentroid(bool doCentroid)
+        private S2AreaCentroid GetAreaCentroid(bool doCentroid)
         {
             // Don't crash even if loop is not well-defined.
-            if (numVertices() < 3)
+            if (NumVertices < 3)
             {
                 return new S2AreaCentroid(0D);
             }
@@ -374,7 +504,7 @@ namespace Google.Common.Geometry
             // exactly the right direction). Note that the approximate point resolution
             // using the E7 or S2CellId representation is only about 1cm.
 
-            var origin = vertex(0);
+            var origin = Vertex(0);
             var axis = (origin.LargestAbsComponent + 1)%3;
             var slightlyDisplaced = origin[axis] + S2.E*1e-10;
             origin =
@@ -384,13 +514,13 @@ namespace Google.Common.Geometry
 
             double areaSum = 0;
             var centroidSum = new S2Point(0, 0, 0);
-            for (var i = 1; i <= numVertices(); ++i)
+            for (var i = 1; i <= NumVertices; ++i)
             {
-                areaSum += S2.SignedArea(origin, vertex(i - 1), vertex(i));
+                areaSum += S2.SignedArea(origin, Vertex(i - 1), Vertex(i));
                 if (doCentroid)
                 {
                     // The true centroid is already premultiplied by the triangle area.
-                    var trueCentroid = S2.TrueCentroid(origin, vertex(i - 1), vertex(i));
+                    var trueCentroid = S2.TrueCentroid(origin, Vertex(i - 1), Vertex(i));
                     centroidSum = centroidSum + trueCentroid;
                 }
             }
@@ -411,7 +541,7 @@ namespace Google.Common.Geometry
             }
             // The loop's sign() does not affect the return result and should be taken
             // into account by the caller.
-            S2Point? centroid = null; 
+            S2Point? centroid = null;
             if (doCentroid)
             {
                 centroid = centroidSum;
@@ -425,32 +555,6 @@ namespace Google.Common.Geometry
    * the loop multiplied by the area of the loop (see S2.java for details on
    * centroids). Note that the centroid may not be contained by the loop.
    */
-
-        public S2AreaCentroid getAreaAndCentroid()
-        {
-            return getAreaCentroid(true);
-        }
-
-        /**
-   * Return the area of the polygon interior, i.e. the region on the left side
-   * of an odd number of loops. The return value is between 0 and 4*Pi.
-   */
-
-        public double getArea()
-        {
-            return getAreaCentroid(false).Area;
-        }
-
-        /**
-   * Return the true centroid of the polygon multiplied by the area of the
-   * polygon (see {@link S2} for details on centroids). Note that the centroid
-   * may not be contained by the polygon.
-   */
-
-        public S2Point? getCentroid()
-        {
-            return getAreaCentroid(true).Centroid;
-        }
 
         // The following are the possible relationships between two loops A and B:
         //
@@ -470,7 +574,7 @@ namespace Google.Common.Geometry
    * region contained by the given other loop.
    */
 
-        public bool contains(S2Loop b)
+        public bool Contains(S2Loop b)
         {
             // For this loop A to contains the given loop B, all of the following must
             // be true:
@@ -488,7 +592,7 @@ namespace Google.Common.Geometry
             // union is the entire sphere, i.e. two loops that contains each other's
             // boundaries but not each other's interiors.
 
-            if (!bound.Contains(b.RectBound))
+            if (!_bound.Contains(b.RectBound))
             {
                 return false;
             }
@@ -496,14 +600,14 @@ namespace Google.Common.Geometry
             // Unless there are shared vertices, we need to check whether A contains a
             // vertex of B. Since shared vertices are rare, it is more efficient to do
             // this test up front as a quick rejection test.
-            if (!contains(b.vertex(0)) && findVertex(b.vertex(0)) < 0)
+            if (!Contains(b.Vertex(0)) && FindVertex(b.Vertex(0)) < 0)
             {
                 return false;
             }
 
             // Now check whether there are any edge crossings, and also check the loop
             // relationship at any shared vertices.
-            if (checkEdgeCrossings(b, new WedgeContains()) <= 0)
+            if (CheckEdgeCrossings(b, new WedgeContains()) <= 0)
             {
                 return false;
             }
@@ -512,9 +616,9 @@ namespace Google.Common.Geometry
             // and that A contains a vertex of B. However we still need to check for
             // the case mentioned above, where (A union B) is the entire sphere.
             // Normally this check is very cheap due to the bounding box precondition.
-            if (bound.Union(b.RectBound).IsFull)
+            if (_bound.Union(b.RectBound).IsFull)
             {
-                if (b.contains(vertex(0)) && b.findVertex(vertex(0)) < 0)
+                if (b.Contains(Vertex(0)) && b.FindVertex(Vertex(0)) < 0)
                 {
                     return false;
                 }
@@ -527,13 +631,13 @@ namespace Google.Common.Geometry
    * contained by the given other loop.
    */
 
-        public bool intersects(S2Loop b)
+        public bool Intersects(S2Loop b)
         {
             // a->Intersects(b) if and only if !a->Complement()->Contains(b).
             // This code is similar to Contains(), but is optimized for the case
             // where both loops enclose less than half of the sphere.
 
-            if (!bound.Intersects(b.RectBound))
+            if (!_bound.Intersects(b.RectBound))
             {
                 return false;
             }
@@ -541,22 +645,22 @@ namespace Google.Common.Geometry
             // Normalize the arguments so that B has a smaller longitude span than A.
             // This makes intersection tests much more efficient in the case where
             // longitude pruning is used (see CheckEdgeCrossings).
-            if (b.RectBound.Lng.Length > bound.Lng.Length)
+            if (b.RectBound.Lng.Length > _bound.Lng.Length)
             {
-                return b.intersects(this);
+                return b.Intersects(this);
             }
 
             // Unless there are shared vertices, we need to check whether A contains a
             // vertex of B. Since shared vertices are rare, it is more efficient to do
             // this test up front as a quick acceptance test.
-            if (contains(b.vertex(0)) && findVertex(b.vertex(0)) < 0)
+            if (Contains(b.Vertex(0)) && FindVertex(b.Vertex(0)) < 0)
             {
                 return true;
             }
 
             // Now check whether there are any edge crossings, and also check the loop
             // relationship at any shared vertices.
-            if (checkEdgeCrossings(b, new WedgeIntersects()) < 0)
+            if (CheckEdgeCrossings(b, new WedgeIntersects()) < 0)
             {
                 return true;
             }
@@ -567,9 +671,9 @@ namespace Google.Common.Geometry
             // arbitrary non-shared vertex of A. Note that this check is cheap because
             // of the bounding box precondition and the fact that we normalized the
             // arguments so that A's longitude span is at least as long as B's.
-            if (b.RectBound.Contains(bound))
+            if (b.RectBound.Contains(_bound))
             {
-                if (b.contains(vertex(0)) && b.findVertex(vertex(0)) < 0)
+                if (b.Contains(Vertex(0)) && b.FindVertex(Vertex(0)) < 0)
                 {
                     return true;
                 }
@@ -584,25 +688,25 @@ namespace Google.Common.Geometry
    * boundaries of the two loops cross.
    */
 
-        public bool containsNested(S2Loop b)
+        public bool ContainsNested(S2Loop b)
         {
-            if (!bound.Contains(b.RectBound))
+            if (!_bound.Contains(b.RectBound))
             {
                 return false;
             }
 
             // We are given that A and B do not share any edges, and that either one
             // loop contains the other or they do not intersect.
-            var m = findVertex(b.vertex(1));
+            var m = FindVertex(b.Vertex(1));
             if (m < 0)
             {
                 // Since b->vertex(1) is not shared, we can check whether A contains it.
-                return contains(b.vertex(1));
+                return Contains(b.Vertex(1));
             }
             // Check whether the edge order around b->vertex(1) is compatible with
             // A containin B.
             return (new WedgeContains()).Test(
-                vertex(m - 1), vertex(m), vertex(m + 1), b.vertex(0), b.vertex(2)) > 0;
+                Vertex(m - 1), Vertex(m), Vertex(m + 1), b.Vertex(0), b.Vertex(2)) > 0;
         }
 
         /**
@@ -613,10 +717,10 @@ namespace Google.Common.Geometry
    * whether multi-loop polygons contain each other.
    */
 
-        public int containsOrCrosses(S2Loop b)
+        public int ContainsOrCrosses(S2Loop b)
         {
             // There can be containment or crossing only if the bounds intersect.
-            if (!bound.Intersects(b.RectBound))
+            if (!_bound.Intersects(b.RectBound))
             {
                 return 0;
             }
@@ -625,7 +729,7 @@ namespace Google.Common.Geometry
             // relationship at any shared vertices. Note that unlike Contains() or
             // Intersects(), we can't do a point containment test as a shortcut because
             // we need to detect whether there are any edge crossings.
-            var result = checkEdgeCrossings(b, new WedgeContainsOrCrosses());
+            var result = CheckEdgeCrossings(b, new WedgeContainsOrCrosses());
 
             // If there was an edge crossing or a shared vertex, we know the result
             // already. (This is true even if the result is 1, but since we don't
@@ -641,11 +745,11 @@ namespace Google.Common.Geometry
             // either A contains B, or there are no shared vertices (due to the check
             // above). So now we just need to distinguish the case where A contains B
             // from the case where B contains A or the two loops are disjoint.
-            if (!bound.Contains(b.RectBound))
+            if (!_bound.Contains(b.RectBound))
             {
                 return 0;
             }
-            if (!contains(b.vertex(0)) && findVertex(b.vertex(0)) < 0)
+            if (!Contains(b.Vertex(0)) && FindVertex(b.Vertex(0)) < 0)
             {
                 return 0;
             }
@@ -661,18 +765,18 @@ namespace Google.Common.Geometry
    * purposes.
    */
 
-        internal bool boundaryApproxEquals(S2Loop b, double maxError)
+        internal bool BoundaryApproxEquals(S2Loop b, double maxError)
         {
-            if (numVertices() != b.numVertices())
+            if (NumVertices != b.NumVertices)
             {
                 return false;
             }
-            var maxVertices = numVertices();
-            var iThis = firstLogicalVertex;
-            var iOther = b.firstLogicalVertex;
+            var maxVertices = NumVertices;
+            var iThis = _firstLogicalVertex;
+            var iOther = b._firstLogicalVertex;
             for (var i = 0; i < maxVertices; ++i, ++iThis, ++iOther)
             {
-                if (!S2.ApproxEquals(vertex(iThis), b.vertex(iOther), maxError))
+                if (!S2.ApproxEquals(Vertex(iThis), b.Vertex(iOther), maxError))
                 {
                     return false;
                 }
@@ -688,17 +792,17 @@ namespace Google.Common.Geometry
    * The point 'p' does not need to be normalized.
    */
 
-        public bool contains(S2Point p)
+        public bool Contains(S2Point p)
         {
-            if (!bound.Contains(p))
+            if (!_bound.Contains(p))
             {
                 return false;
             }
 
-            var inside = originInside;
+            var inside = _originInside;
             var origin = S2.Origin;
             var crosser = new EdgeCrosser(origin, p,
-                                                     vertices[_numVertices - 1]);
+                                          _vertices[_numVertices - 1]);
 
             // The s2edgeindex library is not optimized yet for long edges,
             // so the tradeoff to using it comes with larger loops.
@@ -706,23 +810,23 @@ namespace Google.Common.Geometry
             {
                 for (var i = 0; i < _numVertices; i++)
                 {
-                    inside ^= crosser.EdgeOrVertexCrossing(vertices[i]);
+                    inside ^= crosser.EdgeOrVertexCrossing(_vertices[i]);
                 }
             }
             else
             {
-                var it = getEdgeIterator(_numVertices);
+                var it = GetEdgeIterator(_numVertices);
                 it.GetCandidates(origin, p);
                 var previousIndex = -2;
-                foreach (var ai in it)// it.GetCandidates(origin, p); it.HasNext; it.Next())
+                foreach (var ai in it) // it.GetCandidates(origin, p); it.HasNext; it.Next())
                 {
                     //var ai = it.Index;
                     if (previousIndex != ai - 1)
                     {
-                        crosser.RestartAt(vertices[ai]);
+                        crosser.RestartAt(_vertices[ai]);
                     }
                     previousIndex = ai;
-                    inside ^= crosser.EdgeOrVertexCrossing(vertex(ai + 1));
+                    inside ^= crosser.EdgeOrVertexCrossing(Vertex(ai + 1));
                 }
             }
 
@@ -735,17 +839,17 @@ namespace Google.Common.Geometry
    * This angle in radians is equivalent to the arclength along the unit sphere.
    */
 
-        public S1Angle getDistance(S2Point p)
+        public S1Angle GetDistance(S2Point p)
         {
             var normalized = S2Point.Normalize(p);
 
             // The furthest point from p on the sphere is its antipode, which is an
             // angle of PI radians. This is an upper bound on the angle.
             var minDistance = S1Angle.FromRadians(Math.PI);
-            for (var i = 0; i < numVertices(); i++)
+            for (var i = 0; i < NumVertices; i++)
             {
                 minDistance =
-                    S1Angle.Min(minDistance, S2EdgeUtil.GetDistance(normalized, vertex(i), vertex(i + 1)));
+                    S1Angle.Min(minDistance, S2EdgeUtil.GetDistance(normalized, Vertex(i), Vertex(i + 1)));
             }
             return minDistance;
         }
@@ -758,122 +862,19 @@ namespace Google.Common.Geometry
    * edge lookups.
    */
 
-        private S2EdgeIndex.DataEdgeIterator getEdgeIterator(int expectedQueries)
+        private S2EdgeIndex.DataEdgeIterator GetEdgeIterator(int expectedQueries)
         {
-            if (index == null)
+            if (_index == null)
             {
-                index = new AnonS2EdgeIndex(this);
+                _index = new AnonS2EdgeIndex(this);
             }
-            index.PredictAdditionalCalls(expectedQueries);
-            
-            return new S2EdgeIndex.DataEdgeIterator(index);
+            _index.PredictAdditionalCalls(expectedQueries);
+
+            return new S2EdgeIndex.DataEdgeIterator(_index);
         }
 
 
         /** Return true if this loop is valid. */
-
-        public bool isValid()
-        {
-            if (_numVertices < 3)
-            {
-                Debug.WriteLine("Degenerate loop");
-                return false;
-            }
-
-            // All vertices must be unit length.
-            for (var i = 0; i < _numVertices; ++i)
-            {
-                if (!S2.IsUnitLength(vertex(i)))
-                {
-                    Debug.WriteLine("Vertex " + i + " is not unit length");
-                    return false;
-                }
-            }
-
-            // Loops are not allowed to have any duplicate vertices.
-            var vmap = new Dictionary<S2Point, int>();
-            for (var i = 0; i < _numVertices; ++i)
-            {
-                var key = vertex(i);
-                var contains = vmap.ContainsKey(key);
-                if (contains)
-                {
-                    var prevIndex = vmap[key];
-                    Debug.WriteLine("Duplicate vertices: " + prevIndex + " and " + i);
-                }
-                // update always
-                vmap[key] = i;
-                if (contains)
-                    return false;
-            }
-
-
-            // Non-adjacent edges are not allowed to intersect.
-           // var crosses = false;
-            var it = getEdgeIterator(_numVertices);
-            for (var a1 = 0; a1 < _numVertices; a1++)
-            {
-                var a2 = (a1 + 1)%_numVertices;
-                var crosser = new EdgeCrosser(vertex(a1), vertex(a2), vertex(0));
-                var previousIndex = -2;
-                it.GetCandidates(vertex(a1), vertex(a2));
-                foreach(var b1 in it)// it.GetCandidates(vertex(a1), vertex(a2)); it.HasNext; it.Next())
-                {
-                    //var b1 = it.Index;
-                    var b2 = (b1 + 1)%_numVertices;
-                    // If either 'a' index equals either 'b' index, then these two edges
-                    // share a vertex. If a1==b1 then it must be the case that a2==b2, e.g.
-                    // the two edges are the same. In that case, we skip the test, since we
-                    // don't want to test an edge against itself. If a1==b2 or b1==a2 then
-                    // we have one edge ending at the start of the other, or in other words,
-                    // the edges share a vertex -- and in S2 space, where edges are always
-                    // great circle segments on a sphere, edges can only intersect at most
-                    // once, so we don't need to do further checks in that case either.
-                    if (a1 != b2 && a2 != b1 && a1 != b1)
-                    {
-                        // WORKAROUND(shakusa, ericv): S2.robustCCW() currently
-                        // requires arbitrary-precision arithmetic to be truly robust. That
-                        // means it can give the wrong answers in cases where we are trying
-                        // to determine edge intersections. The workaround is to ignore
-                        // intersections between edge pairs where all four points are
-                        // nearly colinear.
-                        var abc = S2.Angle(vertex(a1), vertex(a2), vertex(b1));
-                        var abcNearlyLinear = S2.ApproxEquals(abc, 0D, MAX_INTERSECTION_ERROR) ||
-                                              S2.ApproxEquals(abc, S2.Pi, MAX_INTERSECTION_ERROR);
-                        var abd = S2.Angle(vertex(a1), vertex(a2), vertex(b2));
-                        var abdNearlyLinear = S2.ApproxEquals(abd, 0D, MAX_INTERSECTION_ERROR) ||
-                                              S2.ApproxEquals(abd, S2.Pi, MAX_INTERSECTION_ERROR);
-                        if (abcNearlyLinear && abdNearlyLinear)
-                        {
-                            continue;
-                        }
-
-                        if (previousIndex != b1)
-                        {
-                            crosser.RestartAt(vertex(b1));
-                        }
-
-                        // Beware, this may return the loop is valid if there is a
-                        // "vertex crossing".
-                        // TODO(user): Fix that.
-                        var crosses = crosser.RobustCrossing(vertex(b2)) > 0;
-                        previousIndex = b2;
-                        if (crosses)
-                        {
-                            Debug.WriteLine("Edges " + a1 + " and " + b1 + " cross");
-                            Debug.WriteLine("Edge locations in degrees: " + "{0}-{1} and {2}-{3}",
-                                            new S2LatLng(vertex(a1)).ToStringDegrees(),
-                                            new S2LatLng(vertex(a2)).ToStringDegrees(),
-                                            new S2LatLng(vertex(b1)).ToStringDegrees(),
-                                            new S2LatLng(vertex(b2)).ToStringDegrees());
-                            return false;
-                        }
-                    }
-                }
-            }
-
-            return true;
-        }
 
         /**
    * Static version of isValid(), to be used only when an S2Loop instance is not
@@ -883,18 +884,18 @@ namespace Google.Common.Geometry
    *         defers this call to {@link #isValid()}.
    */
 
-        public static bool isValid(List<S2Point> vertices)
+        public static bool IsValidLoop(IEnumerable<S2Point> vertices)
         {
-            return new S2Loop(vertices).isValid();
+            return new S2Loop(vertices).IsValid;
         }
 
         public override String ToString()
         {
             var builder = new StringBuilder("S2Loop, ");
 
-            builder.Append(vertices.Length).Append(" points. [");
+            builder.Append(_vertices.Length).Append(" points. [");
 
-            foreach (var v in vertices)
+            foreach (var v in _vertices)
             {
                 builder.Append(v.ToString()).Append(" ");
             }
@@ -903,12 +904,12 @@ namespace Google.Common.Geometry
             return builder.ToString();
         }
 
-        private void initOrigin()
+        private void InitOrigin()
         {
             // The bounding box does not need to be correct before calling this
             // function, but it must at least contain vertex(1) since we need to
             // do a Contains() test on this point below.
-            Preconditions.CheckState(bound.Contains(vertex(1)));
+            Preconditions.CheckState(_bound.Contains(Vertex(1)));
 
             // To ensure that every point is contained in exactly one face of a
             // subdivision of the sphere, all containment tests are done by counting the
@@ -922,15 +923,15 @@ namespace Google.Common.Geometry
             // the fixed vector R = S2::Ortho(B) is on the left side of the wedge ABC.
             // The test below is written so that B is inside if C=R but not if A=R.
 
-            originInside = false; // Initialize before calling Contains().
-            var v1Inside = S2.OrderedCcw(S2.Ortho(vertex(1)), vertex(0), vertex(2), vertex(1));
-            if (v1Inside != contains(vertex(1)))
+            _originInside = false; // Initialize before calling Contains().
+            var v1Inside = S2.OrderedCcw(S2.Ortho(Vertex(1)), Vertex(0), Vertex(2), Vertex(1));
+            if (v1Inside != Contains(Vertex(1)))
             {
-                originInside = true;
+                _originInside = true;
             }
         }
 
-        private void initBound()
+        private void InitBound()
         {
             // The bounding rectangle of a loop is not necessarily the same as the
             // bounding rectangle of its vertices. First, the loop may wrap entirely
@@ -939,15 +940,15 @@ namespace Google.Common.Geometry
             // Note that a small clockwise loop near the equator contains both poles.
 
             var bounder = new RectBounder();
-            for (var i = 0; i <= numVertices(); ++i)
+            for (var i = 0; i <= NumVertices; ++i)
             {
-                bounder.AddPoint(vertex(i));
+                bounder.AddPoint(Vertex(i));
             }
             var b = bounder.Bound;
             // Note that we need to initialize bound with a temporary value since
             // contains() does a bounding rectangle check before doing anything else.
-            bound = S2LatLngRect.Full;
-            if (contains(new S2Point(0, 0, 1)))
+            _bound = S2LatLngRect.Full;
+            if (Contains(new S2Point(0, 0, 1)))
             {
                 b = new S2LatLngRect(new R1Interval(b.Lat.Lo, S2.PiOver2), S1Interval.Full);
             }
@@ -955,11 +956,11 @@ namespace Google.Common.Geometry
             // around the sphere (full longitude range), or it also contains the
             // north pole in which case b.lng().isFull() due to the test above.
 
-            if (b.Lng.IsFull && contains(new S2Point(0, 0, -1)))
+            if (b.Lng.IsFull && Contains(new S2Point(0, 0, -1)))
             {
                 b = new S2LatLngRect(new R1Interval(-S2.PiOver2, b.Lat.Hi), b.Lng);
             }
-            bound = b;
+            _bound = b;
         }
 
         /**
@@ -967,25 +968,23 @@ namespace Google.Common.Geometry
    * value is in the range 1..num_vertices_ if found.
    */
 
-        private int findVertex(S2Point p)
+        private int FindVertex(S2Point p)
         {
-            if (vertexToIndex == null)
+            if (_vertexToIndex == null)
             {
-                vertexToIndex = new Dictionary<S2Point, int>();
+                _vertexToIndex = new Dictionary<S2Point, int>();
                 for (var i = 1; i <= _numVertices; i++)
                 {
-                    vertexToIndex[vertex(i)] = i;
+                    _vertexToIndex[Vertex(i)] = i;
                 }
             }
 
-            if (!vertexToIndex.ContainsKey(p))
+            if (!_vertexToIndex.ContainsKey(p))
             {
                 return -1;
             }
-            else
-            {
-                return vertexToIndex[p];
-            }
+
+            return _vertexToIndex[p];
         }
 
         /**
@@ -1001,28 +1000,28 @@ namespace Google.Common.Geometry
    * intersections and no shared vertices.
    */
 
-        private int checkEdgeCrossings(S2Loop b, IWedgeRelation relation)
+        private int CheckEdgeCrossings(S2Loop b, IWedgeRelation relation)
         {
-            var it = getEdgeIterator(b._numVertices);
+            var it = GetEdgeIterator(b._numVertices);
             var result = 1;
             // since 'this' usually has many more vertices than 'b', use the index on
             // 'this' and loop over 'b'
-            for (var j = 0; j < b.numVertices(); ++j)
+            for (var j = 0; j < b.NumVertices; ++j)
             {
                 var crosser =
-                    new EdgeCrosser(b.vertex(j), b.vertex(j + 1), vertex(0));
+                    new EdgeCrosser(b.Vertex(j), b.Vertex(j + 1), Vertex(0));
                 var previousIndex = -2;
 
-                it.GetCandidates(b.vertex(j), b.vertex(j + 1));
-                foreach (var i in it)// it.GetCandidates(b.vertex(j), b.vertex(j + 1)); it.HasNext; it.Next())
+                it.GetCandidates(b.Vertex(j), b.Vertex(j + 1));
+                foreach (var i in it) // it.GetCandidates(b.vertex(j), b.vertex(j + 1)); it.HasNext; it.Next())
                 {
-                //    var i = it.Index;
+                    //    var i = it.Index;
                     if (previousIndex != i - 1)
                     {
-                        crosser.RestartAt(vertex(i));
+                        crosser.RestartAt(Vertex(i));
                     }
                     previousIndex = i;
-                    var crossing = crosser.RobustCrossing(vertex(i + 1));
+                    var crossing = crosser.RobustCrossing(Vertex(i + 1));
                     if (crossing < 0)
                     {
                         continue;
@@ -1031,10 +1030,10 @@ namespace Google.Common.Geometry
                     {
                         return -1; // There is a proper edge crossing.
                     }
-                    if (vertex(i + 1).Equals(b.vertex(j + 1)))
+                    if (Vertex(i + 1).Equals(b.Vertex(j + 1)))
                     {
                         result = Math.Min(result, relation.Test(
-                            vertex(i), vertex(i + 1), vertex(i + 2), b.vertex(j), b.vertex(j + 2)));
+                            Vertex(i), Vertex(i + 1), Vertex(i + 2), b.Vertex(j), b.Vertex(j + 2)));
                         if (result < 0)
                         {
                             return result;
@@ -1045,7 +1044,7 @@ namespace Google.Common.Geometry
             return result;
         }
 
-        private class AnonS2EdgeIndex : S2EdgeIndex
+        private sealed class AnonS2EdgeIndex : S2EdgeIndex
         {
             private readonly S2Loop _this;
 
@@ -1061,12 +1060,12 @@ namespace Google.Common.Geometry
 
             protected override S2Point EdgeFrom(int index)
             {
-                return _this.vertex(index);
+                return _this.Vertex(index);
             }
 
             protected override S2Point EdgeTo(int index)
             {
-                return _this.vertex(index + 1);
+                return _this.Vertex(index + 1);
             }
         }
     }
