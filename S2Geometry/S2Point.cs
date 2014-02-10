@@ -280,8 +280,8 @@ namespace Google.Common.Geometry
         public string ToDegreesString()
         {
             var s2LatLng = new S2LatLng(this);
-            return "(" + s2LatLng.latDegrees() + ", "
-                   + s2LatLng.lngDegrees() + ")";
+            return "(" + s2LatLng.LatDegrees + ", "
+                   + s2LatLng.LngDegrees + ")";
         }
     }
 }

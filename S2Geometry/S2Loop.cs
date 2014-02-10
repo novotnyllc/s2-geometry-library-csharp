@@ -862,10 +862,10 @@ namespace Google.Common.Geometry
                         {
                             Debug.WriteLine("Edges " + a1 + " and " + b1 + " cross");
                             Debug.WriteLine("Edge locations in degrees: " + "{0}-{1} and {2}-{3}",
-                                            new S2LatLng(vertex(a1)).toStringDegrees(),
-                                            new S2LatLng(vertex(a2)).toStringDegrees(),
-                                            new S2LatLng(vertex(b1)).toStringDegrees(),
-                                            new S2LatLng(vertex(b2)).toStringDegrees());
+                                            new S2LatLng(vertex(a1)).ToStringDegrees(),
+                                            new S2LatLng(vertex(a2)).ToStringDegrees(),
+                                            new S2LatLng(vertex(b1)).ToStringDegrees(),
+                                            new S2LatLng(vertex(b2)).ToStringDegrees());
                             return false;
                         }
                     }

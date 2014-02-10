@@ -423,7 +423,7 @@ namespace Google.Common.Geometry
 
         public static S2CellId FromLatLng(S2LatLng ll)
         {
-            return FromPoint(ll.toPoint());
+            return FromPoint(ll.ToPoint());
         }
 
         public S2Point ToPoint()

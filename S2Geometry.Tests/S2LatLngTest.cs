@@ -13,35 +13,35 @@ namespace S2Geometry.Tests
         [Test]
         public void testBasic()
         {
-            var llRad = S2LatLng.fromRadians(S2.PiOver4, S2.PiOver2);
-            assertTrue(llRad.lat().Radians == S2.PiOver4);
-            assertTrue(llRad.lng().Radians == S2.PiOver2);
-            assertTrue(llRad.isValid());
-            var llDeg = S2LatLng.fromDegrees(45, 90);
+            var llRad = S2LatLng.FromRadians(S2.PiOver4, S2.PiOver2);
+            assertTrue(llRad.Lat.Radians == S2.PiOver4);
+            assertTrue(llRad.Lng.Radians == S2.PiOver2);
+            assertTrue(llRad.IsValid);
+            var llDeg = S2LatLng.FromDegrees(45, 90);
             assertEquals(llDeg, llRad);
-            assertTrue(llDeg.isValid());
-            assertTrue(!S2LatLng.fromDegrees(-91, 0).isValid());
-            assertTrue(!S2LatLng.fromDegrees(0, 181).isValid());
+            assertTrue(llDeg.IsValid);
+            assertTrue(!S2LatLng.FromDegrees(-91, 0).IsValid);
+            assertTrue(!S2LatLng.FromDegrees(0, 181).IsValid);
 
-            var bad = S2LatLng.fromDegrees(120, 200);
-            assertTrue(!bad.isValid());
-            var better = bad.normalized();
-            assertTrue(better.isValid());
-            assertEquals(better.lat(), S1Angle.FromDegrees(90));
-            assertDoubleNear(better.lng().Radians, S1Angle.FromDegrees(-160).Radians);
+            var bad = S2LatLng.FromDegrees(120, 200);
+            assertTrue(!bad.IsValid);
+            var better = bad.Normalized;
+            assertTrue(better.IsValid);
+            assertEquals(better.Lat, S1Angle.FromDegrees(90));
+            assertDoubleNear(better.Lng.Radians, S1Angle.FromDegrees(-160).Radians);
 
-            bad = S2LatLng.fromDegrees(-100, -360);
-            assertTrue(!bad.isValid());
-            better = bad.normalized();
-            assertTrue(better.isValid());
-            assertEquals(better.lat(), S1Angle.FromDegrees(-90));
-            assertDoubleNear(better.lng().Radians, 0);
+            bad = S2LatLng.FromDegrees(-100, -360);
+            assertTrue(!bad.IsValid);
+            better = bad.Normalized;
+            assertTrue(better.IsValid);
+            assertEquals(better.Lat, S1Angle.FromDegrees(-90));
+            assertDoubleNear(better.Lng.Radians, 0);
 
-            assertTrue((S2LatLng.fromDegrees(10, 20).add(S2LatLng.fromDegrees(20, 30))).approxEquals(
-                S2LatLng.fromDegrees(30, 50)));
-            assertTrue((S2LatLng.fromDegrees(10, 20).sub(S2LatLng.fromDegrees(20, 30))).approxEquals(
-                S2LatLng.fromDegrees(-10, -10)));
-            assertTrue((S2LatLng.fromDegrees(10, 20).mul(0.5)).approxEquals(S2LatLng.fromDegrees(5, 10)));
+            assertTrue((S2LatLng.FromDegrees(10, 20) + S2LatLng.FromDegrees(20, 30)).ApproxEquals(
+                S2LatLng.FromDegrees(30, 50)));
+            assertTrue((S2LatLng.FromDegrees(10, 20) - S2LatLng.FromDegrees(20, 30)).ApproxEquals(
+                S2LatLng.FromDegrees(-10, -10)));
+            assertTrue((S2LatLng.FromDegrees(10, 20)*0.5).ApproxEquals(S2LatLng.FromDegrees(5, 10)));
         }
 
         [Test]
@@ -49,41 +49,41 @@ namespace S2Geometry.Tests
         {
             // Test special cases: poles, "date line"
             assertDoubleNear(
-                new S2LatLng(S2LatLng.fromDegrees(90.0, 65.0).toPoint()).lat().Degrees, 90.0);
+                new S2LatLng(S2LatLng.FromDegrees(90.0, 65.0).ToPoint()).Lat.Degrees, 90.0);
             assertEquals(
-                new S2LatLng(S2LatLng.fromRadians(-S2.PiOver2, 1).toPoint()).lat().Radians, -S2.PiOver2);
+                new S2LatLng(S2LatLng.FromRadians(-S2.PiOver2, 1).ToPoint()).Lat.Radians, -S2.PiOver2);
             assertDoubleNear(
-                Math.Abs(new S2LatLng(S2LatLng.fromDegrees(12.2, 180.0).toPoint()).lng().Degrees), 180.0);
+                Math.Abs(new S2LatLng(S2LatLng.FromDegrees(12.2, 180.0).ToPoint()).Lng.Degrees), 180.0);
             assertEquals(
-                Math.Abs(new S2LatLng(S2LatLng.fromRadians(0.1, -S2.Pi).toPoint()).lng().Radians),
+                Math.Abs(new S2LatLng(S2LatLng.FromRadians(0.1, -S2.Pi).ToPoint()).Lng.Radians),
                 S2.Pi);
 
             // Test a bunch of random points.
             for (var i = 0; i < 100000; ++i)
             {
                 var p = randomPoint();
-                assertTrue(S2.ApproxEquals(p, new S2LatLng(p).toPoint()));
+                assertTrue(S2.ApproxEquals(p, new S2LatLng(p).ToPoint()));
             }
 
             // Test generation from E5
-            var test = S2LatLng.fromE5(123456, 98765);
-            assertDoubleNear(test.lat().Degrees, 1.23456);
-            assertDoubleNear(test.lng().Degrees, 0.98765);
+            var test = S2LatLng.FromE5(123456, 98765);
+            assertDoubleNear(test.Lat.Degrees, 1.23456);
+            assertDoubleNear(test.Lng.Degrees, 0.98765);
         }
 
         [Test]
         public void testDistance()
         {
             assertEquals(
-                S2LatLng.fromDegrees(90, 0).getDistance(S2LatLng.fromDegrees(90, 0)).Radians, 0.0);
+                S2LatLng.FromDegrees(90, 0).GetDistance(S2LatLng.FromDegrees(90, 0)).Radians, 0.0);
             assertDoubleNear(
-                S2LatLng.fromDegrees(-37, 25).getDistance(S2LatLng.fromDegrees(-66, -155)).Degrees, 77,
+                S2LatLng.FromDegrees(-37, 25).GetDistance(S2LatLng.FromDegrees(-66, -155)).Degrees, 77,
                 1e-13);
             assertDoubleNear(
-                S2LatLng.fromDegrees(0, 165).getDistance(S2LatLng.fromDegrees(0, -80)).Degrees, 115,
+                S2LatLng.FromDegrees(0, 165).GetDistance(S2LatLng.FromDegrees(0, -80)).Degrees, 115,
                 1e-13);
             assertDoubleNear(
-                S2LatLng.fromDegrees(47, -127).getDistance(S2LatLng.fromDegrees(-47, 53)).Degrees, 180,
+                S2LatLng.FromDegrees(47, -127).GetDistance(S2LatLng.FromDegrees(-47, 53)).Degrees, 180,
                 2e-6);
         }
     }

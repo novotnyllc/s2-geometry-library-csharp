@@ -216,24 +216,24 @@ namespace S2Geometry.Tests
         {
             var kMargin = 1e-6;
 
-            var a = S2LatLng.fromDegrees(-0.5, 0).toPoint();
-            var b = S2LatLng.fromDegrees(+0.5, 0).toPoint();
+            var a = S2LatLng.FromDegrees(-0.5, 0).ToPoint();
+            var b = S2LatLng.FromDegrees(+0.5, 0).ToPoint();
 
             // On edge at end points.
             assertEquals(a, S2EdgeUtil.GetClosestPoint(a, a, b));
             assertEquals(b, S2EdgeUtil.GetClosestPoint(b, a, b));
 
             // On edge in between.
-            var mid = S2LatLng.fromDegrees(0, 0).toPoint();
+            var mid = S2LatLng.FromDegrees(0, 0).ToPoint();
             assertEquals(mid, S2EdgeUtil.GetClosestPoint(mid, a, b));
 
             // End points are closest
-            assertEquals(a, S2EdgeUtil.GetClosestPoint(S2LatLng.fromDegrees(-1, 0).toPoint(), a, b));
-            assertEquals(b, S2EdgeUtil.GetClosestPoint(S2LatLng.fromDegrees(+1, 0).toPoint(), a, b));
+            assertEquals(a, S2EdgeUtil.GetClosestPoint(S2LatLng.FromDegrees(-1, 0).ToPoint(), a, b));
+            assertEquals(b, S2EdgeUtil.GetClosestPoint(S2LatLng.FromDegrees(+1, 0).ToPoint(), a, b));
 
             // Intermediate point is closest.
-            var x = S2LatLng.fromDegrees(+0.1, 1).toPoint();
-            var expectedClosestPoint = S2LatLng.fromDegrees(+0.1, 0).toPoint();
+            var x = S2LatLng.FromDegrees(+0.1, 1).ToPoint();
+            var expectedClosestPoint = S2LatLng.FromDegrees(+0.1, 0).ToPoint();
 
             assertTrue(expectedClosestPoint.Aequal(S2EdgeUtil.GetClosestPoint(x, a, b), kMargin));
         }

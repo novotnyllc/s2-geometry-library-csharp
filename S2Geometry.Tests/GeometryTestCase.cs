@@ -201,7 +201,7 @@ namespace S2Geometry.Tests
                 }
                 var lat = Double.Parse(token.Substring(0, colon));
                 var lng = Double.Parse(token.Substring(colon + 1));
-                vertices.Add(S2LatLng.fromDegrees(lat, lng).toPoint());
+                vertices.Add(S2LatLng.FromDegrees(lat, lng).ToPoint());
             }
         }
 

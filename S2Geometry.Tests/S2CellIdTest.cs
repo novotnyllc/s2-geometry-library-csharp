@@ -13,7 +13,7 @@ namespace S2Geometry.Tests
     {
         private S2CellId getCellId(double latDegrees, double lngDegrees)
         {
-            var id = S2CellId.FromLatLng(S2LatLng.fromDegrees(latDegrees, lngDegrees));
+            var id = S2CellId.FromLatLng(S2LatLng.FromDegrees(latDegrees, lngDegrees));
             Trace.WriteLine(Convert.ToString(unchecked ((long)id.Id), 16));
             return id;
         }

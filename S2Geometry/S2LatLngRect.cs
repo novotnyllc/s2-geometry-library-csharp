@@ -24,8 +24,8 @@ namespace Google.Common.Geometry
 
         public S2LatLngRect(S2LatLng lo, S2LatLng hi)
         {
-            lat = new R1Interval(lo.lat().Radians, hi.lat().Radians);
-            lng = new S1Interval(lo.lng().Radians, hi.lng().Radians);
+            lat = new R1Interval(lo.Lat.Radians, hi.Lat.Radians);
+            lng = new S1Interval(lo.Lng.Radians, hi.Lng.Radians);
             // assert (isValid());
         }
 
@@ -90,11 +90,11 @@ namespace Google.Common.Geometry
                 {
                     if (lngSpan < 2*S2.Pi)
                     {
-                        var midCap = S2Cap.FromAxisAngle(getCenter().toPoint(), S1Angle
+                        var midCap = S2Cap.FromAxisAngle(getCenter().ToPoint(), S1Angle
                                                                                     .FromRadians(0));
                         for (var k = 0; k < 4; ++k)
                         {
-                            midCap = midCap.AddPoint(getVertex(k).toPoint());
+                            midCap = midCap.AddPoint(getVertex(k).ToPoint());
                         }
                         if (midCap.Height < poleCap.Height)
                         {
@@ -196,7 +196,7 @@ namespace Google.Common.Geometry
 
         public static S2LatLngRect fromCenterSize(S2LatLng center, S2LatLng size)
         {
-            return fromPoint(center).expanded(size.mul(0.5));
+            return fromPoint(center).expanded(size*0.5);
         }
 
         /** Convenience method to construct a rectangle containing a single point. */
@@ -218,8 +218,7 @@ namespace Google.Common.Geometry
         public static S2LatLngRect fromPointPair(S2LatLng p1, S2LatLng p2)
         {
             // assert (p1.isValid() && p2.isValid());
-            return new S2LatLngRect(R1Interval.FromPointPair(p1.lat().Radians, p2
-                                                                                   .lat().Radians), S1Interval.FromPointPair(p1.lng().Radians, p2.lng().Radians));
+            return new S2LatLngRect(R1Interval.FromPointPair(p1.Lat.Radians, p2.Lat.Radians), S1Interval.FromPointPair(p1.Lng.Radians, p2.Lng.Radians));
         }
 
         /**
@@ -338,13 +337,13 @@ namespace Google.Common.Geometry
             switch (k)
             {
                 case 0:
-                    return S2LatLng.fromRadians(lat.Lo, lng.Lo);
+                    return S2LatLng.FromRadians(lat.Lo, lng.Lo);
                 case 1:
-                    return S2LatLng.fromRadians(lat.Lo, lng.Hi);
+                    return S2LatLng.FromRadians(lat.Lo, lng.Hi);
                 case 2:
-                    return S2LatLng.fromRadians(lat.Hi, lng.Hi);
+                    return S2LatLng.FromRadians(lat.Hi, lng.Hi);
                 case 3:
-                    return S2LatLng.fromRadians(lat.Hi, lng.Lo);
+                    return S2LatLng.FromRadians(lat.Hi, lng.Lo);
                 default:
                     throw new ArgumentException("Invalid vertex index.");
             }
@@ -357,7 +356,7 @@ namespace Google.Common.Geometry
 
         public S2LatLng getCenter()
         {
-            return S2LatLng.fromRadians(lat.Center, lng.Center);
+            return S2LatLng.FromRadians(lat.Center, lng.Center);
         }
 
         /**
@@ -373,26 +372,26 @@ namespace Google.Common.Geometry
             var a = this;
 
             Preconditions.CheckState(!a.isEmpty());
-            Preconditions.CheckArgument(p.isValid());
+            Preconditions.CheckArgument(p.IsValid);
 
-            if (a.Lng.Contains(p.lng().Radians))
+            if (a.Lng.Contains(p.Lng.Radians))
             {
-                return S1Angle.FromRadians(Math.Max(0.0, Math.Max(p.lat().Radians - a.Lat.Hi,
-                                                              a.Lat.Lo - p.lat().Radians)));
+                return S1Angle.FromRadians(Math.Max(0.0, Math.Max(p.Lat.Radians - a.Lat.Hi,
+                                                              a.Lat.Lo - p.Lat.Radians)));
             }
 
             var interval = new S1Interval(a.Lng.Hi, a.Lng.Complement.Center);
             var aLng = a.Lng.Lo;
-            if (interval.Contains(p.lng().Radians))
+            if (interval.Contains(p.Lng.Radians))
             {
                 aLng = a.Lng.Hi;
             }
 
-            var lo = S2LatLng.fromRadians(a.Lat.Lo, aLng).toPoint();
-            var hi = S2LatLng.fromRadians(a.Lat.Hi, aLng).toPoint();
+            var lo = S2LatLng.FromRadians(a.Lat.Lo, aLng).ToPoint();
+            var hi = S2LatLng.FromRadians(a.Lat.Hi, aLng).ToPoint();
             var loCrossHi =
-                S2LatLng.fromRadians(0, aLng - S2.PiOver2).normalized().toPoint();
-            return S2EdgeUtil.GetDistance(p.toPoint(), lo, hi, loCrossHi);
+                S2LatLng.FromRadians(0, aLng - S2.PiOver2).Normalized.ToPoint();
+            return S2EdgeUtil.GetDistance(p.ToPoint(), lo, hi, loCrossHi);
         }
 
         /**
@@ -456,14 +455,14 @@ namespace Google.Common.Geometry
             // to a single point-edge distance by comparing the relative latitudes of the
             // endpoints, but for the sake of clarity, we'll do all four point-edge
             // distance tests.
-            var aLo = new S2LatLng(a.latLo(), aLng).toPoint();
-            var aHi = new S2LatLng(a.latHi(), aLng).toPoint();
+            var aLo = new S2LatLng(a.latLo(), aLng).ToPoint();
+            var aHi = new S2LatLng(a.latHi(), aLng).ToPoint();
             var aLoCrossHi =
-                S2LatLng.fromRadians(0, aLng.Radians - S2.PiOver2).normalized().toPoint();
-            var bLo = new S2LatLng(b.latLo(), bLng).toPoint();
-            var bHi = new S2LatLng(b.latHi(), bLng).toPoint();
+                S2LatLng.FromRadians(0, aLng.Radians - S2.PiOver2).Normalized.ToPoint();
+            var bLo = new S2LatLng(b.latLo(), bLng).ToPoint();
+            var bHi = new S2LatLng(b.latHi(), bLng).ToPoint();
             var bLoCrossHi =
-                S2LatLng.fromRadians(0, bLng.Radians - S2.PiOver2).normalized().toPoint();
+                S2LatLng.FromRadians(0, bLng.Radians - S2.PiOver2).Normalized.ToPoint();
 
             return S1Angle.Min(S2EdgeUtil.GetDistance(aLo, bLo, bHi, bLoCrossHi),
                                S1Angle.Min(S2EdgeUtil.GetDistance(aHi, bLo, bHi, bLoCrossHi),
@@ -478,7 +477,7 @@ namespace Google.Common.Geometry
 
         public S2LatLng getSize()
         {
-            return S2LatLng.fromRadians(lat.Length, lng.Length);
+            return S2LatLng.FromRadians(lat.Length, lng.Length);
         }
 
         /**
@@ -489,7 +488,7 @@ namespace Google.Common.Geometry
         public bool contains(S2LatLng ll)
         {
             // assert (ll.isValid());
-            return (lat.Contains(ll.lat().Radians) && lng.Contains(ll.lng().Radians));
+            return (lat.Contains(ll.Lat.Radians) && lng.Contains(ll.Lng.Radians));
         }
 
         /**
@@ -511,8 +510,8 @@ namespace Google.Common.Geometry
         public bool interiorContains(S2LatLng ll)
         {
             // assert (ll.isValid());
-            return (lat.InteriorContains(ll.lat().Radians) && lng
-                                                                    .InteriorContains(ll.lng().Radians));
+            return (lat.InteriorContains(ll.Lat.Radians) && lng
+                                                                    .InteriorContains(ll.Lng.Radians));
         }
 
         /**
@@ -563,7 +562,7 @@ namespace Google.Common.Geometry
             {
                 return true;
             }
-            if (cell.Contains(getCenter().toPoint()))
+            if (cell.Contains(getCenter().ToPoint()))
             {
                 return true;
             }
@@ -594,7 +593,7 @@ namespace Google.Common.Geometry
             for (var i = 0; i < 4; ++i)
             {
                 var edgeLng = S1Interval.FromPointPair(
-                    cellLl[i].lng().Radians, cellLl[(i + 1) & 3].lng().Radians);
+                    cellLl[i].Lng.Radians, cellLl[(i + 1) & 3].Lng.Radians);
                 if (!lng.Intersects(edgeLng))
                 {
                     continue;
@@ -649,8 +648,8 @@ namespace Google.Common.Geometry
         public S2LatLngRect addPoint(S2LatLng ll)
         {
             // assert (ll.isValid());
-            var newLat = lat.AddPoint(ll.lat().Radians);
-            var newLng = lng.AddPoint(ll.lng().Radians);
+            var newLat = lat.AddPoint(ll.Lat.Radians);
+            var newLng = lng.AddPoint(ll.Lng.Radians);
             return new S2LatLngRect(newLat, newLng);
         }
 
@@ -673,8 +672,8 @@ namespace Google.Common.Geometry
             {
                 return this;
             }
-            return new S2LatLngRect(lat.Expanded(margin.lat().Radians).Intersection(
-                fullLat()), lng.Expanded(margin.lng().Radians));
+            return new S2LatLngRect(lat.Expanded(margin.Lat.Radians).Intersection(
+                fullLat()), lng.Expanded(margin.Lng.Radians));
         }
 
         /**
@@ -726,7 +725,7 @@ namespace Google.Common.Geometry
             var r = this;
             for (var k = 0; k < 4; ++k)
             {
-                var vertexCap = S2Cap.FromAxisHeight(getVertex(k).toPoint(), cap.Height);
+                var vertexCap = S2Cap.FromAxisHeight(getVertex(k).ToPoint(), cap.Height);
                 r = r.union(vertexCap.RectBound);
             }
             return r;
@@ -790,8 +789,8 @@ namespace Google.Common.Geometry
             // longitude. The nice thing about edges of constant longitude is that
             // they are straight lines on the sphere (geodesics).
 
-            return S2.SimpleCrossing(a, b, S2LatLng.fromRadians(lat.Lo, lng)
-                                                   .toPoint(), S2LatLng.fromRadians(lat.Hi, lng).toPoint());
+            return S2.SimpleCrossing(a, b, S2LatLng.FromRadians(lat.Lo, lng)
+                                                   .ToPoint(), S2LatLng.FromRadians(lat.Hi, lng).ToPoint());
         }
 
         /**

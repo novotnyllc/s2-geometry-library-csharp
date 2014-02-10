@@ -359,14 +359,14 @@ namespace S2Geometry.Tests
             assertTrue(candyCane.RectBound.latHi().Degrees > 10);
             assertTrue(smallNeCw.RectBound.isFull());
             assertEquals(arctic80.RectBound,
-                         new S2LatLngRect(S2LatLng.fromDegrees(80, -180), S2LatLng.fromDegrees(90, 180)));
+                         new S2LatLngRect(S2LatLng.FromDegrees(80, -180), S2LatLng.FromDegrees(90, 180)));
             assertEquals(antarctic80.RectBound,
-                         new S2LatLngRect(S2LatLng.fromDegrees(-90, -180), S2LatLng.fromDegrees(-80, 180)));
+                         new S2LatLngRect(S2LatLng.FromDegrees(-90, -180), S2LatLng.FromDegrees(-80, 180)));
 
             arctic80.invert();
             // The highest latitude of each edge is attained at its midpoint.
             var mid = (arctic80.vertex(0) + arctic80.vertex(1)) * 0.5;
-            assertDoubleNear(arctic80.RectBound.latHi().Radians, new S2LatLng(mid).lat().Radians);
+            assertDoubleNear(arctic80.RectBound.latHi().Radians, new S2LatLng(mid).Lat.Radians);
             arctic80.invert();
 
             assertTrue(southHemi.RectBound.Lng.IsFull);
@@ -406,7 +406,7 @@ namespace S2Geometry.Tests
         [Test]
         public void testContains()
         {
-            assertTrue(candyCane.contains(S2LatLng.fromDegrees(5, 71).toPoint()));
+            assertTrue(candyCane.contains(S2LatLng.FromDegrees(5, 71).ToPoint()));
             for (var i = 0; i < 4; ++i)
             {
                 assertTrue(northHemi.contains(new S2Point(0, 0, 1)));
@@ -485,14 +485,14 @@ namespace S2Geometry.Tests
             }
 
             // A point on one of the edges should be distance 0
-            assertEquals(0d, s1.getDistance(S2LatLng.fromDegrees(0.5, 1).toPoint()).Radians, epsilon);
+            assertEquals(0d, s1.getDistance(S2LatLng.FromDegrees(0.5, 1).ToPoint()).Radians, epsilon);
 
             // In all three cases, the closest point to the origin is (0,1), which is at
             // a distance of 1 degree.
             // Note: all of these are intentionally distances measured along the
             // equator, since that makes the math significantly simpler. Otherwise, the
             // distance wouldn't actually be 1 degree.
-            var origin = S2LatLng.fromDegrees(0, 0).toPoint();
+            var origin = S2LatLng.FromDegrees(0, 0).ToPoint();
             assertEquals(1d, s1.getDistance(origin).Degrees, epsilon);
             assertEquals(1d, s2.getDistance(origin).Degrees, epsilon);
             assertEquals(1d, s3.getDistance(origin).Degrees, epsilon);

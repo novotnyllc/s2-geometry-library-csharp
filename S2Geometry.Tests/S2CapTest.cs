@@ -12,7 +12,7 @@ namespace S2Geometry.Tests
     {
         public S2Point getLatLngPoint(double latDegrees, double lngDegrees)
         {
-            return S2LatLng.fromDegrees(latDegrees, lngDegrees).toPoint();
+            return S2LatLng.FromDegrees(latDegrees, lngDegrees).ToPoint();
         }
 
         // About 9 times the double-precision roundoff relative error.

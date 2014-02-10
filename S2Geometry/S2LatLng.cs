@@ -17,10 +17,10 @@ namespace Google.Common.Geometry
 
     public struct S2LatLng : IEquatable<S2LatLng>
     {
-        public const double EARTH_RADIUS_METERS = 6367000.0;
+        public const double EarthRadiusMeters = 6367000.0;
 
         /** The center point the lat/lng coordinate system. */
-        public static readonly S2LatLng CENTER = new S2LatLng(0.0, 0.0);
+        public static readonly S2LatLng Center = new S2LatLng(0.0, 0.0);
 
         private readonly double _latRadians;
         private readonly double _lngRadians;
@@ -57,6 +57,78 @@ namespace Google.Common.Geometry
             // Note that atan2(0, 0) is defined to be zero.
         }
 
+        internal S1Angle Lat
+        {
+            get { return S1Angle.FromRadians(_latRadians); }
+        }
+
+        /** Returns the latitude of this point as radians. */
+
+        public double LatRadians
+        {
+            get { return _latRadians; }
+        }
+
+        /** Returns the latitude of this point as degrees. */
+
+        public double LatDegrees
+        {
+            get { return 180.0/Math.PI*_latRadians; }
+        }
+
+        /** Returns the longitude of this point as a new S1Angle. */
+
+        internal S1Angle Lng
+        {
+            get { return S1Angle.FromRadians(_lngRadians); }
+        }
+
+        /** Returns the longitude of this point as radians. */
+
+        public double LngRadians
+        {
+            get { return _lngRadians; }
+        }
+
+        /** Returns the longitude of this point as degrees. */
+
+        public double LngDegrees
+        {
+            get { return 180.0/Math.PI*_lngRadians; }
+        }
+
+        /**
+   * Return true if the latitude is between -90 and 90 degrees inclusive and the
+   * longitude is between -180 and 180 degrees inclusive.
+   */
+
+        public bool IsValid
+        {
+            get { return Math.Abs(Lat.Radians) <= S2.PiOver2 && Math.Abs(Lng.Radians) <= S2.Pi; }
+        }
+
+        /**
+   * Returns a new S2LatLng based on this instance for which {@link #isValid()}
+   * will be {@code true}.
+   * <ul>
+   * <li>Latitude is clipped to the range {@code [-90, 90]}
+   * <li>Longitude is normalized to be in the range {@code [-180, 180]}
+   * </ul>
+   * <p>If the current point is valid then the returned point will have the same
+   * coordinates.
+   */
+
+        public S2LatLng Normalized
+        {
+            get
+            {
+                // drem(x, 2 * S2.M_PI) reduces its argument to the range
+                // [-S2.M_PI, S2.M_PI] inclusive, which is what we want here.
+                return new S2LatLng(Math.Max(-S2.PiOver2, Math.Min(S2.PiOver2, Lat.Radians)),
+                                    Math.IEEERemainder(Lng.Radians, 2*S2.Pi));
+            }
+        }
+
         public bool Equals(S2LatLng other)
         {
             return _lngRadians.Equals(other._lngRadians) && _latRadians.Equals(other._latRadians);
@@ -90,32 +162,32 @@ namespace Google.Common.Geometry
    * Approximate "effective" radius of the Earth in meters.
    */
 
-        public static S2LatLng fromRadians(double latRadians, double lngRadians)
+        public static S2LatLng FromRadians(double latRadians, double lngRadians)
         {
             return new S2LatLng(latRadians, lngRadians);
         }
 
-        public static S2LatLng fromDegrees(double latDegrees, double lngDegrees)
+        public static S2LatLng FromDegrees(double latDegrees, double lngDegrees)
         {
             return new S2LatLng(S1Angle.FromDegrees(latDegrees), S1Angle.FromDegrees(lngDegrees));
         }
 
-        public static S2LatLng fromE5(long latE5, long lngE5)
+        public static S2LatLng FromE5(long latE5, long lngE5)
         {
             return new S2LatLng(S1Angle.E5(latE5), S1Angle.E5(lngE5));
         }
 
-        public static S2LatLng fromE6(long latE6, long lngE6)
+        public static S2LatLng FromE6(long latE6, long lngE6)
         {
             return new S2LatLng(S1Angle.E6(latE6), S1Angle.E6(lngE6));
         }
 
-        public static S2LatLng fromE7(long latE7, long lngE7)
+        public static S2LatLng FromE7(long latE7, long lngE7)
         {
             return new S2LatLng(S1Angle.E7(latE7), S1Angle.E7(lngE7));
         }
 
-        public static S1Angle latitude(S2Point p)
+        public static S1Angle Latitude(S2Point p)
         {
             // We use atan2 rather than asin because the input vector is not necessarily
             // unit length, and atan2 is much more accurate than asin near the poles.
@@ -123,7 +195,7 @@ namespace Google.Common.Geometry
                 Math.Atan2(p[2], Math.Sqrt(p[0]*p[0] + p[1]*p[1])));
         }
 
-        public static S1Angle longitude(S2Point p)
+        public static S1Angle Longitude(S2Point p)
         {
             // Note that atan2(0, 0) is defined to be zero.
             return S1Angle.FromRadians(Math.Atan2(p[1], p[0]));
@@ -133,85 +205,16 @@ namespace Google.Common.Geometry
 
         /** Returns the latitude of this point as a new S1Angle. */
 
-        public S1Angle lat()
-        {
-            return S1Angle.FromRadians(_latRadians);
-        }
-
-        /** Returns the latitude of this point as radians. */
-
-        public double latRadians()
-        {
-            return _latRadians;
-        }
-
-        /** Returns the latitude of this point as degrees. */
-
-        public double latDegrees()
-        {
-            return 180.0/Math.PI*_latRadians;
-        }
-
-        /** Returns the longitude of this point as a new S1Angle. */
-
-        public S1Angle lng()
-        {
-            return S1Angle.FromRadians(_lngRadians);
-        }
-
-        /** Returns the longitude of this point as radians. */
-
-        public double lngRadians()
-        {
-            return _lngRadians;
-        }
-
-        /** Returns the longitude of this point as degrees. */
-
-        public double lngDegrees()
-        {
-            return 180.0/Math.PI*_lngRadians;
-        }
-
-        /**
-   * Return true if the latitude is between -90 and 90 degrees inclusive and the
-   * longitude is between -180 and 180 degrees inclusive.
-   */
-
-        public bool isValid()
-        {
-            return Math.Abs(lat().Radians) <= S2.PiOver2 && Math.Abs(lng().Radians) <= S2.Pi;
-        }
-
-        /**
-   * Returns a new S2LatLng based on this instance for which {@link #isValid()}
-   * will be {@code true}.
-   * <ul>
-   * <li>Latitude is clipped to the range {@code [-90, 90]}
-   * <li>Longitude is normalized to be in the range {@code [-180, 180]}
-   * </ul>
-   * <p>If the current point is valid then the returned point will have the same
-   * coordinates.
-   */
-
-        public S2LatLng normalized()
-        {
-            // drem(x, 2 * S2.M_PI) reduces its argument to the range
-            // [-S2.M_PI, S2.M_PI] inclusive, which is what we want here.
-            return new S2LatLng(Math.Max(-S2.PiOver2, Math.Min(S2.PiOver2, lat().Radians)),
-                                Math.IEEERemainder(lng().Radians, 2*S2.Pi));
-        }
-
         // Clamps the latitude to the range [-90, 90] degrees, and adds or subtracts
         // a multiple of 360 degrees to the longitude if necessary to reduce it to
         // the range [-180, 180].
 
         /** Convert an S2LatLng to the equivalent unit-length vector (S2Point). */
 
-        public S2Point toPoint()
+        public S2Point ToPoint()
         {
-            var phi = lat().Radians;
-            var theta = lng().Radians;
+            var phi = Lat.Radians;
+            var theta = Lng.Radians;
             var cosphi = Math.Cos(phi);
             return new S2Point(Math.Cos(theta)*cosphi, Math.Sin(theta)*cosphi, Math.Sin(phi));
         }
@@ -221,7 +224,7 @@ namespace Google.Common.Geometry
    * point.
    */
 
-        public S1Angle getDistance(S2LatLng o)
+        public S1Angle GetDistance(S2LatLng o)
         {
             // This implements the Haversine formula, which is numerically stable for
             // small distances but only gets about 8 digits of precision for very large
@@ -233,10 +236,10 @@ namespace Google.Common.Geometry
             // distance that way (which gives about 15 digits of accuracy for all
             // distances).
 
-            var lat1 = lat().Radians;
-            var lat2 = o.lat().Radians;
-            var lng1 = lng().Radians;
-            var lng2 = o.lng().Radians;
+            var lat1 = Lat.Radians;
+            var lat2 = o.Lat.Radians;
+            var lng1 = Lng.Radians;
+            var lng2 = o.Lng.Radians;
             var dlat = Math.Sin(0.5*(lat2 - lat1));
             var dlng = Math.Sin(0.5*(lng2 - lng1));
             var x = dlat*dlat + dlng*dlng*Math.Cos(lat1)*Math.Cos(lat2);
@@ -253,10 +256,10 @@ namespace Google.Common.Geometry
    * Returns the surface distance to the given point assuming a constant radius.
    */
 
-        public double getDistance(S2LatLng o, double radius)
+        public double GetDistance(S2LatLng o, double radius)
         {
             // TODO(dbeaumont): Maybe check that radius >= 0 ?
-            return getDistance(o).Radians*radius;
+            return GetDistance(o).Radians*radius;
         }
 
         /**
@@ -264,9 +267,9 @@ namespace Google.Common.Geometry
    * radius of {@link #EARTH_RADIUS_METERS}.
    */
 
-        public double getEarthDistance(S2LatLng o)
+        public double GetEarthDistance(S2LatLng o)
         {
-            return getDistance(o, EARTH_RADIUS_METERS);
+            return GetDistance(o, EarthRadiusMeters);
         }
 
         /**
@@ -274,19 +277,20 @@ namespace Google.Common.Geometry
    * Note that there is no guarantee that the new point will be <em>valid</em>.
    */
 
-        public S2LatLng add(S2LatLng o)
+        public static S2LatLng operator +(S2LatLng x, S2LatLng y)
         {
-            return new S2LatLng(_latRadians + o._latRadians, _lngRadians + o._lngRadians);
+            return new S2LatLng(x._latRadians + y._latRadians, x._lngRadians + y._lngRadians);
         }
+
 
         /**
    * Subtracts the given point from this point.
    * Note that there is no guarantee that the new point will be <em>valid</em>.
    */
 
-        public S2LatLng sub(S2LatLng o)
+        public static S2LatLng operator -(S2LatLng x, S2LatLng y)
         {
-            return new S2LatLng(_latRadians - o._latRadians, _lngRadians - o._lngRadians);
+            return new S2LatLng(x._latRadians - y._latRadians, x._lngRadians - y._lngRadians);
         }
 
         /**
@@ -294,19 +298,18 @@ namespace Google.Common.Geometry
    * Note that there is no guarantee that the new point will be <em>valid</em>.
    */
 
-        public S2LatLng mul(double m)
+        public static S2LatLng operator *(S2LatLng x, double m)
         {
             // TODO(dbeaumont): Maybe check that m >= 0 ?
-            return new S2LatLng(_latRadians*m, _lngRadians*m);
+            return new S2LatLng(x._latRadians*m, x._lngRadians*m);
         }
-
 
         /**
    * Returns true if both the latitude and longitude of the given point are
    * within {@code maxError} radians of this point.
    */
 
-        public bool approxEquals(S2LatLng o, double maxError)
+        public bool ApproxEquals(S2LatLng o, double maxError)
         {
             return (Math.Abs(_latRadians - o._latRadians) < maxError)
                    && (Math.Abs(_lngRadians - o._lngRadians) < maxError);
@@ -318,9 +321,9 @@ namespace Google.Common.Geometry
    * surface of the Earth.
    */
 
-        public bool approxEquals(S2LatLng o)
+        public bool ApproxEquals(S2LatLng o)
         {
-            return approxEquals(o, 1e-9);
+            return ApproxEquals(o, 1e-9);
         }
 
         public override String ToString()
@@ -328,9 +331,9 @@ namespace Google.Common.Geometry
             return "(" + _latRadians + ", " + _lngRadians + ")";
         }
 
-        public String toStringDegrees()
+        public String ToStringDegrees()
         {
-            return "(" + latDegrees() + ", " + lngDegrees() + ")";
+            return "(" + LatDegrees + ", " + LngDegrees + ")";
         }
     }
 }

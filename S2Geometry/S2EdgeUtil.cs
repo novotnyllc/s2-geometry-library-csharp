@@ -720,7 +720,7 @@ namespace Google.Common.Geometry
         public LongitudePruner(S1Interval interval, S2Point v0)
         {
             this.interval = interval;
-            lng0 = S2LatLng.longitude(v0).Radians;
+            lng0 = S2LatLng.Longitude(v0).Radians;
         }
 
         /**
@@ -730,7 +730,7 @@ namespace Google.Common.Geometry
 
         public bool Intersects(S2Point v1)
         {
-            var lng1 = S2LatLng.longitude(v1).Radians;
+            var lng1 = S2LatLng.Longitude(v1).Radians;
             var result = interval.Intersects(S1Interval.FromPointPair(lng0, lng1));
             lng0 = lng1;
             return result;

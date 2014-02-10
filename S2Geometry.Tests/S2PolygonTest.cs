@@ -130,8 +130,8 @@ namespace S2Geometry.Tests
             S2Loop s2Loop, int vertexIndex, double lat, double lng, double error)
         {
             var latLng = new S2LatLng(s2Loop.vertex(vertexIndex));
-            assertDoubleNear(latLng.latDegrees(), lat, error);
-            assertDoubleNear(latLng.lngDegrees(), lng, error);
+            assertDoubleNear(latLng.LatDegrees, lat, error);
+            assertDoubleNear(latLng.LngDegrees, lng, error);
         }
 
         private void checkEqual(S2Polygon a, S2Polygon b)
@@ -248,7 +248,7 @@ namespace S2Geometry.Tests
                 S2Point.Normalize(rect.loop(0).vertex(0) + rect.loop(0).vertex(1))).Radians,
                          epsilon);
 
-            var origin = S2LatLng.fromDegrees(0, 0).toPoint();
+            var origin = S2LatLng.FromDegrees(0, 0).ToPoint();
             // rect contains the origin
             assertEquals(0d, rect.getDistance(origin).Radians, epsilon);
 

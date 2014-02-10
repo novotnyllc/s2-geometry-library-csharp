@@ -148,43 +148,43 @@ namespace S2Geometry.Tests
         public void testProject()
         {
             var latLngs = new List<S2Point>();
-            latLngs.Add(S2LatLng.fromDegrees(0, 0).toPoint());
-            latLngs.Add(S2LatLng.fromDegrees(0, 1).toPoint());
-            latLngs.Add(S2LatLng.fromDegrees(0, 2).toPoint());
-            latLngs.Add(S2LatLng.fromDegrees(1, 2).toPoint());
+            latLngs.Add(S2LatLng.FromDegrees(0, 0).ToPoint());
+            latLngs.Add(S2LatLng.FromDegrees(0, 1).ToPoint());
+            latLngs.Add(S2LatLng.FromDegrees(0, 2).ToPoint());
+            latLngs.Add(S2LatLng.FromDegrees(1, 2).ToPoint());
             var line = new S2Polyline(latLngs);
 
             var edgeIndex = -1;
             S2Point testPoint = default(S2Point);
 
-            testPoint = S2LatLng.fromDegrees(0.5, -0.5).toPoint();
+            testPoint = S2LatLng.FromDegrees(0.5, -0.5).ToPoint();
             edgeIndex = line.getNearestEdgeIndex(testPoint);
             assertTrue(S2.ApproxEquals(
-                line.projectToEdge(testPoint, edgeIndex), S2LatLng.fromDegrees(0, 0).toPoint()));
+                line.projectToEdge(testPoint, edgeIndex), S2LatLng.FromDegrees(0, 0).ToPoint()));
             assertEquals(0, edgeIndex);
 
-            testPoint = S2LatLng.fromDegrees(0.5, 0.5).toPoint();
+            testPoint = S2LatLng.FromDegrees(0.5, 0.5).ToPoint();
             edgeIndex = line.getNearestEdgeIndex(testPoint);
             assertTrue(S2.ApproxEquals(
-                line.projectToEdge(testPoint, edgeIndex), S2LatLng.fromDegrees(0, 0.5).toPoint()));
+                line.projectToEdge(testPoint, edgeIndex), S2LatLng.FromDegrees(0, 0.5).ToPoint()));
             assertEquals(0, edgeIndex);
 
-            testPoint = S2LatLng.fromDegrees(0.5, 1).toPoint();
+            testPoint = S2LatLng.FromDegrees(0.5, 1).ToPoint();
             edgeIndex = line.getNearestEdgeIndex(testPoint);
             assertTrue(S2.ApproxEquals(
-                line.projectToEdge(testPoint, edgeIndex), S2LatLng.fromDegrees(0, 1).toPoint()));
+                line.projectToEdge(testPoint, edgeIndex), S2LatLng.FromDegrees(0, 1).ToPoint()));
             assertEquals(0, edgeIndex);
 
-            testPoint = S2LatLng.fromDegrees(-0.5, 2.5).toPoint();
+            testPoint = S2LatLng.FromDegrees(-0.5, 2.5).ToPoint();
             edgeIndex = line.getNearestEdgeIndex(testPoint);
             assertTrue(S2.ApproxEquals(
-                line.projectToEdge(testPoint, edgeIndex), S2LatLng.fromDegrees(0, 2).toPoint()));
+                line.projectToEdge(testPoint, edgeIndex), S2LatLng.FromDegrees(0, 2).ToPoint()));
             assertEquals(1, edgeIndex);
 
-            testPoint = S2LatLng.fromDegrees(2, 2).toPoint();
+            testPoint = S2LatLng.FromDegrees(2, 2).ToPoint();
             edgeIndex = line.getNearestEdgeIndex(testPoint);
             assertTrue(S2.ApproxEquals(
-                line.projectToEdge(testPoint, edgeIndex), S2LatLng.fromDegrees(1, 2).toPoint()));
+                line.projectToEdge(testPoint, edgeIndex), S2LatLng.FromDegrees(1, 2).ToPoint()));
             assertEquals(2, edgeIndex);
         }
 

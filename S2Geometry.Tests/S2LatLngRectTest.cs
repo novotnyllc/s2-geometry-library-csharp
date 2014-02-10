@@ -29,7 +29,7 @@ namespace S2Geometry.Tests
             assertTrue(x.union(y).Equals(expectedUnion));
             assertTrue(x.intersection(y).Equals(expectedIntersection));
 
-            if (y.getSize() == S2LatLng.fromRadians(0, 0))
+            if (y.getSize() == S2LatLng.FromRadians(0, 0))
             {
                 var r = x.addPoint(y.lo());
                 assertTrue(r == expectedUnion);
@@ -46,7 +46,7 @@ namespace S2Geometry.Tests
             for (var i = 0; i < 4; ++i)
             {
                 if (r.contains(cell.GetVertexRaw(i))
-                    || (!r.isEmpty() && cell.Contains(r.getVertex(i).toPoint())))
+                    || (!r.isEmpty() && cell.Contains(r.getVertex(i).ToPoint())))
                 {
                     vertexContained = true;
                 }
@@ -82,9 +82,9 @@ namespace S2Geometry.Tests
             S1Angle[] latA = {a.latLo(), a.latHi()};
             S1Angle[] latB = {b.latLo(), b.latHi()};
             S2Point[][] lng_edge_a =
-            {new[] {pntA[0].toPoint(), pntA[3].toPoint()}, new[] {pntA[1].toPoint(), pntA[2].toPoint()}};
+            {new[] {pntA[0].ToPoint(), pntA[3].ToPoint()}, new[] {pntA[1].ToPoint(), pntA[2].ToPoint()}};
             S2Point[][] lng_edge_b =
-            {new[] {pntB[0].toPoint(), pntB[3].toPoint()}, new[] {pntB[1].toPoint(), pntB[2].toPoint()}};
+            {new[] {pntB[0].ToPoint(), pntB[3].ToPoint()}, new[] {pntB[1].ToPoint(), pntB[2].ToPoint()}};
 
             var minDistance = S1Angle.FromDegrees(180.0);
             for (var i = 0; i < 4; ++i)
@@ -99,9 +99,9 @@ namespace S2Geometry.Tests
                     var aToLat = getDistance(currentA, latB[j], b.Lng);
                     var bToLat = getDistance(currentB, latA[j], a.Lng);
                     var aToLng =
-                        S2EdgeUtil.GetDistance(currentA.toPoint(), lng_edge_b[j][0], lng_edge_b[j][1]);
+                        S2EdgeUtil.GetDistance(currentA.ToPoint(), lng_edge_b[j][0], lng_edge_b[j][1]);
                     var bToLng =
-                        S2EdgeUtil.GetDistance(currentB.toPoint(), lng_edge_a[j][0], lng_edge_a[j][1]);
+                        S2EdgeUtil.GetDistance(currentB.ToPoint(), lng_edge_a[j][0], lng_edge_a[j][1]);
 
                     minDistance = S1Angle.Min(
                         minDistance, S1Angle.Min(aToLat, S1Angle.Min(bToLat, S1Angle.Min(aToLng, bToLng))));
@@ -120,11 +120,11 @@ namespace S2Geometry.Tests
             var bToLoLat = getDistance(b, a.latLo(), a.Lng);
             var bToHiLat = getDistance(b, a.latHi(), a.Lng);
             var bToLoLng =
-                S2EdgeUtil.GetDistance(b.toPoint(), new S2LatLng(a.latLo(), a.lngLo()).toPoint(),
-                                       new S2LatLng(a.latHi(), a.lngLo()).toPoint());
+                S2EdgeUtil.GetDistance(b.ToPoint(), new S2LatLng(a.latLo(), a.lngLo()).ToPoint(),
+                                       new S2LatLng(a.latHi(), a.lngLo()).ToPoint());
             var bToHiLng =
-                S2EdgeUtil.GetDistance(b.toPoint(), new S2LatLng(a.latLo(), a.lngHi()).toPoint(),
-                                       new S2LatLng(a.latHi(), a.lngHi()).toPoint());
+                S2EdgeUtil.GetDistance(b.ToPoint(), new S2LatLng(a.latLo(), a.lngHi()).ToPoint(),
+                                       new S2LatLng(a.latHi(), a.lngHi()).ToPoint());
             return S1Angle.Min(bToLoLat, S1Angle.Min(bToHiLat, S1Angle.Min(bToLoLng, bToHiLng)));
         }
 
@@ -135,16 +135,16 @@ namespace S2Geometry.Tests
 
         private static S1Angle getDistance(S2LatLng x, S1Angle lat, S1Interval interval)
         {
-            assertTrue(x.isValid());
+            assertTrue(x.IsValid);
             assertTrue(interval.IsValid);
 
             // Is X inside the longitude interval?
-            if (interval.Contains(x.lng().Radians))
-                return S1Angle.FromRadians(Math.Abs(x.lat().Radians - lat.Radians));
+            if (interval.Contains(x.Lng.Radians))
+                return S1Angle.FromRadians(Math.Abs(x.Lat.Radians - lat.Radians));
 
             // Return the distance to the closer endpoint.
-            return S1Angle.Min(x.getDistance(new S2LatLng(lat, S1Angle.FromRadians(interval.Lo))),
-                               x.getDistance(new S2LatLng(lat, S1Angle.FromRadians(interval.Hi))));
+            return S1Angle.Min(x.GetDistance(new S2LatLng(lat, S1Angle.FromRadians(interval.Lo))),
+                               x.GetDistance(new S2LatLng(lat, S1Angle.FromRadians(interval.Hi))));
         }
 
         private static S2LatLngRect getEdgeBound(double x1,
@@ -160,7 +160,7 @@ namespace S2Geometry.Tests
 
         private static S2LatLngRect pointRectFromDegrees(double lat, double lng)
         {
-            return S2LatLngRect.fromPoint(S2LatLng.fromDegrees(lat, lng).normalized());
+            return S2LatLngRect.fromPoint(S2LatLng.FromDegrees(lat, lng).Normalized);
         }
 
         private static S2LatLngRect rectFromDegrees(
@@ -171,8 +171,8 @@ namespace S2Geometry.Tests
             // argument order is ambiguous, but hopefully it's not too confusing
             // within the context of this unit test.
 
-            return new S2LatLngRect(S2LatLng.fromDegrees(latLo, lngLo).normalized(),
-                                    S2LatLng.fromDegrees(latHi, lngHi).normalized());
+            return new S2LatLngRect(S2LatLng.FromDegrees(latLo, lngLo).Normalized,
+                                    S2LatLng.FromDegrees(latHi, lngHi).Normalized);
         }
 
         /**
@@ -183,8 +183,8 @@ namespace S2Geometry.Tests
 
         private static void verifyGetRectPointDistance(S2LatLngRect a, S2LatLng p)
         {
-            var distance1 = bruteForceRectPointDistance(a, p.normalized());
-            var distance2 = a.getDistance(p.normalized());
+            var distance1 = bruteForceRectPointDistance(a, p.Normalized);
+            var distance2 = a.getDistance(p.Normalized);
             assertEquals(distance1.Radians, distance2.Radians, 1e-10);
         }
 
@@ -235,35 +235,35 @@ namespace S2Geometry.Tests
 
             // FromCenterSize()
             assertTrue(
-                S2LatLngRect.fromCenterSize(S2LatLng.fromDegrees(80, 170), S2LatLng.fromDegrees(40, 60))
+                S2LatLngRect.fromCenterSize(S2LatLng.FromDegrees(80, 170), S2LatLng.FromDegrees(40, 60))
                             .approxEquals(rectFromDegrees(60, 140, 90, -160)));
             assertTrue(S2LatLngRect
-                           .fromCenterSize(S2LatLng.fromDegrees(10, 40), S2LatLng.fromDegrees(210, 400)).isFull());
+                           .fromCenterSize(S2LatLng.FromDegrees(10, 40), S2LatLng.FromDegrees(210, 400)).isFull());
             assertTrue(
-                S2LatLngRect.fromCenterSize(S2LatLng.fromDegrees(-90, 180), S2LatLng.fromDegrees(20, 50))
+                S2LatLngRect.fromCenterSize(S2LatLng.FromDegrees(-90, 180), S2LatLng.FromDegrees(20, 50))
                             .approxEquals(rectFromDegrees(-90, 155, -80, -155)));
 
             // FromPoint(), FromPointPair()
             assertEquals(S2LatLngRect.fromPoint(d1.lo()), new S2LatLngRect(d1.lo(), d1.lo()));
             assertEquals(
-                S2LatLngRect.fromPointPair(S2LatLng.fromDegrees(-35, -140), S2LatLng.fromDegrees(15, 155)),
+                S2LatLngRect.fromPointPair(S2LatLng.FromDegrees(-35, -140), S2LatLng.FromDegrees(15, 155)),
                 rectFromDegrees(-35, 155, 15, -140));
             assertEquals(
-                S2LatLngRect.fromPointPair(S2LatLng.fromDegrees(25, -70), S2LatLng.fromDegrees(-90, 80)),
+                S2LatLngRect.fromPointPair(S2LatLng.FromDegrees(25, -70), S2LatLng.FromDegrees(-90, 80)),
                 rectFromDegrees(-90, -70, 25, 80));
 
             // GetCenter(), GetVertex(), Contains(S2LatLng), InteriorContains(S2LatLng).
-            var eqM180 = S2LatLng.fromRadians(0, -S2.Pi);
-            var northPole = S2LatLng.fromRadians(S2.PiOver2, 0);
+            var eqM180 = S2LatLng.FromRadians(0, -S2.Pi);
+            var northPole = S2LatLng.FromRadians(S2.PiOver2, 0);
             var r1 = new S2LatLngRect(eqM180, northPole);
 
-            assertEquals(r1.getCenter(), S2LatLng.fromRadians(S2.PiOver4, -S2.PiOver2));
-            assertEquals(r1.getVertex(0), S2LatLng.fromRadians(0, S2.Pi));
-            assertEquals(r1.getVertex(1), S2LatLng.fromRadians(0, 0));
-            assertEquals(r1.getVertex(2), S2LatLng.fromRadians(S2.PiOver2, 0));
-            assertEquals(r1.getVertex(3), S2LatLng.fromRadians(S2.PiOver2, S2.Pi));
-            assertTrue(r1.contains(S2LatLng.fromDegrees(30, -45)));
-            assertTrue(!r1.contains(S2LatLng.fromDegrees(30, 45)));
+            assertEquals(r1.getCenter(), S2LatLng.FromRadians(S2.PiOver4, -S2.PiOver2));
+            assertEquals(r1.getVertex(0), S2LatLng.FromRadians(0, S2.Pi));
+            assertEquals(r1.getVertex(1), S2LatLng.FromRadians(0, 0));
+            assertEquals(r1.getVertex(2), S2LatLng.FromRadians(S2.PiOver2, 0));
+            assertEquals(r1.getVertex(3), S2LatLng.FromRadians(S2.PiOver2, S2.Pi));
+            assertTrue(r1.contains(S2LatLng.FromDegrees(30, -45)));
+            assertTrue(!r1.contains(S2LatLng.FromDegrees(30, 45)));
             assertTrue(!r1.interiorContains(eqM180) && !r1.interiorContains(northPole));
             assertTrue(r1.contains(new S2Point(0.5, -0.3, 0.1)));
             assertTrue(!r1.contains(new S2Point(0.5, 0.2, 0.1)));
@@ -278,8 +278,8 @@ namespace S2Geometry.Tests
                 for (var k = 0; k < 4; ++k)
                 {
                     assertTrue(
-                        S2.SimpleCcw(r.getVertex((k - 1) & 3).toPoint(), r.getVertex(k).toPoint(),
-                                     r.getVertex((k + 1) & 3).toPoint()));
+                        S2.SimpleCcw(r.getVertex((k - 1) & 3).ToPoint(), r.getVertex(k).ToPoint(),
+                                     r.getVertex((k + 1) & 3).ToPoint()));
                 }
             }
 
@@ -320,42 +320,42 @@ namespace S2Geometry.Tests
 
             // AddPoint()
             var p = S2LatLngRect.empty();
-            p = p.addPoint(S2LatLng.fromDegrees(0, 0));
-            p = p.addPoint(S2LatLng.fromRadians(0, -S2.PiOver2));
-            p = p.addPoint(S2LatLng.fromRadians(S2.PiOver4, -S2.Pi));
+            p = p.addPoint(S2LatLng.FromDegrees(0, 0));
+            p = p.addPoint(S2LatLng.FromRadians(0, -S2.PiOver2));
+            p = p.addPoint(S2LatLng.FromRadians(S2.PiOver4, -S2.Pi));
             p = p.addPoint(new S2Point(0, 0, 1));
             assertTrue(p.Equals(r1));
 
             // Expanded()
             assertTrue(
-                rectFromDegrees(70, 150, 80, 170).expanded(S2LatLng.fromDegrees(20, 30)).approxEquals(
+                rectFromDegrees(70, 150, 80, 170).expanded(S2LatLng.FromDegrees(20, 30)).approxEquals(
                     rectFromDegrees(50, 120, 90, -160)));
-            assertTrue(S2LatLngRect.empty().expanded(S2LatLng.fromDegrees(20, 30)).isEmpty());
-            assertTrue(S2LatLngRect.full().expanded(S2LatLng.fromDegrees(20, 30)).isFull());
+            assertTrue(S2LatLngRect.empty().expanded(S2LatLng.FromDegrees(20, 30)).isEmpty());
+            assertTrue(S2LatLngRect.full().expanded(S2LatLng.FromDegrees(20, 30)).isFull());
             assertTrue(
-                rectFromDegrees(-90, 170, 10, 20).expanded(S2LatLng.fromDegrees(30, 80)).approxEquals(
+                rectFromDegrees(-90, 170, 10, 20).expanded(S2LatLng.FromDegrees(30, 80)).approxEquals(
                     rectFromDegrees(-90, -180, 40, 180)));
 
             // ConvolveWithCap()
             var llr1 =
-                new S2LatLngRect(S2LatLng.fromDegrees(0, 170), S2LatLng.fromDegrees(0, -170))
+                new S2LatLngRect(S2LatLng.FromDegrees(0, 170), S2LatLng.FromDegrees(0, -170))
                     .convolveWithCap(S1Angle.FromDegrees(15));
             var llr2 =
-                new S2LatLngRect(S2LatLng.fromDegrees(-15, 155), S2LatLng.fromDegrees(15, -155));
+                new S2LatLngRect(S2LatLng.FromDegrees(-15, 155), S2LatLng.FromDegrees(15, -155));
             assertTrue(llr1.approxEquals(llr2));
 
-            llr1 = new S2LatLngRect(S2LatLng.fromDegrees(60, 150), S2LatLng.fromDegrees(80, 10))
+            llr1 = new S2LatLngRect(S2LatLng.FromDegrees(60, 150), S2LatLng.FromDegrees(80, 10))
                 .convolveWithCap(S1Angle.FromDegrees(15));
-            llr2 = new S2LatLngRect(S2LatLng.fromDegrees(45, -180), S2LatLng.fromDegrees(90, 180));
+            llr2 = new S2LatLngRect(S2LatLng.FromDegrees(45, -180), S2LatLng.FromDegrees(90, 180));
             assertTrue(llr1.approxEquals(llr2));
 
             // GetCapBound(), bounding cap at center is smaller:
-            assertTrue(new S2LatLngRect(S2LatLng.fromDegrees(-45, -45), S2LatLng.fromDegrees(45, 45)).CapBound.ApproxEquals(S2Cap.FromAxisHeight(new S2Point(1, 0, 0), 0.5)));
+            assertTrue(new S2LatLngRect(S2LatLng.FromDegrees(-45, -45), S2LatLng.FromDegrees(45, 45)).CapBound.ApproxEquals(S2Cap.FromAxisHeight(new S2Point(1, 0, 0), 0.5)));
             // GetCapBound(), bounding cap at north pole is smaller:
-            assertTrue(new S2LatLngRect(S2LatLng.fromDegrees(88, -80), S2LatLng.fromDegrees(89, 80)).CapBound.ApproxEquals(S2Cap.FromAxisAngle(new S2Point(0, 0, 1), S1Angle.FromDegrees(2))));
+            assertTrue(new S2LatLngRect(S2LatLng.FromDegrees(88, -80), S2LatLng.FromDegrees(89, 80)).CapBound.ApproxEquals(S2Cap.FromAxisAngle(new S2Point(0, 0, 1), S1Angle.FromDegrees(2))));
             // GetCapBound(), longitude span > 180 degrees:
             assertTrue(
-                new S2LatLngRect(S2LatLng.fromDegrees(-30, -150), S2LatLng.fromDegrees(-10, 50)).CapBound
+                new S2LatLngRect(S2LatLng.FromDegrees(-30, -150), S2LatLng.FromDegrees(-10, 50)).CapBound
                     .ApproxEquals(S2Cap.FromAxisAngle(new S2Point(0, 0, -1), S1Angle.FromDegrees(80))));
 
             // Contains(S2Cell), MayIntersect(S2Cell), Intersects(S2Cell)
@@ -392,8 +392,8 @@ namespace S2Geometry.Tests
                 var bound0tr = cell0tr.RectBound;
                 var v0 = new S2LatLng(cell0tr.GetVertexRaw(0));
                 testCellOps(
-                    rectFromDegrees(v0.lat().Degrees - 1e-8, v0.lng().Degrees - 1e-8,
-                                    v0.lat().Degrees - 2e-10, v0.lng().Degrees + 1e-10), cell0tr, 1);
+                    rectFromDegrees(v0.Lat.Degrees - 1e-8, v0.Lng.Degrees - 1e-8,
+                                    v0.Lat.Degrees - 2e-10, v0.Lng.Degrees + 1e-10), cell0tr, 1);
             }
 
             // Rectangles that intersect a face but where no vertex of one region
@@ -405,8 +405,8 @@ namespace S2Geometry.Tests
                 var cell202 = S2Cell.FromFacePosLevel(2, (byte)0, 2);
                 var bound202 = cell202.RectBound;
                 testCellOps(
-                    rectFromDegrees(bound202.lo().lat().Degrees + 3, bound202.lo().lng().Degrees + 3,
-                                    bound202.hi().lat().Degrees - 3, bound202.hi().lng().Degrees - 3), cell202, 2);
+                    rectFromDegrees(bound202.lo().Lat.Degrees + 3, bound202.lo().Lng.Degrees + 3,
+                                    bound202.hi().Lat.Degrees - 3, bound202.hi().Lng.Degrees - 3), cell202, 2);
             }
         }
 
@@ -445,7 +445,7 @@ namespace S2Geometry.Tests
             assertEquals(zero, a.getDistance(a));
             assertEquals(zero, a.getDistance(b));
             assertEquals(zero, b.getDistance(b));
-            assertEquals(zero, a.getDistance(S2LatLng.fromDegrees(0, 0)));
+            assertEquals(zero, a.getDistance(S2LatLng.FromDegrees(0, 0)));
             assertEquals(zero, a.getDistance(rectFromDegrees(0, 1, 2, 3)));
             assertEquals(zero, a.getDistance(rectFromDegrees(0, 2, 2, 4)));
             assertEquals(zero, a.getDistance(rectFromDegrees(1, 0, 3, 2)));
@@ -484,8 +484,8 @@ namespace S2Geometry.Tests
             verifyGetDistance(pointRectFromDegrees(-2, -1), a);
             verifyGetDistance(pointRectFromDegrees(1, 2), a);
 
-            verifyGetRectPointDistance(a, S2LatLng.fromDegrees(-2, -1));
-            verifyGetRectPointDistance(a, S2LatLng.fromDegrees(1, 2));
+            verifyGetRectPointDistance(a, S2LatLng.FromDegrees(-2, -1));
+            verifyGetRectPointDistance(a, S2LatLng.FromDegrees(1, 2));
 
             // Tests near the north pole.
             var b = rectFromDegrees(86, 0, 88, 2);
@@ -505,13 +505,13 @@ namespace S2Geometry.Tests
             verifyGetDistance(pointRectFromDegrees(85, 181), b);
             verifyGetDistance(pointRectFromDegrees(90, 0), b);
 
-            verifyGetRectPointDistance(b, S2LatLng.fromDegrees(87, 3));
-            verifyGetRectPointDistance(b, S2LatLng.fromDegrees(87, -1));
-            verifyGetRectPointDistance(b, S2LatLng.fromDegrees(89, 1));
-            verifyGetRectPointDistance(b, S2LatLng.fromDegrees(89, 181));
-            verifyGetRectPointDistance(b, S2LatLng.fromDegrees(85, 1));
-            verifyGetRectPointDistance(b, S2LatLng.fromDegrees(85, 181));
-            verifyGetRectPointDistance(b, S2LatLng.fromDegrees(90, 0));
+            verifyGetRectPointDistance(b, S2LatLng.FromDegrees(87, 3));
+            verifyGetRectPointDistance(b, S2LatLng.FromDegrees(87, -1));
+            verifyGetRectPointDistance(b, S2LatLng.FromDegrees(89, 1));
+            verifyGetRectPointDistance(b, S2LatLng.FromDegrees(89, 181));
+            verifyGetRectPointDistance(b, S2LatLng.FromDegrees(85, 1));
+            verifyGetRectPointDistance(b, S2LatLng.FromDegrees(85, 181));
+            verifyGetRectPointDistance(b, S2LatLng.FromDegrees(90, 0));
 
             // Rect that touches the north pole.
             var c = rectFromDegrees(88, 0, 90, 2);

@@ -160,14 +160,14 @@ namespace Google.Common.Geometry
                 lng[1] = S2.Pi;
 
                 // Check whether cap includes the south pole.
-                lat[0] = axisLatLng.lat().Radians - capAngle;
+                lat[0] = axisLatLng.Lat.Radians - capAngle;
                 if (lat[0] <= -S2.PiOver2)
                 {
                     lat[0] = -S2.PiOver2;
                     allLongitudes = true;
                 }
                 // Check whether cap includes the north pole.
-                lat[1] = axisLatLng.lat().Radians + capAngle;
+                lat[1] = axisLatLng.Lat.Radians + capAngle;
                 if (lat[1] >= S2.PiOver2)
                 {
                     lat[1] = S2.PiOver2;
@@ -187,13 +187,13 @@ namespace Google.Common.Geometry
                     // The formula for sin(a) follows from the relationship h = 1 - cos(a).
 
                     var sinA = Math.Sqrt(_height*(2 - _height));
-                    var sinC = Math.Cos(axisLatLng.lat().Radians);
+                    var sinC = Math.Cos(axisLatLng.Lat.Radians);
                     if (sinA <= sinC)
                     {
                         var angleA = Math.Asin(sinA/sinC);
-                        lng[0] = Math.IEEERemainder(axisLatLng.lng().Radians - angleA,
+                        lng[0] = Math.IEEERemainder(axisLatLng.Lng.Radians - angleA,
                                                     2*S2.Pi);
-                        lng[1] = Math.IEEERemainder(axisLatLng.lng().Radians + angleA,
+                        lng[1] = Math.IEEERemainder(axisLatLng.Lng.Radians + angleA,
                                                     2*S2.Pi);
                     }
                 }
