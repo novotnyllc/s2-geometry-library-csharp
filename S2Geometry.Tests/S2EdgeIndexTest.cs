@@ -97,7 +97,7 @@ namespace S2Geometry.Tests
 
                 for (var i = 0; i < allEdges.Count; ++i)
                 {
-                    var crossing = S2EdgeUtil.robustCrossing(
+                    var crossing = S2EdgeUtil.RobustCrossing(
                         e.Start, e.End, allEdges[i].Start, allEdges[i].End);
                     if (crossing >= 0)
                     {

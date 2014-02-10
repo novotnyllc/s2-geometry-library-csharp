@@ -392,7 +392,7 @@ namespace Google.Common.Geometry
             var hi = S2LatLng.fromRadians(a.Lat.Hi, aLng).toPoint();
             var loCrossHi =
                 S2LatLng.fromRadians(0, aLng - S2.PiOver2).normalized().toPoint();
-            return S2EdgeUtil.getDistance(p.toPoint(), lo, hi, loCrossHi);
+            return S2EdgeUtil.GetDistance(p.toPoint(), lo, hi, loCrossHi);
         }
 
         /**
@@ -465,10 +465,10 @@ namespace Google.Common.Geometry
             var bLoCrossHi =
                 S2LatLng.fromRadians(0, bLng.Radians - S2.PiOver2).normalized().toPoint();
 
-            return S1Angle.Min(S2EdgeUtil.getDistance(aLo, bLo, bHi, bLoCrossHi),
-                               S1Angle.Min(S2EdgeUtil.getDistance(aHi, bLo, bHi, bLoCrossHi),
-                                           S1Angle.Min(S2EdgeUtil.getDistance(bLo, aLo, aHi, aLoCrossHi),
-                                                       S2EdgeUtil.getDistance(bHi, aLo, aHi, aLoCrossHi))));
+            return S1Angle.Min(S2EdgeUtil.GetDistance(aLo, bLo, bHi, bLoCrossHi),
+                               S1Angle.Min(S2EdgeUtil.GetDistance(aHi, bLo, bHi, bLoCrossHi),
+                                           S1Angle.Min(S2EdgeUtil.GetDistance(bLo, aLo, aHi, aLoCrossHi),
+                                                       S2EdgeUtil.GetDistance(bHi, aLo, aHi, aLoCrossHi))));
         }
 
         /**

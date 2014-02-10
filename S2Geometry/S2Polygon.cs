@@ -574,11 +574,11 @@ namespace Google.Common.Geometry
             if (crossing > 0)
             {
                 // There is a proper edge crossing.
-                var x = S2EdgeUtil.getIntersection(a0, a1, b0, b1);
-                var t = S2EdgeUtil.getDistanceFraction(x, a0, a1);
+                var x = S2EdgeUtil.GetIntersection(a0, a1, b0, b1);
+                var t = S2EdgeUtil.GetDistanceFraction(x, a0, a1);
                 intersections.Add(new ParametrizedS2Point(t, x));
             }
-            else if (S2EdgeUtil.vertexCrossing(a0, a1, b0, b1))
+            else if (S2EdgeUtil.VertexCrossing(a0, a1, b0, b1))
             {
                 // There is a crossing at one of the vertices. The basic rule is simple:
                 // if a0 equals one of the "b" vertices, the crossing occurs at t=0;
@@ -608,7 +608,7 @@ namespace Google.Common.Geometry
         {
             var it = new S2EdgeIndex.DataEdgeIterator(bIndex);
             it.GetCandidates(a0, a1);
-            var crosser = new S2EdgeUtil.EdgeCrosser(a0, a1, a0);
+            var crosser = new EdgeCrosser(a0, a1, a0);
             //S2Point from;
             var to = default (S2Point);
             
@@ -620,9 +620,9 @@ namespace Google.Common.Geometry
                 to = fromTo.End;
                 if (previousTo != from)
                 {
-                    crosser.restartAt(from);
+                    crosser.RestartAt(from);
                 }
-                var crossing = crosser.robustCrossing(to);
+                var crossing = crosser.RobustCrossing(to);
                 if (crossing < 0)
                 {
                     continue;
@@ -714,7 +714,7 @@ namespace Google.Common.Geometry
 
         public void initToIntersection(S2Polygon a, S2Polygon b)
         {
-            initToIntersectionSloppy(a, b, S2EdgeUtil.DEFAULT_INTERSECTION_TOLERANCE);
+            initToIntersectionSloppy(a, b, S2EdgeUtil.DefaultIntersectionTolerance);
         }
 
         public void initToIntersectionSloppy(
@@ -744,7 +744,7 @@ namespace Google.Common.Geometry
 
         public void initToUnion(S2Polygon a, S2Polygon b)
         {
-            initToUnionSloppy(a, b, S2EdgeUtil.DEFAULT_INTERSECTION_TOLERANCE);
+            initToUnionSloppy(a, b, S2EdgeUtil.DefaultIntersectionTolerance);
         }
 
         public void initToUnionSloppy(S2Polygon a, S2Polygon b, S1Angle vertexMergeRadius)
@@ -774,7 +774,7 @@ namespace Google.Common.Geometry
 
         public static S2Polygon destructiveUnion(List<S2Polygon> polygons)
         {
-            return destructiveUnionSloppy(polygons, S2EdgeUtil.DEFAULT_INTERSECTION_TOLERANCE);
+            return destructiveUnionSloppy(polygons, S2EdgeUtil.DefaultIntersectionTolerance);
         }
 
         /**

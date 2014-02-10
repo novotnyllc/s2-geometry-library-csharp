@@ -211,7 +211,7 @@ namespace S2Geometry.Tests
                 for (var j = 0; j < loop.numVertices(); ++j)
                 {
                     Console.WriteLine(
-                        " " + S2EdgeUtil.edgeOrVertexCrossing(orig, dest, loop.vertex(j), loop.vertex(j + 1)));
+                        " " + S2EdgeUtil.EdgeOrVertexCrossing(orig, dest, loop.vertex(j), loop.vertex(j + 1)));
                 }
                 Console.WriteLine();
             }
@@ -228,7 +228,7 @@ namespace S2Geometry.Tests
                                   i,
                                   S2.RobustCcw(c, o, b),
                                   S2.RobustCcw(a, o, c),
-                                  S2EdgeUtil.edgeOrVertexCrossing(c, o, b, a));
+                                  S2EdgeUtil.EdgeOrVertexCrossing(c, o, b, a));
             }
         }
 

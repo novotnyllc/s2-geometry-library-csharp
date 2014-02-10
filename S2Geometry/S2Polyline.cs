@@ -80,12 +80,12 @@ namespace Google.Common.Geometry
         {
             get
             {
-                var bounder = new S2EdgeUtil.RectBounder();
+                var bounder = new RectBounder();
                 for (var i = 0; i < numVertices(); ++i)
                 {
-                    bounder.addPoint(vertex(i));
+                    bounder.AddPoint(vertex(i));
                 }
-                return bounder.getBound();
+                return bounder.Bound;
             }
         }
 
@@ -132,10 +132,10 @@ namespace Google.Common.Geometry
             for (var j = 0; j < 4; ++j)
             {
                 var crosser =
-                    new S2EdgeUtil.EdgeCrosser(cellVertices[j], cellVertices[(j + 1) & 3], vertex(0));
+                    new EdgeCrosser(cellVertices[j], cellVertices[(j + 1) & 3], vertex(0));
                 for (var i = 1; i < numVertices(); ++i)
                 {
-                    if (crosser.robustCrossing(vertex(i)) >= 0)
+                    if (crosser.RobustCrossing(vertex(i)) >= 0)
                     {
                         // There is a proper crossing, or two vertices were the same.
                         return true;
@@ -302,7 +302,7 @@ namespace Google.Common.Geometry
             // Find the line segment in the polyline that is closest to the point given.
             for (var i = 0; i < numVertices() - 1; ++i)
             {
-                var distanceToSegment = S2EdgeUtil.getDistance(point, vertex(i), vertex(i + 1));
+                var distanceToSegment = S2EdgeUtil.GetDistance(point, vertex(i), vertex(i + 1));
                 if (distanceToSegment < minDistance)
                 {
                     minDistance = distanceToSegment;
@@ -326,7 +326,7 @@ namespace Google.Common.Geometry
                 // If there is only one vertex, it is always closest to any given point.
                 return vertex(0);
             }
-            return S2EdgeUtil.getClosestPoint(point, vertex(index), vertex(index + 1));
+            return S2EdgeUtil.GetClosestPoint(point, vertex(index), vertex(index + 1));
         }
     }
 }

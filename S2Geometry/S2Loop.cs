@@ -503,7 +503,7 @@ namespace Google.Common.Geometry
 
             // Now check whether there are any edge crossings, and also check the loop
             // relationship at any shared vertices.
-            if (checkEdgeCrossings(b, new S2EdgeUtil.WedgeContains()) <= 0)
+            if (checkEdgeCrossings(b, new WedgeContains()) <= 0)
             {
                 return false;
             }
@@ -556,7 +556,7 @@ namespace Google.Common.Geometry
 
             // Now check whether there are any edge crossings, and also check the loop
             // relationship at any shared vertices.
-            if (checkEdgeCrossings(b, new S2EdgeUtil.WedgeIntersects()) < 0)
+            if (checkEdgeCrossings(b, new WedgeIntersects()) < 0)
             {
                 return true;
             }
@@ -601,7 +601,7 @@ namespace Google.Common.Geometry
             }
             // Check whether the edge order around b->vertex(1) is compatible with
             // A containin B.
-            return (new S2EdgeUtil.WedgeContains()).test(
+            return (new WedgeContains()).Test(
                 vertex(m - 1), vertex(m), vertex(m + 1), b.vertex(0), b.vertex(2)) > 0;
         }
 
@@ -625,7 +625,7 @@ namespace Google.Common.Geometry
             // relationship at any shared vertices. Note that unlike Contains() or
             // Intersects(), we can't do a point containment test as a shortcut because
             // we need to detect whether there are any edge crossings.
-            var result = checkEdgeCrossings(b, new S2EdgeUtil.WedgeContainsOrCrosses());
+            var result = checkEdgeCrossings(b, new WedgeContainsOrCrosses());
 
             // If there was an edge crossing or a shared vertex, we know the result
             // already. (This is true even if the result is 1, but since we don't
@@ -697,7 +697,7 @@ namespace Google.Common.Geometry
 
             var inside = originInside;
             var origin = S2.Origin;
-            var crosser = new S2EdgeUtil.EdgeCrosser(origin, p,
+            var crosser = new EdgeCrosser(origin, p,
                                                      vertices[_numVertices - 1]);
 
             // The s2edgeindex library is not optimized yet for long edges,
@@ -706,7 +706,7 @@ namespace Google.Common.Geometry
             {
                 for (var i = 0; i < _numVertices; i++)
                 {
-                    inside ^= crosser.edgeOrVertexCrossing(vertices[i]);
+                    inside ^= crosser.EdgeOrVertexCrossing(vertices[i]);
                 }
             }
             else
@@ -719,10 +719,10 @@ namespace Google.Common.Geometry
                     //var ai = it.Index;
                     if (previousIndex != ai - 1)
                     {
-                        crosser.restartAt(vertices[ai]);
+                        crosser.RestartAt(vertices[ai]);
                     }
                     previousIndex = ai;
-                    inside ^= crosser.edgeOrVertexCrossing(vertex(ai + 1));
+                    inside ^= crosser.EdgeOrVertexCrossing(vertex(ai + 1));
                 }
             }
 
@@ -745,7 +745,7 @@ namespace Google.Common.Geometry
             for (var i = 0; i < numVertices(); i++)
             {
                 minDistance =
-                    S1Angle.Min(minDistance, S2EdgeUtil.getDistance(normalized, vertex(i), vertex(i + 1)));
+                    S1Angle.Min(minDistance, S2EdgeUtil.GetDistance(normalized, vertex(i), vertex(i + 1)));
             }
             return minDistance;
         }
@@ -814,7 +814,7 @@ namespace Google.Common.Geometry
             for (var a1 = 0; a1 < _numVertices; a1++)
             {
                 var a2 = (a1 + 1)%_numVertices;
-                var crosser = new S2EdgeUtil.EdgeCrosser(vertex(a1), vertex(a2), vertex(0));
+                var crosser = new EdgeCrosser(vertex(a1), vertex(a2), vertex(0));
                 var previousIndex = -2;
                 it.GetCandidates(vertex(a1), vertex(a2));
                 foreach(var b1 in it)// it.GetCandidates(vertex(a1), vertex(a2)); it.HasNext; it.Next())
@@ -850,13 +850,13 @@ namespace Google.Common.Geometry
 
                         if (previousIndex != b1)
                         {
-                            crosser.restartAt(vertex(b1));
+                            crosser.RestartAt(vertex(b1));
                         }
 
                         // Beware, this may return the loop is valid if there is a
                         // "vertex crossing".
                         // TODO(user): Fix that.
-                        var crosses = crosser.robustCrossing(vertex(b2)) > 0;
+                        var crosses = crosser.RobustCrossing(vertex(b2)) > 0;
                         previousIndex = b2;
                         if (crosses)
                         {
@@ -938,12 +938,12 @@ namespace Google.Common.Geometry
             // candy-cane stripe). Second, the loop may include one or both poles.
             // Note that a small clockwise loop near the equator contains both poles.
 
-            var bounder = new S2EdgeUtil.RectBounder();
+            var bounder = new RectBounder();
             for (var i = 0; i <= numVertices(); ++i)
             {
-                bounder.addPoint(vertex(i));
+                bounder.AddPoint(vertex(i));
             }
-            var b = bounder.getBound();
+            var b = bounder.Bound;
             // Note that we need to initialize bound with a temporary value since
             // contains() does a bounding rectangle check before doing anything else.
             bound = S2LatLngRect.full();
@@ -1001,7 +1001,7 @@ namespace Google.Common.Geometry
    * intersections and no shared vertices.
    */
 
-        private int checkEdgeCrossings(S2Loop b, S2EdgeUtil.IWedgeRelation relation)
+        private int checkEdgeCrossings(S2Loop b, IWedgeRelation relation)
         {
             var it = getEdgeIterator(b._numVertices);
             var result = 1;
@@ -1010,7 +1010,7 @@ namespace Google.Common.Geometry
             for (var j = 0; j < b.numVertices(); ++j)
             {
                 var crosser =
-                    new S2EdgeUtil.EdgeCrosser(b.vertex(j), b.vertex(j + 1), vertex(0));
+                    new EdgeCrosser(b.vertex(j), b.vertex(j + 1), vertex(0));
                 var previousIndex = -2;
 
                 it.GetCandidates(b.vertex(j), b.vertex(j + 1));
@@ -1019,10 +1019,10 @@ namespace Google.Common.Geometry
                 //    var i = it.Index;
                     if (previousIndex != i - 1)
                     {
-                        crosser.restartAt(vertex(i));
+                        crosser.RestartAt(vertex(i));
                     }
                     previousIndex = i;
-                    var crossing = crosser.robustCrossing(vertex(i + 1));
+                    var crossing = crosser.RobustCrossing(vertex(i + 1));
                     if (crossing < 0)
                     {
                         continue;
@@ -1033,7 +1033,7 @@ namespace Google.Common.Geometry
                     }
                     if (vertex(i + 1).Equals(b.vertex(j + 1)))
                     {
-                        result = Math.Min(result, relation.test(
+                        result = Math.Min(result, relation.Test(
                             vertex(i), vertex(i + 1), vertex(i + 2), b.vertex(j), b.vertex(j + 2)));
                         if (result < 0)
                         {

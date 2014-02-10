@@ -99,9 +99,9 @@ namespace S2Geometry.Tests
                     var aToLat = getDistance(currentA, latB[j], b.Lng);
                     var bToLat = getDistance(currentB, latA[j], a.Lng);
                     var aToLng =
-                        S2EdgeUtil.getDistance(currentA.toPoint(), lng_edge_b[j][0], lng_edge_b[j][1]);
+                        S2EdgeUtil.GetDistance(currentA.toPoint(), lng_edge_b[j][0], lng_edge_b[j][1]);
                     var bToLng =
-                        S2EdgeUtil.getDistance(currentB.toPoint(), lng_edge_a[j][0], lng_edge_a[j][1]);
+                        S2EdgeUtil.GetDistance(currentB.toPoint(), lng_edge_a[j][0], lng_edge_a[j][1]);
 
                     minDistance = S1Angle.Min(
                         minDistance, S1Angle.Min(aToLat, S1Angle.Min(bToLat, S1Angle.Min(aToLng, bToLng))));
@@ -120,10 +120,10 @@ namespace S2Geometry.Tests
             var bToLoLat = getDistance(b, a.latLo(), a.Lng);
             var bToHiLat = getDistance(b, a.latHi(), a.Lng);
             var bToLoLng =
-                S2EdgeUtil.getDistance(b.toPoint(), new S2LatLng(a.latLo(), a.lngLo()).toPoint(),
+                S2EdgeUtil.GetDistance(b.toPoint(), new S2LatLng(a.latLo(), a.lngLo()).toPoint(),
                                        new S2LatLng(a.latHi(), a.lngLo()).toPoint());
             var bToHiLng =
-                S2EdgeUtil.getDistance(b.toPoint(), new S2LatLng(a.latLo(), a.lngHi()).toPoint(),
+                S2EdgeUtil.GetDistance(b.toPoint(), new S2LatLng(a.latLo(), a.lngHi()).toPoint(),
                                        new S2LatLng(a.latHi(), a.lngHi()).toPoint());
             return S1Angle.Min(bToLoLat, S1Angle.Min(bToHiLat, S1Angle.Min(bToLoLng, bToHiLng)));
         }
