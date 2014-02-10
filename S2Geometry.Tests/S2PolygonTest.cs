@@ -64,7 +64,7 @@ namespace S2Geometry.Tests
         {
             var a = makePolygon(aStr);
             var b = makePolygon(bStr);
-            assertTrue(a.contains(b));
+            assertTrue(a.Contains(b));
         }
 
         // Make sure we've set things up correctly.
@@ -121,9 +121,9 @@ namespace S2Geometry.Tests
 
         private void assertRelation(S2Polygon a, S2Polygon b, int contains, bool intersects)
         {
-            assertEquals(a.contains(b), contains > 0);
-            assertEquals(b.contains(a), contains < 0);
-            assertEquals(a.intersects(b), intersects);
+            assertEquals(a.Contains(b), contains > 0);
+            assertEquals(b.Contains(a), contains < 0);
+            assertEquals(a.Intersects(b), intersects);
         }
 
         private void assertPointApproximatelyEquals(
@@ -138,9 +138,9 @@ namespace S2Geometry.Tests
         {
             var MAX_ERROR = 1e-31;
 
-            if (a.isNormalized() && b.isNormalized())
+            if (a.IsNormalized && b.IsNormalized)
             {
-                var r = a.boundaryApproxEquals(b, MAX_ERROR);
+                var r = a.BoundaryApproxEquals(b, MAX_ERROR);
                 assertTrue(r);
             }
             else
@@ -152,19 +152,19 @@ namespace S2Geometry.Tests
                 assertTrue(builder.assemblePolygon(a2, null));
                 builder.addPolygon(b);
                 assertTrue(builder.assemblePolygon(b2, null));
-                assertTrue(a2.boundaryApproxEquals(b2, MAX_ERROR));
+                assertTrue(a2.BoundaryApproxEquals(b2, MAX_ERROR));
             }
         }
 
         public void tryUnion(S2Polygon a, S2Polygon b)
         {
             var union = new S2Polygon();
-            union.initToUnion(a, b);
+            union.InitToUnion(a, b);
 
             var polygons = new List<S2Polygon>();
             polygons.Add(new S2Polygon(a));
             polygons.Add(new S2Polygon(b));
-            var destructiveUnion = S2Polygon.destructiveUnion(polygons);
+            var destructiveUnion = S2Polygon.DestructiveUnion(polygons);
 
             checkEqual(union, destructiveUnion);
         }
@@ -211,8 +211,8 @@ namespace S2Geometry.Tests
             assertTrue(builder.assemblePolygon(ab, null));
 
             var union = new S2Polygon();
-            union.initToUnion(adj0, unAdj);
-            assertEquals(2, union.numLoops());
+            union.InitToUnion(adj0, unAdj);
+            assertEquals(2, union.NumLoops);
 
             checkEqual(ab, union);
             tryUnion(adj0, unAdj);
@@ -235,26 +235,26 @@ namespace S2Geometry.Tests
             var shell = makePolygon(inner + outer);
 
             // All of the vertices of a polygon should be distance 0
-            for (var i = 0; i < shell.numLoops(); i++)
+            for (var i = 0; i < shell.NumLoops; i++)
             {
-                for (var j = 0; j < shell.loop(i).NumVertices; j++)
+                for (var j = 0; j < shell.Loop(i).NumVertices; j++)
                 {
-                    assertEquals(0d, shell.getDistance(shell.loop(i).Vertex(j)).Radians, epsilon);
+                    assertEquals(0d, shell.GetDistance(shell.Loop(i).Vertex(j)).Radians, epsilon);
                 }
             }
 
             // A non-vertex point on an edge should be distance 0
-            assertEquals(0d, rect.getDistance(
-                S2Point.Normalize(rect.loop(0).Vertex(0) + rect.loop(0).Vertex(1))).Radians,
+            assertEquals(0d, rect.GetDistance(
+                S2Point.Normalize(rect.Loop(0).Vertex(0) + rect.Loop(0).Vertex(1))).Radians,
                          epsilon);
 
             var origin = S2LatLng.FromDegrees(0, 0).ToPoint();
             // rect contains the origin
-            assertEquals(0d, rect.getDistance(origin).Radians, epsilon);
+            assertEquals(0d, rect.GetDistance(origin).Radians, epsilon);
 
             // shell does NOT contain the origin, since it has a hole. The shortest
             // distance is to (1,0) or (-1,0), and should be 1 degree
-            assertEquals(1d, shell.getDistance(origin).Degrees, epsilon);
+            assertEquals(1d, shell.GetDistance(origin).Degrees, epsilon);
         }
 
         [Test]
@@ -314,9 +314,9 @@ namespace S2Geometry.Tests
             polygons.Add(unAdj);
             // The polygons are sufficiently far apart that this angle will not
             // bring them together:
-            var union = S2Polygon.destructiveUnionSloppy(polygons, S1Angle.FromDegrees(0.1));
+            var union = S2Polygon.DestructiveUnionSloppy(polygons, S1Angle.FromDegrees(0.1));
 
-            assertEquals(2, union.numLoops());
+            assertEquals(2, union.NumLoops);
         }
 
         [Test]
@@ -325,14 +325,14 @@ namespace S2Geometry.Tests
             var polygons = new List<S2Polygon>();
             polygons.Add(adj0);
             polygons.Add(adj1);
-            var union = S2Polygon.destructiveUnionSloppy(polygons, S1Angle.FromDegrees(0.1));
+            var union = S2Polygon.DestructiveUnionSloppy(polygons, S1Angle.FromDegrees(0.1));
 
-            assertEquals(1, union.numLoops());
-            if (union.numLoops() != 1)
+            assertEquals(1, union.NumLoops);
+            if (union.NumLoops != 1)
             {
                 return;
             }
-            var s2Loop = union.loop(0);
+            var s2Loop = union.Loop(0);
             assertEquals(8, s2Loop.NumVertices);
             if (s2Loop.NumVertices != 8)
             {

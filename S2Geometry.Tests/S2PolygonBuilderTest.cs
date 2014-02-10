@@ -450,7 +450,7 @@ namespace S2Geometry.Tests
                 {
                     var polygon = new S2Polygon();
                     builder.assemblePolygon(polygon, unusedEdges);
-                    polygon.release(loops);
+                    polygon.Release(loops);
                 }
                 var expected = new List<S2Loop>();
                 foreach (var loop in test.loopsOut)

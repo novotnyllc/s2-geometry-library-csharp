@@ -137,9 +137,9 @@ namespace Google.Common.Geometry
 
         public void addPolygon(S2Polygon polygon)
         {
-            for (var i = 0; i < polygon.numLoops(); ++i)
+            for (var i = 0; i < polygon.NumLoops; ++i)
             {
-                addLoop(polygon.loop(i));
+                addLoop(polygon.Loop(i));
             }
         }
 
@@ -237,7 +237,7 @@ namespace Google.Common.Geometry
                     loops[i].Normalize();
                 }
             }
-            if (_options.getValidate() && !S2Polygon.isValid(loops))
+            if (_options.getValidate() && !S2Polygon.IsValidPolygon(loops))
             {
                 if (unusedEdges != null)
                 {
@@ -248,7 +248,7 @@ namespace Google.Common.Geometry
                 }
                 return false;
             }
-            polygon.init(loops);
+            polygon.Init(loops);
             return success;
         }
 
