@@ -378,7 +378,7 @@ namespace S2Geometry.Tests
             }
             for (var i = 1; i < vertices.Count; ++i)
             {
-                builder.addEdge(vertices[i - 1], vertices[i]);
+                builder.AddEdge(vertices[i - 1], vertices[i]);
             }
         }
 
@@ -392,10 +392,10 @@ namespace S2Geometry.Tests
             for (var iter = 0; iter < 200; ++iter)
             {
                 // Initialize to the default options, which are changed below
-                var options = S2PolygonBuilder.Options.DIRECTED_XOR;
+                var options = S2PolygonBuilderOptions.DirectedXor;
 
-                options.setUndirectedEdges(evalTristate(test.undirectedEdges));
-                options.setXorEdges(evalTristate(test.xorEdges));
+                options.UndirectedEdges = evalTristate(test.undirectedEdges);
+                options.XorEdges = evalTristate(test.xorEdges);
 
                 // Each test has a minimum and a maximum merge distance. The merge
                 // distance must be at least the given minimum to ensure that all expected
@@ -423,10 +423,10 @@ namespace S2Geometry.Tests
                 // to the minimum value.
 
                 r = Math.Max(0.0, 2*rand.NextDouble() - 1);
-                options.setMergeDistance(S1Angle.FromRadians(
-                    minMerge + 2*maxPerturbation + r*(maxMerge - minMerge - 4*maxPerturbation)));
+                options.MergeDistance = S1Angle.FromRadians(
+                    minMerge + 2*maxPerturbation + r*(maxMerge - minMerge - 4*maxPerturbation));
 
-                options.setValidate(true);
+                options.Validate = true;
                 var builder = new S2PolygonBuilder(options);
 
                 // On each iteration we randomly rotate the test case around the sphere.
@@ -444,12 +444,12 @@ namespace S2Geometry.Tests
                 var unusedEdges = new List<S2Edge>();
                 if (test.xorEdges < 0)
                 {
-                    builder.assembleLoops(loops, unusedEdges);
+                    builder.AssembleLoops(loops, unusedEdges);
                 }
                 else
                 {
                     var polygon = new S2Polygon();
-                    builder.assemblePolygon(polygon, unusedEdges);
+                    builder.AssemblePolygon(polygon, unusedEdges);
                     polygon.Release(loops);
                 }
                 var expected = new List<S2Loop>();
@@ -471,8 +471,8 @@ namespace S2Geometry.Tests
                     | findMissingLoops(expected, loops, maxError, "Expected"))
                 {
                     Console.Error.WriteLine(
-                        "During iteration " + iter + ", undirected: " + options.getUndirectedEdges() + ", xor: "
-                        + options.getXorEdges() + "\n\n");
+                        "During iteration " + iter + ", undirected: " + options.UndirectedEdges + ", xor: "
+                        + options.XorEdges + "\n\n");
                     return false;
                 }
                 if (unusedEdges.Count != test.numUnusedEdges)

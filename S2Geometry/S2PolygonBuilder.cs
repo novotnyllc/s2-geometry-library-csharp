@@ -36,34 +36,33 @@ namespace Google.Common.Geometry
  *
  */
 
-    public class S2PolygonBuilder
+    public sealed class S2PolygonBuilder
     {
-        private readonly Options _options;
-
         /**
    * The current set of edges, grouped by origin. The set of destination
    * vertices is a multiset so that the same edge can be present more than once.
    */
-        private readonly System.Collections.Generic.IDictionary<S2Point, HashBag<S2Point>> edges;
+        private readonly System.Collections.Generic.IDictionary<S2Point, HashBag<S2Point>> _edges;
+        private readonly S2PolygonBuilderOptions _options;
 
         /**
    * Default constructor for well-behaved polygons. Uses the DIRECTED_XOR
    * options.
    */
 
-        public S2PolygonBuilder() : this(Options.DIRECTED_XOR)
+        public S2PolygonBuilder() : this(S2PolygonBuilderOptions.DirectedXor)
         {
         }
 
-        public S2PolygonBuilder(Options options)
+        public S2PolygonBuilder(S2PolygonBuilderOptions options)
         {
             _options = options;
-            edges = new Dictionary<S2Point, HashBag<S2Point>>();
+            _edges = new Dictionary<S2Point, HashBag<S2Point>>();
         }
 
-        public Options options()
+        public S2PolygonBuilderOptions Options
         {
-            return _options;
+            get { return _options; }
         }
 
         /**
@@ -73,7 +72,7 @@ namespace Google.Common.Geometry
    * where v0 == v1 are ignored.
    */
 
-        public void addEdge(S2Point v0, S2Point v1)
+        public void AddEdge(S2Point v0, S2Point v1)
         {
             // If xor_edges is true, we look for an existing edge in the opposite
             // direction. We either delete that edge or insert a new one.
@@ -83,30 +82,30 @@ namespace Google.Common.Geometry
                 return;
             }
 
-            if (_options.getXorEdges())
+            if (_options.XorEdges)
             {
                 HashBag<S2Point> candidates;
-                edges.TryGetValue(v1, out candidates);
+                _edges.TryGetValue(v1, out candidates);
                 if (candidates != null && candidates.Any(c => c.Equals(v0)))
                 {
-                    eraseEdge(v1, v0);
+                    EraseEdge(v1, v0);
                     return;
                 }
             }
 
-            if (!edges.ContainsKey(v0))
+            if (!_edges.ContainsKey(v0))
             {
-                edges[v0] = new HashBag<S2Point>();
+                _edges[v0] = new HashBag<S2Point>();
             }
 
-            edges[v0].Add(v1);
-            if (_options.getUndirectedEdges())
+            _edges[v0].Add(v1);
+            if (_options.UndirectedEdges)
             {
-                if (!edges.ContainsKey(v1))
+                if (!_edges.ContainsKey(v1))
                 {
-                    edges[v1] = new HashBag<S2Point>();
+                    _edges[v1] = new HashBag<S2Point>();
                 }
-                edges[v1].Add(v0);
+                _edges[v1].Add(v0);
             }
         }
 
@@ -119,13 +118,13 @@ namespace Google.Common.Geometry
    * This method does not take ownership of the loop.
    */
 
-        public void addLoop(S2Loop loop)
+        public void AddLoop(S2Loop loop)
         {
             var sign = loop.Sign;
             for (var i = loop.NumVertices; i > 0; --i)
             {
                 // Vertex indices need to be in the range [0, 2*num_vertices()-1].
-                addEdge(loop.Vertex(i), loop.Vertex(i + sign));
+                AddEdge(loop.Vertex(i), loop.Vertex(i + sign));
             }
         }
 
@@ -135,11 +134,11 @@ namespace Google.Common.Geometry
    * ownership of the polygon.
    */
 
-        public void addPolygon(S2Polygon polygon)
+        public void AddPolygon(S2Polygon polygon)
         {
             for (var i = 0; i < polygon.NumLoops; ++i)
             {
-                addLoop(polygon.Loop(i));
+                AddLoop(polygon.Loop(i));
             }
         }
 
@@ -158,11 +157,11 @@ namespace Google.Common.Geometry
    * This method resets the S2PolygonBuilder state so that it can be reused.
    */
 
-        public bool assembleLoops(List<S2Loop> loops, List<S2Edge> unusedEdges)
+        public bool AssembleLoops(System.Collections.Generic.IList<S2Loop> loops, System.Collections.Generic.IList<S2Edge> unusedEdges)
         {
-            if (_options.getMergeDistance().Radians > 0)
+            if (_options.MergeDistance.Radians > 0)
             {
-                mergeVertices();
+                MergeVertices();
             }
 
             var dummyUnusedEdges = new List<S2Edge>();
@@ -176,15 +175,15 @@ namespace Google.Common.Geometry
             // includes extra edges that are not part of any loop.)
 
             unusedEdges.Clear();
-            while (edges.Any())
+            while (_edges.Any())
             {
                 //Map.Entry<S2Point, Multiset<S2Point>> edge = edges.entrySet().iterator().next();
-                var edge = edges.First();
+                var edge = _edges.First();
 
                 var v0 = edge.Key;
                 var v1 = edge.Value.First();
 
-                var loop = assembleLoop(v0, v1, unusedEdges);
+                var loop = AssembleLoop(v0, v1, unusedEdges);
                 if (loop == null)
                 {
                     continue;
@@ -196,12 +195,12 @@ namespace Google.Common.Geometry
                 // This is guaranteed to assemble a loop that is interior to the previous
                 // one and will therefore eventually terminate.
 
-                while (_options.getUndirectedEdges() && !loop.IsNormalized)
+                while (_options.UndirectedEdges && !loop.IsNormalized)
                 {
-                    loop = assembleLoop(loop.Vertex(1), loop.Vertex(0), unusedEdges);
+                    loop = AssembleLoop(loop.Vertex(1), loop.Vertex(0), unusedEdges);
                 }
                 loops.Add(loop);
-                eraseLoop(loop, loop.NumVertices);
+                EraseLoop(loop, loop.NumVertices);
             }
             return unusedEdges.Count == 0;
         }
@@ -223,27 +222,27 @@ namespace Google.Common.Geometry
    * of the input edge or loop orientations).
    */
 
-        public bool assemblePolygon(S2Polygon polygon, List<S2Edge> unusedEdges)
+        public bool AssemblePolygon(S2Polygon polygon, System.Collections.Generic.IList<S2Edge> unusedEdges)
         {
             var loops = new List<S2Loop>();
-            var success = assembleLoops(loops, unusedEdges);
+            var success = AssembleLoops(loops, unusedEdges);
 
             // If edges are undirected, then all loops are already CCW. Otherwise we
             // need to make sure the loops are normalized.
-            if (!_options.getUndirectedEdges())
+            if (!_options.UndirectedEdges)
             {
                 for (var i = 0; i < loops.Count; ++i)
                 {
                     loops[i].Normalize();
                 }
             }
-            if (_options.getValidate() && !S2Polygon.IsValidPolygon(loops))
+            if (_options.Validate && !S2Polygon.IsValidPolygon(loops))
             {
                 if (unusedEdges != null)
                 {
                     foreach (var loop in loops)
                     {
-                        rejectLoop(loop, loop.NumVertices, unusedEdges);
+                        RejectLoop(loop, loop.NumVertices, unusedEdges);
                     }
                 }
                 return false;
@@ -256,22 +255,22 @@ namespace Google.Common.Geometry
    * Convenience method for when you don't care about unused edges.
    */
 
-        public S2Polygon assemblePolygon()
+        public S2Polygon AssemblePolygon()
         {
             var polygon = new S2Polygon();
             var unusedEdges = new List<S2Edge>();
 
-            assemblePolygon(polygon, unusedEdges);
+            AssemblePolygon(polygon, unusedEdges);
 
             return polygon;
         }
 
         // Debugging functions:
 
-        protected void dumpEdges(S2Point v0)
+        protected void DumpEdges(S2Point v0)
         {
             Debug.WriteLine(v0.ToString());
-            var vset = edges[v0];
+            var vset = _edges[v0];
             if (vset != null)
             {
                 foreach (var v in vset)
@@ -281,52 +280,52 @@ namespace Google.Common.Geometry
             }
         }
 
-        protected void dump()
+        protected void Dump()
         {
-            foreach (var v in edges.Keys)
+            foreach (var v in _edges.Keys)
             {
-                dumpEdges(v);
+                DumpEdges(v);
             }
         }
 
-        private void eraseEdge(S2Point v0, S2Point v1)
+        private void EraseEdge(S2Point v0, S2Point v1)
         {
             // Note that there may be more than one copy of an edge if we are not XORing
             // them, so a VertexSet is a multiset.
 
-            var vset = edges[v0];
+            var vset = _edges[v0];
             // assert (vset.count(v1) > 0);
             vset.Remove(v1);
             if (vset.IsEmpty)
             {
-                edges.Remove(v0);
+                _edges.Remove(v0);
             }
 
-            if (_options.getUndirectedEdges())
+            if (_options.UndirectedEdges)
             {
-                vset = edges[v1];
+                vset = _edges[v1];
                 // assert (vset.count(v0) > 0);
                 vset.Remove(v0);
                 if (vset.IsEmpty)
                 {
-                    edges.Remove(v1);
+                    _edges.Remove(v1);
                 }
             }
         }
 
-        private void eraseLoop(List<S2Point> v, int n)
+        private void EraseLoop(System.Collections.Generic.IList<S2Point> v, int n)
         {
             for (int i = n - 1, j = 0; j < n; i = j++)
             {
-                eraseEdge(v[i], v[j]);
+                EraseEdge(v[i], v[j]);
             }
         }
 
-        private void eraseLoop(S2Loop v, int n)
+        private void EraseLoop(S2Loop v, int n)
         {
             for (int i = n - 1, j = 0; j < n; i = j++)
             {
-                eraseEdge(v.Vertex(i), v.Vertex(j));
+                EraseEdge(v.Vertex(i), v.Vertex(j));
             }
         }
 
@@ -337,7 +336,7 @@ namespace Google.Common.Geometry
    * loops are constructed when possible.
    */
 
-        private S2Loop assembleLoop(S2Point v0, S2Point v1, List<S2Edge> unusedEdges)
+        private S2Loop AssembleLoop(S2Point v0, S2Point v1, System.Collections.Generic.IList<S2Edge> unusedEdges)
         {
             // The path so far.
             var path = new List<S2Point>();
@@ -358,7 +357,7 @@ namespace Google.Common.Geometry
                 var v2 = default (S2Point);
                 var v2Found = false;
                 HashBag<S2Point> vset;
-                edges.TryGetValue(v1, out vset);
+                _edges.TryGetValue(v1, out vset);
                 if (vset != null)
                 {
                     foreach (var v in vset)
@@ -379,7 +378,7 @@ namespace Google.Common.Geometry
                 {
                     // We've hit a dead end. Remove this edge and backtrack.
                     unusedEdges.Add(new S2Edge(v0, v1));
-                    eraseEdge(v0, v1);
+                    EraseEdge(v0, v1);
                     index.Remove(v1);
                     path.RemoveAt(path.Count - 1);
                 }
@@ -396,12 +395,12 @@ namespace Google.Common.Geometry
                     var start = index[v2];
                     path = path.GetRange(start, path.Count - start);
 
-                    if (_options.getValidate() && !S2Loop.IsValidLoop(path))
+                    if (_options.Validate && !S2Loop.IsValidLoop(path))
                     {
                         // We've constructed a loop that crosses itself, which can only happen
                         // if there is bad input data. Throw away the whole loop.
-                        rejectLoop(path, path.Count, unusedEdges);
-                        eraseLoop(path, path.Count);
+                        RejectLoop(path, path.Count, unusedEdges);
+                        EraseLoop(path, path.Count);
                         return null;
                     }
                     return new S2Loop(path);
@@ -412,7 +411,7 @@ namespace Google.Common.Geometry
 
         /** Erases all edges of the given loop and marks them as unused. */
 
-        private void rejectLoop(S2Loop v, int n, List<S2Edge> unusedEdges)
+        private void RejectLoop(S2Loop v, int n, System.Collections.Generic.IList<S2Edge> unusedEdges)
         {
             for (int i = n - 1, j = 0; j < n; i = j++)
             {
@@ -422,7 +421,7 @@ namespace Google.Common.Geometry
 
         /** Erases all edges of the given loop and marks them as unused. */
 
-        private void rejectLoop(List<S2Point> v, int n, List<S2Edge> unusedEdges)
+        private void RejectLoop(System.Collections.Generic.IList<S2Point> v, int n, System.Collections.Generic.IList<S2Edge> unusedEdges)
         {
             for (int i = n - 1, j = 0; j < n; i = j++)
             {
@@ -432,7 +431,7 @@ namespace Google.Common.Geometry
 
         /** Moves a set of vertices from old to new positions. */
 
-        private void moveVertices(System.Collections.Generic.IDictionary<S2Point, S2Point> mergeMap)
+        private void MoveVertices(System.Collections.Generic.IDictionary<S2Point, S2Point> mergeMap)
         {
             if (mergeMap.Count == 0)
             {
@@ -442,7 +441,7 @@ namespace Google.Common.Geometry
             // We need to copy the set of edges affected by the move, since
             // this.edges_could be reallocated when we start modifying it.
             var edgesCopy = new List<S2Edge>();
-            foreach (var edge in edges)
+            foreach (var edge in _edges)
             {
                 var v0 = edge.Key;
                 var vset = edge.Value;
@@ -451,7 +450,7 @@ namespace Google.Common.Geometry
                     if (mergeMap.ContainsKey(v0) || mergeMap.ContainsKey(v1))
                     {
                         // We only need to modify one copy of each undirected edge.
-                        if (!_options.getUndirectedEdges() || v0 < v1)
+                        if (!_options.UndirectedEdges || v0 < v1)
                         {
                             edgesCopy.Add(new S2Edge(v0, v1));
                         }
@@ -466,7 +465,7 @@ namespace Google.Common.Geometry
             {
                 var v0 = edgesCopy[i].Start;
                 var v1 = edgesCopy[i].End;
-                eraseEdge(v0, v1);
+                EraseEdge(v0, v1);
                 if (mergeMap.ContainsKey(v0))
                 {
                     v0 = mergeMap[v0];
@@ -475,7 +474,7 @@ namespace Google.Common.Geometry
                 {
                     v1 = mergeMap[v1];
                 }
-                addEdge(v0, v1);
+                AddEdge(v0, v1);
             }
         }
 
@@ -484,7 +483,7 @@ namespace Google.Common.Geometry
    * and merge them into a single vertex.
    */
 
-        private void mergeVertices()
+        private void MergeVertices()
         {
             // The overall strategy is to start from each vertex and grow a maximal
             // cluster of mergable vertices. In graph theoretic terms, we find the
@@ -497,15 +496,15 @@ namespace Google.Common.Geometry
             // creating new vertex pairs that need to be merged. (We guarantee that all
             // vertex pairs are separated by at least merge_distance in the output.)
 
-            var index = new PointIndex(_options.getMergeDistance().Radians);
+            var index = new PointIndex(_options.MergeDistance.Radians);
 
-            foreach (var edge in edges)
+            foreach (var edge in _edges)
             {
-                index.add(edge.Key);
+                index.Add(edge.Key);
                 var vset = edge.Value;
                 foreach (var v in vset)
                 {
-                    index.add(v);
+                    index.Add(v);
                 }
             }
 
@@ -519,22 +518,22 @@ namespace Google.Common.Geometry
             foreach (var entry in index)
             {
                 var point = entry.Value;
-                if (point.isMarked())
+                if (point.IsMarked)
                 {
                     continue; // Already processed.
                 }
 
-                point.mark();
+                point.Mark();
 
                 // Grow a maximal mergeable component starting from "vstart", the
                 // canonical representative of the mergeable group.
-                var vstart = point.getPoint();
+                var vstart = point.Point;
                 frontier.Push(vstart);
                 while (frontier.Any())
                 {
                     var v0 = frontier.Pop();
 
-                    index.query(v0, mergeable);
+                    index.Query(v0, mergeable);
                     foreach (var v1 in mergeable)
                     {
                         frontier.Push(v1);
@@ -544,7 +543,7 @@ namespace Google.Common.Geometry
             }
 
             // Finally, we need to replace vertices according to the merge_map.
-            moveVertices(mergeMap);
+            MoveVertices(mergeMap);
         }
 
         /**
@@ -563,92 +562,170 @@ namespace Google.Common.Geometry
    * An S2Point that can be marked. Used in PointIndex.
    */
 
-        private class MarkedS2Point
+        private sealed class MarkedS2Point
         {
-            private readonly S2Point point;
+            private readonly S2Point _point;
             private bool _mark;
 
             public MarkedS2Point(S2Point point)
             {
-                this.point = point;
+                _point = point;
                 _mark = false;
             }
 
-            public bool isMarked()
+            public bool IsMarked
             {
-                return _mark;
+                get { return _mark; }
             }
 
-            public S2Point getPoint()
+            public S2Point Point
             {
-                return point;
+                get { return _point; }
             }
 
-            public void mark()
+            public void Mark()
             {
                 // assert (!isMarked());
                 _mark = true;
             }
         }
 
-        public class Options
+        private sealed class PointIndex : IEnumerable<System.Collections.Generic.KeyValuePair<S2CellId, MarkedS2Point>>
         {
+            // : ForwardingMultimap<S2CellId, MarkedS2Point> {
+            private readonly MultiMap<S2CellId, MarkedS2Point> _delegate = new MultiMap<S2CellId, MarkedS2Point>();
+            private readonly int _level;
+            private readonly double _searchRadius;
+
+            public PointIndex(double searchRadius)
+            {
+                _searchRadius = searchRadius;
+
+                // We choose a cell level such that if dist(A,B) <= search_radius, the
+                // S2CellId at that level containing A is a vertex neighbor of B (see
+                // S2CellId.getVertexNeighbors). This turns out to be the highest
+                // level such that a spherical cap (i.e. "disc") of the given radius
+                // fits completely inside all cells at that level.
+                _level =
+                    Math.Min(S2Projections.MIN_WIDTH.GetMaxLevel(2*searchRadius), S2CellId.MaxLevel - 1);
+            }
+
+
+            //protected Multimap<S2CellId, MarkedS2Point> _delegate() {
+            //  return _delegate;
+            //}
+
+            /** Add a point to the index if it does not already exist. */
+
+            public IEnumerator<System.Collections.Generic.KeyValuePair<S2CellId, MarkedS2Point>> GetEnumerator()
+            {
+                return _delegate.GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+
+            public void Add(S2Point p)
+            {
+                var id = S2CellId.FromPoint(p).ParentForLevel(_level);
+                var pointSet = _delegate[id];
+                foreach (var point in pointSet)
+                {
+                    if (point.Point.Equals(p))
+                    {
+                        return;
+                    }
+                }
+                _delegate.Add(id, new MarkedS2Point(p));
+            }
+
             /**
+     * Return the set the unmarked points whose distance to "center" is less
+     * than search_radius_, and mark these points. By construction, these points
+     * will be contained by one of the vertex neighbors of "center".
+     */
+
+            public void Query(S2Point center, System.Collections.Generic.ICollection<S2Point> output)
+            {
+                output.Clear();
+
+                var neighbors = new List<S2CellId>();
+                S2CellId.FromPoint(center).GetVertexNeighbors(_level, neighbors);
+                foreach (var id in neighbors)
+                {
+                    // Iterate over the points contained by each vertex neighbor.
+                    foreach (var mp in _delegate[id])
+                    {
+                        if (mp.IsMarked)
+                        {
+                            continue;
+                        }
+                        var p = mp.Point;
+
+                        if (center.Angle(p) <= _searchRadius)
+                        {
+                            output.Add(p);
+                            mp.Mark();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public sealed class S2PolygonBuilderOptions
+    {
+        /**
      * These are the options that should be used for assembling well-behaved
      * input data into polygons. All edges should be directed such that "shells"
      * and "holes" have opposite orientations (typically CCW shells and
      * clockwise holes), unless it is known that shells and holes do not share
      * any edges.
      */
-            public static readonly Options DIRECTED_XOR = new Options(false, true);
+        public static readonly S2PolygonBuilderOptions DirectedXor = new S2PolygonBuilderOptions(false, true);
 
-            /**
+        /**
      * These are the options that should be used for assembling polygons that do
      * not follow the conventions above, e.g. where edge directions may vary
      * within a single loop, or shells and holes are not oppositely oriented.
      */
-            public static readonly Options UNDIRECTED_XOR = new Options(true, true);
+        public static readonly S2PolygonBuilderOptions UndirectedXor = new S2PolygonBuilderOptions(true, true);
 
-            /**
+        /**
      * These are the options that should be used for assembling edges where the
      * desired output is a collection of loops rather than a polygon, and edges
      * may occur more than once. Edges are treated as undirected and are not
      * XORed together, in particular, adding edge A->B also adds B->A.
      */
-            public static readonly Options UNDIRECTED_UNION = new Options(true, false);
+        public static readonly S2PolygonBuilderOptions UndirectedUnion = new S2PolygonBuilderOptions(true, false);
 
-            /**
+        /**
      * Finally, select this option when the desired output is a collection of
      * loops rather than a polygon, but your input edges are directed and you do
      * not want reverse edges to be added implicitly as above.
      */
-            public static readonly Options DIRECTED_UNION = new Options(false, false);
-            private S1Angle mergeDistance;
+        public static readonly S2PolygonBuilderOptions DirectedUnion = new S2PolygonBuilderOptions(false, false);
+        private S1Angle _mergeDistance;
 
-            private bool undirectedEdges;
-            private bool validate;
-            private bool xorEdges;
+        private S2PolygonBuilderOptions(bool undirectedEdges, bool xorEdges)
+        {
+            UndirectedEdges = undirectedEdges;
+            XorEdges = xorEdges;
+            Validate = false;
+            _mergeDistance = S1Angle.FromRadians(0);
+        }
 
-            private Options(bool undirectedEdges, bool xorEdges)
-            {
-                this.undirectedEdges = undirectedEdges;
-                this.xorEdges = xorEdges;
-                validate = false;
-                mergeDistance = S1Angle.FromRadians(0);
-            }
-
-            /**
+        /**
      * If "undirected_edges" is false, then the input is assumed to consist of
      * edges that can be assembled into oriented loops without reversing any of
      * the edges. Otherwise, "undirected_edges" should be set to true.
      */
 
-            public bool getUndirectedEdges()
-            {
-                return undirectedEdges;
-            }
+        internal bool UndirectedEdges { get; set; }
 
-            /**
+        /**
      * If "xor_edges" is true, then any duplicate edge pairs are removed. This
      * is useful for computing the union of a collection of polygons whose
      * interiors are disjoint but whose boundaries may share some common edges
@@ -670,30 +747,10 @@ namespace Google.Common.Geometry
      * assembling loops for Kansas City, KS and Kansas City, MO simultaneously).
      */
 
-            public bool getXorEdges()
-            {
-                return xorEdges;
-            }
+        public bool XorEdges { get; internal set; }
 
-            /**
-     * Default value: false
-     */
 
-            public bool getValidate()
-            {
-                return validate;
-            }
-
-            /**
-     * Default value: 0
-     */
-
-            public S1Angle getMergeDistance()
-            {
-                return mergeDistance;
-            }
-
-            /**
+        /**
      * If true, isValid() is called on all loops and polygons before
      * constructing them. If any loop is invalid (e.g. self-intersecting), it is
      * rejected and returned as a set of "unused edges". Any remaining valid
@@ -701,12 +758,9 @@ namespace Google.Common.Geometry
      * intersect), then all loops are rejected and returned as unused edges.
      */
 
-            public void setValidate(bool validate)
-            {
-                this.validate = validate;
-            }
+        public bool Validate { get; set; }
 
-            /**
+        /**
      * If set to a positive value, all vertices that are separated by at most
      * this distance will be merged together. In addition, vertices that are
      * closer than this distance to a non-incident edge will be spliced into it
@@ -719,106 +773,10 @@ namespace Google.Common.Geometry
      * vertices and/or edges may not be perfectly aligned.
      */
 
-            public void setMergeDistance(S1Angle mergeDistance)
-            {
-                this.mergeDistance = mergeDistance;
-            }
-
-            // Used for testing only
-            internal void setUndirectedEdges(bool undirectedEdges)
-            {
-                this.undirectedEdges = undirectedEdges;
-            }
-
-            // Used for testing only
-            internal void setXorEdges(bool xorEdges)
-            {
-                this.xorEdges = xorEdges;
-            }
-        }
-
-        private class PointIndex : IEnumerable<System.Collections.Generic.KeyValuePair<S2CellId, MarkedS2Point>>
+        public S1Angle MergeDistance
         {
-            // : ForwardingMultimap<S2CellId, MarkedS2Point> {
-            private readonly MultiMap<S2CellId, MarkedS2Point> _delegate = new MultiMap<S2CellId, MarkedS2Point>();
-            private readonly int level;
-            private readonly double searchRadius;
-
-            public PointIndex(double searchRadius)
-            {
-                this.searchRadius = searchRadius;
-
-                // We choose a cell level such that if dist(A,B) <= search_radius, the
-                // S2CellId at that level containing A is a vertex neighbor of B (see
-                // S2CellId.getVertexNeighbors). This turns out to be the highest
-                // level such that a spherical cap (i.e. "disc") of the given radius
-                // fits completely inside all cells at that level.
-                level =
-                    Math.Min(S2Projections.MIN_WIDTH.GetMaxLevel(2*searchRadius), S2CellId.MaxLevel - 1);
-            }
-
-
-            //protected Multimap<S2CellId, MarkedS2Point> _delegate() {
-            //  return _delegate;
-            //}
-
-            /** Add a point to the index if it does not already exist. */
-
-            public IEnumerator<System.Collections.Generic.KeyValuePair<S2CellId, MarkedS2Point>> GetEnumerator()
-            {
-                return _delegate.GetEnumerator();
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
-
-            public void add(S2Point p)
-            {
-                var id = S2CellId.FromPoint(p).ParentForLevel(level);
-                var pointSet = _delegate[id];
-                foreach (var point in pointSet)
-                {
-                    if (point.getPoint().Equals(p))
-                    {
-                        return;
-                    }
-                }
-                _delegate.Add(id, new MarkedS2Point(p));
-            }
-
-            /**
-     * Return the set the unmarked points whose distance to "center" is less
-     * than search_radius_, and mark these points. By construction, these points
-     * will be contained by one of the vertex neighbors of "center".
-     */
-
-            public void query(S2Point center, List<S2Point> output)
-            {
-                output.Clear();
-
-                var neighbors = new List<S2CellId>();
-                S2CellId.FromPoint(center).GetVertexNeighbors(level, neighbors);
-                foreach (var id in neighbors)
-                {
-                    // Iterate over the points contained by each vertex neighbor.
-                    foreach (var mp in _delegate[id])
-                    {
-                        if (mp.isMarked())
-                        {
-                            continue;
-                        }
-                        var p = mp.getPoint();
-
-                        if (center.Angle(p) <= searchRadius)
-                        {
-                            output.Add(p);
-                            mp.mark();
-                        }
-                    }
-                }
-            }
+            set { _mergeDistance = value; }
+            get { return _mergeDistance; }
         }
     }
 }

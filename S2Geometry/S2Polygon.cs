@@ -730,7 +730,7 @@ namespace Google.Common.Geometry
                     intersections.Sort();
                     for (int size = intersections.Count, i = 1; i < size; i += 2)
                     {
-                        builder.addEdge(intersections[i - 1].Point, intersections[i].Point);
+                        builder.AddEdge(intersections[i - 1].Point, intersections[i].Point);
                     }
                 }
             }
@@ -774,12 +774,12 @@ namespace Google.Common.Geometry
             // plus the boundary of B clipped to the interior of A,
             // plus one copy of any directed edges that are in both boundaries.
 
-            var options = S2PolygonBuilder.Options.DIRECTED_XOR;
-            options.setMergeDistance(vertexMergeRadius);
+            var options = S2PolygonBuilderOptions.DirectedXor;
+            options.MergeDistance = vertexMergeRadius;
             var builder = new S2PolygonBuilder(options);
             ClipBoundary(a, false, b, false, false, true, builder);
             ClipBoundary(b, false, a, false, false, false, builder);
-            if (!builder.assemblePolygon(this, null))
+            if (!builder.AssemblePolygon(this, null))
             {
                 // TODO (andriy): do something more meaningful here.
                 Debug.WriteLine("Bad directed edges");
@@ -799,12 +799,12 @@ namespace Google.Common.Geometry
             // plus the boundary of B clipped to the exterior of A,
             // plus one copy of any directed edges that are in both boundaries.
 
-            var options = S2PolygonBuilder.Options.DIRECTED_XOR;
-            options.setMergeDistance(vertexMergeRadius);
+            var options = S2PolygonBuilderOptions.DirectedXor;
+            options.MergeDistance = vertexMergeRadius;
             var builder = new S2PolygonBuilder(options);
             ClipBoundary(a, false, b, false, true, true, builder);
             ClipBoundary(b, false, a, false, true, false, builder);
-            if (!builder.assemblePolygon(this, null))
+            if (!builder.AssemblePolygon(this, null))
             {
                 // TODO(andriy): do something more meaningful here.
                 Debug.WriteLine("Bad directed edges");

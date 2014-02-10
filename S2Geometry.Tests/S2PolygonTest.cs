@@ -145,13 +145,13 @@ namespace S2Geometry.Tests
             }
             else
             {
-                var builder = new S2PolygonBuilder(S2PolygonBuilder.Options.UNDIRECTED_XOR);
+                var builder = new S2PolygonBuilder(S2PolygonBuilderOptions.UndirectedXor);
                 var a2 = new S2Polygon();
                 var b2 = new S2Polygon();
-                builder.addPolygon(a);
-                assertTrue(builder.assemblePolygon(a2, null));
-                builder.addPolygon(b);
-                assertTrue(builder.assemblePolygon(b2, null));
+                builder.AddPolygon(a);
+                assertTrue(builder.AssemblePolygon(a2, null));
+                builder.AddPolygon(b);
+                assertTrue(builder.AssemblePolygon(b2, null));
                 assertTrue(a2.BoundaryApproxEquals(b2, MAX_ERROR));
             }
         }
@@ -204,11 +204,11 @@ namespace S2Geometry.Tests
         [Test]
         public void testDisjoint()
         {
-            var builder = new S2PolygonBuilder(S2PolygonBuilder.Options.UNDIRECTED_XOR);
-            builder.addPolygon(adj0);
-            builder.addPolygon(unAdj);
+            var builder = new S2PolygonBuilder(S2PolygonBuilderOptions.UndirectedXor);
+            builder.AddPolygon(adj0);
+            builder.AddPolygon(unAdj);
             var ab = new S2Polygon();
-            assertTrue(builder.assemblePolygon(ab, null));
+            assertTrue(builder.AssemblePolygon(ab, null));
 
             var union = new S2Polygon();
             union.InitToUnion(adj0, unAdj);
