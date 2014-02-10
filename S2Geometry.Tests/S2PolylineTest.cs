@@ -105,7 +105,7 @@ namespace S2Geometry.Tests
                 // Close the circle.
                 vertices.Add(vertices[0]);
                 var line = new S2Polyline(vertices);
-                var length = line.getArclengthAngle();
+                var length = line.ArcLengthAngle;
                 assertTrue(Math.Abs(length.Radians - 2*S2.Pi) < 2e-14);
             }
         }
@@ -120,14 +120,14 @@ namespace S2Geometry.Tests
             vertices.Add(new S2Point(0, 0, 1));
             var line = new S2Polyline(vertices);
 
-            assertEquals(line.interpolate(-0.1), vertices[0]);
+            assertEquals(line.Interpolate(-0.1), vertices[0]);
             assertTrue(S2.ApproxEquals(
-                line.interpolate(0.1), S2Point.Normalize(new S2Point(1, Math.Tan(0.2*S2.Pi/2), 0))));
-            assertTrue(S2.ApproxEquals(line.interpolate(0.25), S2Point.Normalize(new S2Point(1, 1, 0))));
+                line.Interpolate(0.1), S2Point.Normalize(new S2Point(1, Math.Tan(0.2*S2.Pi/2), 0))));
+            assertTrue(S2.ApproxEquals(line.Interpolate(0.25), S2Point.Normalize(new S2Point(1, 1, 0))));
 
-            assertEquals(line.interpolate(0.5), vertices[1]);
-            assertEquals(line.interpolate(0.75), vertices[2]);
-            assertEquals(line.interpolate(1.1), vertices[3]);
+            assertEquals(line.Interpolate(0.5), vertices[1]);
+            assertEquals(line.Interpolate(0.75), vertices[2]);
+            assertEquals(line.Interpolate(1.1), vertices[3]);
         }
 
         [Test]
@@ -158,33 +158,33 @@ namespace S2Geometry.Tests
             S2Point testPoint = default(S2Point);
 
             testPoint = S2LatLng.FromDegrees(0.5, -0.5).ToPoint();
-            edgeIndex = line.getNearestEdgeIndex(testPoint);
+            edgeIndex = line.GetNearestEdgeIndex(testPoint);
             assertTrue(S2.ApproxEquals(
-                line.projectToEdge(testPoint, edgeIndex), S2LatLng.FromDegrees(0, 0).ToPoint()));
+                line.ProjectToEdge(testPoint, edgeIndex), S2LatLng.FromDegrees(0, 0).ToPoint()));
             assertEquals(0, edgeIndex);
 
             testPoint = S2LatLng.FromDegrees(0.5, 0.5).ToPoint();
-            edgeIndex = line.getNearestEdgeIndex(testPoint);
+            edgeIndex = line.GetNearestEdgeIndex(testPoint);
             assertTrue(S2.ApproxEquals(
-                line.projectToEdge(testPoint, edgeIndex), S2LatLng.FromDegrees(0, 0.5).ToPoint()));
+                line.ProjectToEdge(testPoint, edgeIndex), S2LatLng.FromDegrees(0, 0.5).ToPoint()));
             assertEquals(0, edgeIndex);
 
             testPoint = S2LatLng.FromDegrees(0.5, 1).ToPoint();
-            edgeIndex = line.getNearestEdgeIndex(testPoint);
+            edgeIndex = line.GetNearestEdgeIndex(testPoint);
             assertTrue(S2.ApproxEquals(
-                line.projectToEdge(testPoint, edgeIndex), S2LatLng.FromDegrees(0, 1).ToPoint()));
+                line.ProjectToEdge(testPoint, edgeIndex), S2LatLng.FromDegrees(0, 1).ToPoint()));
             assertEquals(0, edgeIndex);
 
             testPoint = S2LatLng.FromDegrees(-0.5, 2.5).ToPoint();
-            edgeIndex = line.getNearestEdgeIndex(testPoint);
+            edgeIndex = line.GetNearestEdgeIndex(testPoint);
             assertTrue(S2.ApproxEquals(
-                line.projectToEdge(testPoint, edgeIndex), S2LatLng.FromDegrees(0, 2).ToPoint()));
+                line.ProjectToEdge(testPoint, edgeIndex), S2LatLng.FromDegrees(0, 2).ToPoint()));
             assertEquals(1, edgeIndex);
 
             testPoint = S2LatLng.FromDegrees(2, 2).ToPoint();
-            edgeIndex = line.getNearestEdgeIndex(testPoint);
+            edgeIndex = line.GetNearestEdgeIndex(testPoint);
             assertTrue(S2.ApproxEquals(
-                line.projectToEdge(testPoint, edgeIndex), S2LatLng.FromDegrees(1, 2).ToPoint()));
+                line.ProjectToEdge(testPoint, edgeIndex), S2LatLng.FromDegrees(1, 2).ToPoint()));
             assertEquals(2, edgeIndex);
         }
 

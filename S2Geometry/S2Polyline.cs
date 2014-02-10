@@ -18,10 +18,10 @@ namespace Google.Common.Geometry
  *
  */
 
-    public class S2Polyline : IS2Region, IEquatable<S2Polyline>
+    public struct S2Polyline : IS2Region, IEquatable<S2Polyline>
     {
         private readonly int _numVertices;
-        private readonly S2Point[] vertices;
+        private readonly S2Point[] _vertices;
 
         /**
    * Create a polyline that connects the given vertices. Empty polylines are
@@ -29,11 +29,11 @@ namespace Google.Common.Geometry
    * vertices should be unit length.
    */
 
-        public S2Polyline(List<S2Point> vertices)
+        public S2Polyline(IEnumerable<S2Point> vertices)
         {
             // assert isValid(vertices);
-            _numVertices = vertices.Count;
-            this.vertices = vertices.ToArray();
+            _vertices = vertices.ToArray();
+            _numVertices = _vertices.Length;
         }
 
         /**
@@ -44,23 +44,38 @@ namespace Google.Common.Geometry
 
         public S2Polyline(S2Polyline src)
         {
-            _numVertices = src.numVertices();
-            vertices = (S2Point[])src.vertices.Clone();
+            _numVertices = src.NumVertices;
+            _vertices = (S2Point[])src._vertices.Clone();
+        }
+
+        public int NumVertices
+        {
+            get { return _numVertices; }
+        }
+
+        public S1Angle ArcLengthAngle
+        {
+            get
+            {
+                double lengthSum = 0;
+                for (var i = 1; i < NumVertices; ++i)
+                {
+                    lengthSum += Vertex(i - 1).Angle(Vertex(i));
+                }
+                return S1Angle.FromRadians(lengthSum);
+            }
         }
 
         public bool Equals(S2Polyline other)
         {
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
-
             if (_numVertices != other._numVertices)
             {
                 return false;
             }
 
-            for (var i = 0; i < vertices.Length; i++)
+            for (var i = 0; i < _vertices.Length; i++)
             {
-                if (!vertices[i].Equals(other.vertices[i]))
+                if (!_vertices[i].Equals(other._vertices[i]))
                 {
                     return false;
                 }
@@ -81,9 +96,9 @@ namespace Google.Common.Geometry
             get
             {
                 var bounder = new RectBounder();
-                for (var i = 0; i < numVertices(); ++i)
+                for (var i = 0; i < NumVertices; ++i)
                 {
-                    bounder.AddPoint(vertex(i));
+                    bounder.AddPoint(Vertex(i));
                 }
                 return bounder.Bound;
             }
@@ -109,7 +124,7 @@ namespace Google.Common.Geometry
 
         public bool MayIntersect(S2Cell cell)
         {
-            if (numVertices() == 0)
+            if (NumVertices == 0)
             {
                 return false;
             }
@@ -117,9 +132,9 @@ namespace Google.Common.Geometry
             // We only need to check whether the cell contains vertex 0 for correctness,
             // but these tests are cheap compared to edge crossings so we might as well
             // check all the vertices.
-            for (var i = 0; i < numVertices(); ++i)
+            for (var i = 0; i < NumVertices; ++i)
             {
-                if (cell.Contains(vertex(i)))
+                if (cell.Contains(Vertex(i)))
                 {
                     return true;
                 }
@@ -132,10 +147,10 @@ namespace Google.Common.Geometry
             for (var j = 0; j < 4; ++j)
             {
                 var crosser =
-                    new EdgeCrosser(cellVertices[j], cellVertices[(j + 1) & 3], vertex(0));
-                for (var i = 1; i < numVertices(); ++i)
+                    new EdgeCrosser(cellVertices[j], cellVertices[(j + 1) & 3], Vertex(0));
+                for (var i = 1; i < NumVertices; ++i)
                 {
-                    if (crosser.RobustCrossing(vertex(i)) >= 0)
+                    if (crosser.RobustCrossing(Vertex(i)) >= 0)
                     {
                         // There is a proper crossing, or two vertices were the same.
                         return true;
@@ -148,7 +163,6 @@ namespace Google.Common.Geometry
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != GetType()) return false;
             return Equals((S2Polyline)obj);
         }
@@ -160,7 +174,7 @@ namespace Google.Common.Geometry
                 unchecked
                 {
                     var code = (_numVertices*397);
-                    foreach (var v in vertices)
+                    foreach (var v in _vertices)
                     {
                         code ^= v.GetHashCode();
                     }
@@ -184,7 +198,7 @@ namespace Google.Common.Geometry
    * Return true if the given vertices form a valid polyline.
    */
 
-        public bool isValid(List<S2Point> vertices)
+        public bool IsValidPolyline(IReadOnlyList<S2Point> vertices)
         {
             // All vertices must be unit length.
             var n = vertices.Count;
@@ -211,31 +225,16 @@ namespace Google.Common.Geometry
             return true;
         }
 
-        public int numVertices()
-        {
-            return _numVertices;
-        }
-
-        public S2Point vertex(int k)
+        public S2Point Vertex(int k)
         {
             // assert (k >= 0 && k < numVertices);
-            return vertices[k];
+            return _vertices[k];
         }
 
         /**
    * Return the angle corresponding to the total arclength of the polyline on a
    * unit sphere.
    */
-
-        public S1Angle getArclengthAngle()
-        {
-            double lengthSum = 0;
-            for (var i = 1; i < numVertices(); ++i)
-            {
-                lengthSum += vertex(i - 1).Angle(vertex(i));
-            }
-            return S1Angle.FromRadians(lengthSum);
-        }
 
         /**
    * Return the point whose distance from vertex 0 along the polyline is the
@@ -244,35 +243,35 @@ namespace Google.Common.Geometry
    * this function is currently linear in the number of vertices.
    */
 
-        public S2Point interpolate(double fraction)
+        public S2Point Interpolate(double fraction)
         {
             // We intentionally let the (fraction >= 1) case fall through, since
             // we need to handle it in the loop below in any case because of
             // possible roundoff errors.
             if (fraction <= 0)
             {
-                return vertex(0);
+                return Vertex(0);
             }
 
             double lengthSum = 0;
-            for (var i = 1; i < numVertices(); ++i)
+            for (var i = 1; i < NumVertices; ++i)
             {
-                lengthSum += vertex(i - 1).Angle(vertex(i));
+                lengthSum += Vertex(i - 1).Angle(Vertex(i));
             }
             var target = fraction*lengthSum;
-            for (var i = 1; i < numVertices(); ++i)
+            for (var i = 1; i < NumVertices; ++i)
             {
-                var length = vertex(i - 1).Angle(vertex(i));
+                var length = Vertex(i - 1).Angle(Vertex(i));
                 if (target < length)
                 {
                     // This code interpolates with respect to arc length rather than
                     // straight-line distance, and produces a unit-length result.
                     var f = Math.Sin(target)/Math.Sin(length);
-                    return (vertex(i - 1) * (Math.Cos(target) - f*Math.Cos(length))) + (vertex(i)* f);
+                    return (Vertex(i - 1)*(Math.Cos(target) - f*Math.Cos(length))) + (Vertex(i)*f);
                 }
                 target -= length;
             }
-            return vertex(numVertices() - 1);
+            return Vertex(NumVertices - 1);
         }
 
         // S2Region interface (see {@code S2Region} for details):
@@ -285,11 +284,11 @@ namespace Google.Common.Geometry
    * least one vertex. Throws IllegalStateException if this is not the case.
    */
 
-        public int getNearestEdgeIndex(S2Point point)
+        public int GetNearestEdgeIndex(S2Point point)
         {
-            Preconditions.CheckState(numVertices() > 0, "Empty polyline");
+            Preconditions.CheckState(NumVertices > 0, "Empty polyline");
 
-            if (numVertices() == 1)
+            if (NumVertices == 1)
             {
                 // If there is only one vertex, the "edge" is trivial, and it's the only one
                 return 0;
@@ -300,9 +299,9 @@ namespace Google.Common.Geometry
             var minIndex = -1;
 
             // Find the line segment in the polyline that is closest to the point given.
-            for (var i = 0; i < numVertices() - 1; ++i)
+            for (var i = 0; i < NumVertices - 1; ++i)
             {
-                var distanceToSegment = S2EdgeUtil.GetDistance(point, vertex(i), vertex(i + 1));
+                var distanceToSegment = S2EdgeUtil.GetDistance(point, Vertex(i), Vertex(i + 1));
                 if (distanceToSegment < minDistance)
                 {
                     minDistance = distanceToSegment;
@@ -317,16 +316,16 @@ namespace Google.Common.Geometry
    * returns the point on that edge that is closest to p.
    */
 
-        public S2Point projectToEdge(S2Point point, int index)
+        public S2Point ProjectToEdge(S2Point point, int index)
         {
-            Preconditions.CheckState(numVertices() > 0, "Empty polyline");
-            Preconditions.CheckState(numVertices() == 1 || index < numVertices() - 1, "Invalid edge index");
-            if (numVertices() == 1)
+            Preconditions.CheckState(NumVertices > 0, "Empty polyline");
+            Preconditions.CheckState(NumVertices == 1 || index < NumVertices - 1, "Invalid edge index");
+            if (NumVertices == 1)
             {
                 // If there is only one vertex, it is always closest to any given point.
-                return vertex(0);
+                return Vertex(0);
             }
-            return S2EdgeUtil.GetClosestPoint(point, vertex(index), vertex(index + 1));
+            return S2EdgeUtil.GetClosestPoint(point, Vertex(index), Vertex(index + 1));
         }
     }
 }

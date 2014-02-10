@@ -283,9 +283,9 @@ namespace S2Geometry.Tests
             // given frame.
             var line = makePolyline(str);
 
-            for (var i = 0; i < line.numVertices(); ++i)
+            for (var i = 0; i < line.NumVertices; ++i)
             {
-                var p = line.vertex(i);
+                var p = line.Vertex(i);
                 // (p[0]*x + p[1]*y + p[2]*z).Normalize()
                 var axis = S2Point.Normalize(((x * p.X) + (y * p.Y)) + (z * p.Z));
                 var cap = S2Cap.FromAxisAngle(axis, S1Angle.FromRadians(maxPerturbation));
