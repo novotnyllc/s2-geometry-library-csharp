@@ -17,6 +17,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{43196EF9-B75F-4ABB-8967-DAFD621A7D05}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
+		S2Geometry.nuspec = S2Geometry.nuspec
 	EndProjectSection
 EndProject
 Global
