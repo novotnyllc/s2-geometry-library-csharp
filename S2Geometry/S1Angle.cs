@@ -48,11 +48,11 @@ namespace Google.Common.Geometry
         {
             return _radians.Equals(other._radians);
         }
-
+        
         public override bool Equals(object obj)
         {
-            if (obj.GetType() != GetType()) return false;
-            return Equals((S1Angle)obj);
+            if (ReferenceEquals(null, obj)) return false;
+            return obj is S1Angle && Equals((S1Angle)obj);
         }
 
         public override int GetHashCode()

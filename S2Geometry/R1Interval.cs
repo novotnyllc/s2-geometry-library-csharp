@@ -64,9 +64,10 @@ namespace Google.Common.Geometry
 
         public override bool Equals(object obj)
         {
-            if (obj.GetType() != GetType()) return false;
-            return Equals((R1Interval)obj);
+            if (ReferenceEquals(null, obj)) return false;
+            return obj is R1Interval && Equals((R1Interval)obj);
         }
+
 
         public override int GetHashCode()
         {

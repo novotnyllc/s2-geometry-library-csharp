@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Google.Common.Geometry
 {
-    internal class Preconditions
+    internal static class Preconditions
     {
         public static void CheckArgument(bool expression, string message = null)
         {
