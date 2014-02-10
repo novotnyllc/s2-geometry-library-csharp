@@ -235,7 +235,7 @@ namespace S2Geometry.Tests
             var x = S2LatLng.FromDegrees(+0.1, 1).ToPoint();
             var expectedClosestPoint = S2LatLng.FromDegrees(+0.1, 0).ToPoint();
 
-            assertTrue(expectedClosestPoint.Aequal(S2EdgeUtil.GetClosestPoint(x, a, b), kMargin));
+            assertTrue(expectedClosestPoint.ApproxEquals(S2EdgeUtil.GetClosestPoint(x, a, b), kMargin));
         }
 
         [Test]

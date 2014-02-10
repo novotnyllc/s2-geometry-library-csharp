@@ -214,7 +214,7 @@ namespace Google.Common.Geometry
    * difference of margin.
    */
 
-        public bool Aequal(S2Point that, double margin)
+        public bool ApproxEquals(S2Point that, double margin)
         {
             return (Math.Abs(_x - that._x) < margin) && (Math.Abs(_y - that._y) < margin)
                    && (Math.Abs(_z - that._z) < margin);

@@ -150,7 +150,7 @@ namespace S2Geometry.Tests
 
                 // Check that the child geometry is consistent with its cell id.
                 JavaAssert.Equal(children[i].Id, childId);
-                Assert.True(children[i].Center.Aequal(childId.ToPoint(), 1e-15));
+                Assert.True(children[i].Center.ApproxEquals(childId.ToPoint(), 1e-15));
                 var direct = new S2Cell(childId);
                 JavaAssert.Equal(children[i].Face, direct.Face);
                 JavaAssert.Equal(children[i].Level, direct.Level);

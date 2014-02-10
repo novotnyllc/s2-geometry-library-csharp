@@ -492,7 +492,7 @@ namespace Google.Common.Geometry
 
         internal bool ApproxEquals(S2Cap other, double maxError)
         {
-            return (_axis.Aequal(other._axis, maxError) && Math.Abs(_height - other._height) <= maxError)
+            return (_axis.ApproxEquals(other._axis, maxError) && Math.Abs(_height - other._height) <= maxError)
                    || (IsEmpty && other._height <= maxError)
                    || (other.IsEmpty && _height <= maxError)
                    || (IsFull && other._height >= 2 - maxError)
