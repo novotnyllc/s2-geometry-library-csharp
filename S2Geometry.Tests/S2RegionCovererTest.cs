@@ -18,10 +18,10 @@ namespace S2Geometry.Tests
             for (var i = 0; i < covering.Count; ++i)
             {
                 var level = covering[i].Level;
-                assertTrue(level >= coverer.minLevel());
-                assertTrue(level <= coverer.maxLevel());
-                assertEquals((level - coverer.minLevel())%coverer.levelMod(), 0);
-                var key = covering[i].ParentForLevel(coverer.minLevel());
+                assertTrue(level >= coverer.MinLevel);
+                assertTrue(level <= coverer.MaxLevel);
+                assertEquals((level - coverer.MinLevel)%coverer.LevelMod, 0);
+                var key = covering[i].ParentForLevel(coverer.MinLevel);
                 if (!minLevelCells.ContainsKey(key))
                 {
                     minLevelCells.Add(key, 1);
@@ -31,7 +31,7 @@ namespace S2Geometry.Tests
                     minLevelCells[key] = minLevelCells[key] + 1;
                 }
             }
-            if (covering.Count > coverer.maxCells())
+            if (covering.Count > coverer.MaxCells)
             {
                 // If the covering has more than the requested number of cells, then check
                 // that the cell count cannot be reduced by using the parent of some cell.
@@ -67,27 +67,27 @@ namespace S2Geometry.Tests
             {
                 do
                 {
-                    coverer.setMinLevel(random(kMaxLevel + 1));
-                    coverer.setMaxLevel(random(kMaxLevel + 1));
-                } while (coverer.minLevel() > coverer.maxLevel());
-                coverer.setMaxCells(skewed(10));
-                coverer.setLevelMod(1 + random(3));
+                    coverer.MinLevel = random(kMaxLevel + 1);
+                    coverer.MaxLevel = random(kMaxLevel + 1);
+                } while (coverer.MinLevel > coverer.MaxLevel);
+                coverer.MaxCells = skewed(10);
+                coverer.LevelMod = 1 + random(3);
                 var maxArea = Math.Min(
-                    4*S2.Pi, (3*coverer.maxCells() + 1)*S2Cell.AverageArea(coverer.minLevel()));
+                    4*S2.Pi, (3*coverer.MaxCells + 1)*S2Cell.AverageArea(coverer.MinLevel));
                 var cap = getRandomCap(0.1*S2Cell.AverageArea(kMaxLevel), maxArea);
                 var covering = new List<S2CellId>();
                 var interior = new List<S2CellId>();
 
-                coverer.getCovering(cap, covering);
+                coverer.GetCovering(cap, covering);
                 checkCovering(coverer, cap, covering, false);
 
-                coverer.getInteriorCovering(cap, interior);
+                coverer.GetInteriorCovering(cap, interior);
                 checkCovering(coverer, cap, interior, true);
 
 
                 // Check that GetCovering is deterministic.
                 var covering2 = new List<S2CellId>();
-                coverer.getCovering(cap, covering2);
+                coverer.GetCovering(cap, covering2);
                 assertTrue(covering.SequenceEqual(covering2));
 
                 // Also check S2CellUnion.denormalize(). The denormalized covering
@@ -97,7 +97,7 @@ namespace S2Geometry.Tests
                 var cells = new S2CellUnion();
                 cells.InitFromCellIds(covering);
                 var denormalized = new List<S2CellId>();
-                cells.Denormalize(coverer.minLevel(), coverer.levelMod(), denormalized);
+                cells.Denormalize(coverer.MinLevel, coverer.LevelMod, denormalized);
                 checkCovering(coverer, cap, denormalized, false);
             }
         }
@@ -108,14 +108,14 @@ namespace S2Geometry.Tests
             Console.WriteLine("TestRandomCells");
 
             var coverer = new S2RegionCoverer();
-            coverer.setMaxCells(1);
+            coverer.MaxCells = 1;
 
             // Test random cell ids at all levels.
             for (var i = 0; i < 10000; ++i)
             {
                 var id = getRandomCellId();
                 var covering = new S2CellUnion();
-                coverer.getCovering(new S2Cell(id), covering.CellIds);
+                coverer.GetCovering(new S2Cell(id), covering.CellIds);
                 assertEquals(covering.Count, 1);
                 assertEquals(covering.CellId(0), id);
             }
@@ -128,16 +128,16 @@ namespace S2Geometry.Tests
 
             var kMaxLevel = S2CellId.MaxLevel;
             var coverer = new S2RegionCoverer();
-            coverer.setMaxCells(int.MaxValue);
+            coverer.MaxCells = int.MaxValue;
             for (var i = 0; i < 1000; ++i)
             {
                 var level = random(kMaxLevel + 1);
-                coverer.setMinLevel(level);
-                coverer.setMaxLevel(level);
+                coverer.MinLevel = level;
+                coverer.MaxLevel = level;
                 var maxArea = Math.Min(4*S2.Pi, 1000*S2Cell.AverageArea(level));
                 var cap = getRandomCap(0.1*S2Cell.AverageArea(kMaxLevel), maxArea);
                 var covering = new List<S2CellId>();
-                S2RegionCoverer.getSimpleCovering(cap, cap.Axis, level, covering);
+                S2RegionCoverer.GetSimpleCovering(cap, cap.Axis, level, covering);
                 checkCovering(coverer, cap, covering, false);
             }
         }
