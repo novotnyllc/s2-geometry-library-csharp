@@ -14,7 +14,7 @@
           This version targets .NET 4.5, Windows Store apps, Windows Phone 8, Xamarin.iOS and Xamarin.Android</description>
         <summary />
         <releaseNotes />
-        <tags>Google S2 Geo GeoSpatial geometry Hilbert portable pcl WinJS wp wp8</tags>
+        <tags>Google S2 Geo GeoSpatial geometry Hilbert portable pcl wp wp8</tags>
       <dependencies>
         <dependency id="C5" version="2.2.5073.27396 " />
       </dependencies>
