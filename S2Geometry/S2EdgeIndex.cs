@@ -54,7 +54,7 @@ namespace Google.Common.Geometry
 
         public void reset()
         {
-            minimumS2LevelUsed = S2CellId.MAX_LEVEL;
+            minimumS2LevelUsed = S2CellId.MaxLevel;
             indexComputed = false;
             queryCount = 0;
             cells = null;
@@ -111,7 +111,7 @@ namespace Google.Common.Geometry
                 minimumS2LevelUsed = Math.Min(minimumS2LevelUsed, level);
                 foreach (var cellId in cover)
                 {
-                    cellList.Add(cellId.id());
+                    cellList.Add(cellId.Id);
                     edgeList.Add(i);
                 }
             }
@@ -266,22 +266,22 @@ namespace Google.Common.Geometry
 
         private static S2CellId containingCell(S2Point pa, S2Point pb, S2Point pc, S2Point pd)
         {
-            var a = S2CellId.fromPoint(pa);
-            var b = S2CellId.fromPoint(pb);
-            var c = S2CellId.fromPoint(pc);
-            var d = S2CellId.fromPoint(pd);
+            var a = S2CellId.FromPoint(pa);
+            var b = S2CellId.FromPoint(pb);
+            var c = S2CellId.FromPoint(pc);
+            var d = S2CellId.FromPoint(pd);
 
-            if (a.face() != b.face() || a.face() != c.face() || a.face() != d.face())
+            if (a.Face != b.Face || a.Face != c.Face || a.Face != d.Face)
             {
-                return S2CellId.sentinel();
+                return S2CellId.Sentinel;
             }
 
             while (!a.Equals(b) || !a.Equals(c) || !a.Equals(d))
             {
-                a = a.parent();
-                b = b.parent();
-                c = c.parent();
-                d = d.parent();
+                a = a.Parent;
+                b = b.Parent;
+                c = c.Parent;
+                d = d.Parent;
             }
             return a;
         }
@@ -293,18 +293,18 @@ namespace Google.Common.Geometry
 
         private static S2CellId containingCell(S2Point pa, S2Point pb)
         {
-            var a = S2CellId.fromPoint(pa);
-            var b = S2CellId.fromPoint(pb);
+            var a = S2CellId.FromPoint(pa);
+            var b = S2CellId.FromPoint(pb);
 
-            if (a.face() != b.face())
+            if (a.Face != b.Face)
             {
-                return S2CellId.sentinel();
+                return S2CellId.Sentinel;
             }
 
             while (!a.Equals(b))
             {
-                a = a.parent();
-                b = b.parent();
+                a = a.Parent;
+                b = b.Parent;
             }
             return a;
         }
@@ -341,13 +341,13 @@ namespace Google.Common.Geometry
             }
             else
             {
-                if (idealLevel == S2CellId.MAX_LEVEL)
+                if (idealLevel == S2CellId.MaxLevel)
                 {
                     // If the edge is tiny, instabilities are more likely, so we
                     // want to limit the number of operations.
                     // We pretend we are in a cell much larger so as to trigger the
                     // 'needs covering' case, so we won't try to thicken the edge.
-                    containingCellId = (new S2CellId(0xFFF0)).parent(3);
+                    containingCellId = (new S2CellId(0xFFF0)).ParentForLevel(3);
                 }
                 else
                 {
@@ -365,11 +365,11 @@ namespace Google.Common.Geometry
             }
 
             // Best case: edge is fully contained in a cell that's not too big.
-            if (!containingCellId.Equals(S2CellId.sentinel())
-                && containingCellId.level() >= idealLevel - 2)
+            if (!containingCellId.Equals(S2CellId.Sentinel)
+                && containingCellId.Level >= idealLevel - 2)
             {
                 edgeCovering.Add(containingCellId);
-                return containingCellId.level();
+                return containingCellId.Level;
             }
 
             if (idealLevel == 0)
@@ -378,8 +378,8 @@ namespace Google.Common.Geometry
                 // trick below doesn't work. For now, we will add the whole S2 sphere.
                 // TODO(user): Do something a tad smarter (and beware of the
                 // antipodal case).
-                for (var cellid = S2CellId.begin(0); !cellid.Equals(S2CellId.end(0));
-                     cellid = cellid.next())
+                for (var cellid = S2CellId.Begin(0); !cellid.Equals(S2CellId.End(0));
+                     cellid = cellid.Next)
                 {
                     edgeCovering.Add(cellid);
                 }
@@ -394,8 +394,8 @@ namespace Google.Common.Geometry
             // the cap by four big-enough cells around the cell vertex closest to the
             // cap center.
             var middle = S2Point.Normalize((a + b) / 2);
-            var actualLevel = Math.Min(idealLevel, S2CellId.MAX_LEVEL - 1);
-            S2CellId.fromPoint(middle).getVertexNeighbors(actualLevel, edgeCovering);
+            var actualLevel = Math.Min(idealLevel, S2CellId.MaxLevel - 1);
+            S2CellId.FromPoint(middle).GetVertexNeighbors(actualLevel, edgeCovering);
             return actualLevel;
         }
 
@@ -464,10 +464,10 @@ namespace Google.Common.Geometry
             var parentCells = new HashSet<S2CellId>();
             foreach (var coverCell in cover)
             {
-                for (var parentLevel = coverCell.level() - 1; parentLevel >= minimumS2LevelUsed;
+                for (var parentLevel = coverCell.Level - 1; parentLevel >= minimumS2LevelUsed;
                      --parentLevel)
                 {
-                    if (!parentCells.Add(coverCell.parent(parentLevel)))
+                    if (!parentCells.Add(coverCell.ParentForLevel(parentLevel)))
                     {
                         break; // cell is already in => parents are too.
                     }
@@ -477,7 +477,7 @@ namespace Google.Common.Geometry
             // Put parent cell edge references into result.
             foreach (var parentCell in parentCells)
             {
-                var bounds = getEdges(parentCell.id(), parentCell.id());
+                var bounds = getEdges(parentCell.Id, parentCell.Id);
                 for (var i = bounds[0]; i < bounds[1]; i++)
                 {
                     candidateCrossings.Add(edges[i]);
@@ -555,7 +555,7 @@ namespace Google.Common.Geometry
             {
                 var cell = cover[cover.Count - 1];
                 cover.RemoveAt(cover.Count - 1);
-                var bounds = getEdges(cell.rangeMin().id(), cell.rangeMax().id());
+                var bounds = getEdges(cell.RangeMin.Id, cell.RangeMax.Id);
                 if (bounds[1] - bounds[0] <= 16)
                 {
                     for (var i = bounds[0]; i < bounds[1]; i++)
@@ -566,7 +566,7 @@ namespace Google.Common.Geometry
                 else
                 {
                     // Add cells at this level
-                    bounds = getEdges(cell.id(), cell.id());
+                    bounds = getEdges(cell.Id, cell.Id);
                     for (var i = bounds[0]; i < bounds[1]; i++)
                     {
                         candidateCrossings.Add(edges[i]);

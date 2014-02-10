@@ -86,9 +86,9 @@ namespace S2Geometry.Tests
 
         private S2CellId advance(S2CellId id, int n)
         {
-            while (id.isValid() && --n >= 0)
+            while (id.IsValid && --n >= 0)
             {
-                id = id.next();
+                id = id.Next;
             }
             return id;
         }
@@ -100,7 +100,7 @@ namespace S2Geometry.Tests
             // any edges that are already present in the opposite direction.
 
             IDictionary<S2Point, ISet<S2Point>> edges = new Dictionary<S2Point, ISet<S2Point>>();
-            for (var id = begin; !id.Equals(end); id = id.next())
+            for (var id = begin; !id.Equals(end); id = id.Next)
             {
                 var cell = new S2Cell(id);
                 for (var k = 0; k < 4; ++k)
@@ -261,24 +261,24 @@ namespace S2Geometry.Tests
             {
                 var num = (ulong)LongRandom();
                 var begin = new S2CellId(num | 1);
-                if (!begin.isValid())
+                if (!begin.IsValid)
                 {
                     continue;
                 }
-                begin = begin.parent((int)Math.Round(rand.NextDouble()*S2CellId.MAX_LEVEL));
+                begin = begin.ParentForLevel((int)Math.Round(rand.NextDouble()*S2CellId.MaxLevel));
                 var aBegin = advance(begin, skewed(6));
                 var aEnd = advance(aBegin, skewed(6) + 1);
                 var bBegin = advance(begin, skewed(6));
                 var bEnd = advance(bBegin, skewed(6) + 1);
-                if (!aEnd.isValid() || !bEnd.isValid())
+                if (!aEnd.IsValid || !bEnd.IsValid)
                 {
                     continue;
                 }
 
                 var a = makeCellLoop(aBegin, aEnd);
                 var b = makeCellLoop(bBegin, bEnd);
-                var contained = (aBegin.lessOrEquals(bBegin) && bEnd.lessOrEquals(aEnd));
-                var intersects = (aBegin.lessThan(bEnd) && bBegin.lessThan(aEnd));
+                var contained = (aBegin <= bBegin && bEnd <= aEnd);
+                var intersects = (aBegin < bEnd && bBegin < aEnd);
                 Console.WriteLine(
                     "Checking " + a.numVertices() + " vs. " + b.numVertices() + ", contained = " + contained
                     + ", intersects = " + intersects);
@@ -430,7 +430,7 @@ namespace S2Geometry.Tests
                 var loops = new List<S2Loop>();
                 var loopVertices = new List<S2Point>();
                 ISet<S2Point> points = new HashSet<S2Point>();
-                for (var id = S2CellId.begin(level); !id.Equals(S2CellId.end(level)); id = id.next())
+                for (var id = S2CellId.Begin(level); !id.Equals(S2CellId.End(level)); id = id.Next)
                 {
                     var cell = new S2Cell(id);
                     points.Add(cell.Center);

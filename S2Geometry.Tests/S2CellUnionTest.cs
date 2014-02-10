@@ -235,16 +235,16 @@ namespace S2Geometry.Tests
             // It is easier to check these properties in s2cell_unittest, since
             // S2Cell has methods to compute the cell vertices, etc.
 
-            for (var level = -2; level <= S2CellId.MAX_LEVEL + 3; ++level)
+            for (var level = -2; level <= S2CellId.MaxLevel + 3; ++level)
             {
                 var dWidth = (2*S2Projections.MIN_WIDTH.Deriv())*Math.Pow(2, -level);
-                if (level >= S2CellId.MAX_LEVEL + 3)
+                if (level >= S2CellId.MaxLevel + 3)
                 {
                     dWidth = 0;
                 }
 
                 // Check boundary cases (exactly equal to a threshold value).
-                var expectedLevel = Math.Max(0, Math.Min(S2CellId.MAX_LEVEL, level));
+                var expectedLevel = Math.Max(0, Math.Min(S2CellId.MaxLevel, level));
                 assertEquals(S2Projections.MIN_WIDTH.GetMinLevel(dWidth), expectedLevel);
                 assertEquals(S2Projections.MIN_WIDTH.GetMaxLevel(dWidth), expectedLevel);
                 assertEquals(S2Projections.MIN_WIDTH.GetClosestLevel(dWidth), expectedLevel);

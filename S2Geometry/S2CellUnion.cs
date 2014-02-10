@@ -63,8 +63,8 @@ namespace Google.Common.Geometry
                 var centroid = new S2Point(0, 0, 0);
                 foreach (var id in this)
                 {
-                    var area = S2Cell.AverageArea(id.level());
-                    centroid = centroid + (id.toPoint() * area);
+                    var area = S2Cell.AverageArea(id.Level);
+                    centroid = centroid + (id.ToPoint() * area);
                 }
                 if (centroid.Equals(new S2Point(0, 0, 0)))
                 {
@@ -233,14 +233,14 @@ namespace Google.Common.Geometry
             output.Clear();
             foreach (var id in this)
             {
-                var level = id.level();
+                var level = id.Level;
                 var newLevel = Math.Max(minLevel, level);
                 if (levelMod > 1)
                 {
                     // Round up so that (new_level - min_level) is a multiple of level_mod.
                     // (Note that S2CellId::kMaxLevel is a multiple of 1, 2, and 3.)
-                    newLevel += (S2CellId.MAX_LEVEL - (newLevel - minLevel))%levelMod;
-                    newLevel = Math.Min(S2CellId.MAX_LEVEL, newLevel);
+                    newLevel += (S2CellId.MaxLevel - (newLevel - minLevel))%levelMod;
+                    newLevel = Math.Min(S2CellId.MaxLevel, newLevel);
                 }
                 if (newLevel == level)
                 {
@@ -248,8 +248,8 @@ namespace Google.Common.Geometry
                 }
                 else
                 {
-                    var end = id.childEnd(newLevel);
-                    for (var idInner = id.childBegin(newLevel); !idInner.Equals(end); idInner = idInner.next())
+                    var end = id.ChildEndForLevel(newLevel);
+                    for (var idInner = id.ChildBeginForLevel(newLevel); !idInner.Equals(end); idInner = idInner.Next)
                     {
                         output.Add(idInner);
                     }
@@ -292,11 +292,11 @@ namespace Google.Common.Geometry
             {
                 pos = -pos - 1;
             }
-            if (pos < _cellIds.Count && _cellIds[pos].rangeMin().lessOrEquals(id))
+            if (pos < _cellIds.Count && _cellIds[pos].RangeMin <=id)
             {
                 return true;
             }
-            return pos != 0 && _cellIds[pos - 1].rangeMax().greaterOrEquals(id);
+            return pos != 0 && _cellIds[pos - 1].RangeMax >= id;
         }
 
         /**
@@ -316,11 +316,11 @@ namespace Google.Common.Geometry
             }
 
 
-            if (pos < _cellIds.Count && _cellIds[pos].rangeMin().lessOrEquals(id.rangeMax()))
+            if (pos < _cellIds.Count && _cellIds[pos].RangeMin <= id.RangeMax)
             {
                 return true;
             }
-            return pos != 0 && _cellIds[pos - 1].rangeMax().greaterOrEquals(id.rangeMin());
+            return pos != 0 && _cellIds[pos - 1].RangeMax >= id.RangeMin;
         }
 
         public bool contains(S2CellUnion that)
@@ -384,16 +384,16 @@ namespace Google.Common.Geometry
             }
             else
             {
-                var pos = x._cellIds.BinarySearch(id.rangeMin());
+                var pos = x._cellIds.BinarySearch(id.RangeMin);
 
                 if (pos < 0)
                 {
                     pos = -pos - 1;
                 }
 
-                var idmax = id.rangeMax();
+                var idmax = id.RangeMax;
                 var size = x._cellIds.Count;
-                while (pos < size && x._cellIds[pos].lessOrEquals(idmax))
+                while (pos < size && x._cellIds[pos] <=idmax)
                 {
                     _cellIds.Add(x._cellIds[pos++]);
                 }
@@ -420,12 +420,12 @@ namespace Google.Common.Geometry
 
             while (i < x._cellIds.Count && j < y._cellIds.Count)
             {
-                var imin = x.cellId(i).rangeMin();
-                var jmin = y.cellId(j).rangeMin();
-                if (imin.greaterThan(jmin))
+                var imin = x.cellId(i).RangeMin;
+                var jmin = y.cellId(j).RangeMin;
+                if (imin > jmin)
                 {
                     // Either j->contains(*i) or the two cells are disjoint.
-                    if (x.cellId(i).lessOrEquals(y.cellId(j).rangeMax()))
+                    if (x.cellId(i) <= y.cellId(j).RangeMax)
                     {
                         _cellIds.Add(x.cellId(i++));
                     }
@@ -434,23 +434,23 @@ namespace Google.Common.Geometry
                         // Advance "j" to the first cell possibly contained by *i.
                         j = indexedBinarySearch(y._cellIds, imin, j + 1);
                         // The previous cell *(j-1) may now contain *i.
-                        if (x.cellId(i).lessOrEquals(y.cellId(j - 1).rangeMax()))
+                        if (x.cellId(i) <= y.cellId(j - 1).RangeMax)
                         {
                             --j;
                         }
                     }
                 }
-                else if (jmin.greaterThan(imin))
+                else if (jmin >= imin)
                 {
                     // Identical to the code above with "i" and "j" reversed.
-                    if (y.cellId(j).lessOrEquals(x.cellId(i).rangeMax()))
+                    if (y.cellId(j) <= x.cellId(i).RangeMax)
                     {
                         _cellIds.Add(y.cellId(j++));
                     }
                     else
                     {
                         i = indexedBinarySearch(x._cellIds, jmin, i + 1);
-                        if (y.cellId(j).lessOrEquals(x.cellId(i - 1).rangeMax()))
+                        if (y.cellId(j) <= x.cellId(i - 1).RangeMax)
                         {
                             --i;
                         }
@@ -459,7 +459,7 @@ namespace Google.Common.Geometry
                 else
                 {
                     // "i" and "j" have the same range_min(), so one contains the other.
-                    if (x.cellId(i).lessThan(y.cellId(j)))
+                    if (x.cellId(i) < y.cellId(j))
                     {
                         _cellIds.Add(x.cellId(i++));
                     }
@@ -524,23 +524,23 @@ namespace Google.Common.Geometry
         public void expand(int level)
         {
             var output = new List<S2CellId>();
-            var levelLsb = S2CellId.lowestOnBitForLevel(level);
+            var levelLsb = S2CellId.LowestOnBitForLevel(level);
             var i = size() - 1;
             do
             {
                 var id = cellId(i);
-                if (id.lowestOnBit() < levelLsb)
+                if (id.LowestOnBit < levelLsb)
                 {
-                    id = id.parent(level);
+                    id = id.ParentForLevel(level);
                     // Optimization: skip over any cells contained by this one. This is
                     // especially important when very small regions are being expanded.
-                    while (i > 0 && id.contains(cellId(i - 1)))
+                    while (i > 0 && id.Contains(cellId(i - 1)))
                     {
                         --i;
                     }
                 }
                 output.Add(id);
-                id.getAllNeighbors(level, output);
+                id.GetAllNeighbors(level, output);
             } while (--i >= 0);
             initSwap(output);
         }
@@ -561,10 +561,10 @@ namespace Google.Common.Geometry
 
         public void expand(S1Angle minRadius, int maxLevelDiff)
         {
-            var minLevel = S2CellId.MAX_LEVEL;
+            var minLevel = S2CellId.MaxLevel;
             foreach (var id in this)
             {
-                minLevel = Math.Min(minLevel, id.level());
+                minLevel = Math.Min(minLevel, id.Level);
             }
             // Find the maximum level such that all cells are at least "min_radius"
             // wide.
@@ -593,7 +593,7 @@ namespace Google.Common.Geometry
 
         public bool contains(S2Point p)
         {
-            return contains(S2CellId.fromPoint(p));
+            return contains(S2CellId.FromPoint(p));
         }
 
         /**
@@ -608,7 +608,7 @@ namespace Google.Common.Geometry
             long numLeaves = 0;
             foreach (var cellId in _cellIds)
             {
-                var invertedLevel = S2CellId.MAX_LEVEL - cellId.level();
+                var invertedLevel = S2CellId.MaxLevel - cellId.Level;
                 numLeaves += (1L << (invertedLevel << 1));
             }
             return numLeaves;
@@ -631,7 +631,7 @@ namespace Google.Common.Geometry
 
         public double averageBasedArea()
         {
-            return S2Cell.AverageArea(S2CellId.MAX_LEVEL)*leafCellsCovered();
+            return S2Cell.AverageArea(S2CellId.MaxLevel)*leafCellsCovered();
         }
 
         /**
@@ -696,13 +696,13 @@ namespace Google.Common.Geometry
                 var id = idLoop;
                 var sze = output.Count;
                 // Check whether this cell is contained by the previous cell.
-                if (output.Any() && output[sze - 1].contains(id))
+                if (output.Any() && output[sze - 1].Contains(id))
                 {
                     continue;
                 }
 
                 // Discard any previous cells contained by this cell.
-                while (output.Any() && id.contains(output[output.Count - 1]))
+                while (output.Any() && id.Contains(output[output.Count - 1]))
                 {
                     output.RemoveAt(output.Count - 1);
                 }
@@ -714,8 +714,8 @@ namespace Google.Common.Geometry
                     sze = output.Count;
                     // A necessary (but not sufficient) condition is that the XOR of the
                     // four cells must be zero. This is also very fast to test.
-                    if ((output[sze - 3].id() ^ output[sze - 2].id() ^ output[sze - 1].id())
-                        != id.id())
+                    if ((output[sze - 3].Id ^ output[sze - 2].Id ^ output[sze - 1].Id)
+                        != id.Id)
                     {
                         break;
                     }
@@ -724,12 +724,12 @@ namespace Google.Common.Geometry
                     // mask that blocks out the two bits that encode the child position of
                     // "id" with respect to its parent, then check that the other three
                     // children all agree with "mask.
-                    var mask = id.lowestOnBit() << 1;
+                    var mask = id.LowestOnBit << 1;
                     mask = ~(mask + (mask << 1));
-                    var idMasked = (id.id() & mask);
-                    if ((output[sze - 3].id() & mask) != idMasked
-                        || (output[sze - 2].id() & mask) != idMasked
-                        || (output[sze - 1].id() & mask) != idMasked || id.isFace())
+                    var idMasked = (id.Id & mask);
+                    if ((output[sze - 3].Id & mask) != idMasked
+                        || (output[sze - 2].Id & mask) != idMasked
+                        || (output[sze - 1].Id & mask) != idMasked || id.IsFace)
                     {
                         break;
                     }
@@ -738,7 +738,7 @@ namespace Google.Common.Geometry
                     output.RemoveAt(sze - 1);
                     output.RemoveAt(sze - 2);
                     output.RemoveAt(sze - 3);
-                    id = id.parent();
+                    id = id.Parent;
                 }
                 output.Add(id);
             }

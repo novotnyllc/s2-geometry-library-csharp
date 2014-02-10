@@ -17,11 +17,11 @@ namespace S2Geometry.Tests
             IDictionary<S2CellId, int> minLevelCells = new Dictionary<S2CellId, int>();
             for (var i = 0; i < covering.Count; ++i)
             {
-                var level = covering[i].level();
+                var level = covering[i].Level;
                 assertTrue(level >= coverer.minLevel());
                 assertTrue(level <= coverer.maxLevel());
                 assertEquals((level - coverer.minLevel())%coverer.levelMod(), 0);
-                var key = covering[i].parent(coverer.minLevel());
+                var key = covering[i].ParentForLevel(coverer.minLevel());
                 if (!minLevelCells.ContainsKey(key))
                 {
                     minLevelCells.Add(key, 1);
@@ -61,7 +61,7 @@ namespace S2Geometry.Tests
         {
             Console.WriteLine("TestRandomCaps");
 
-            var kMaxLevel = S2CellId.MAX_LEVEL;
+            var kMaxLevel = S2CellId.MaxLevel;
             var coverer = new S2RegionCoverer();
             for (var i = 0; i < 1000; ++i)
             {
@@ -126,7 +126,7 @@ namespace S2Geometry.Tests
         {
             Console.WriteLine("TestSimpleCoverings");
 
-            var kMaxLevel = S2CellId.MAX_LEVEL;
+            var kMaxLevel = S2CellId.MaxLevel;
             var coverer = new S2RegionCoverer();
             coverer.setMaxCells(int.MaxValue);
             for (var i = 0; i < 1000; ++i)

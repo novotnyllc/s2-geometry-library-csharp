@@ -839,14 +839,14 @@ namespace Google.Common.Geometry
             {
                 if (value <= 0)
                 {
-                    return S2CellId.MAX_LEVEL;
+                    return S2CellId.MaxLevel;
                 }
 
                 // This code is equivalent to computing a floating-point "level"
                 // value and rounding up.
                 var exponent = Exp(value/((1 << _dim)*_deriv));
                 var level = Math.Max(0,
-                                     Math.Min(S2CellId.MAX_LEVEL, -((exponent - 1) >> (_dim - 1))));
+                                     Math.Min(S2CellId.MaxLevel, -((exponent - 1) >> (_dim - 1))));
                 // assert (level == S2CellId.MAX_LEVEL || getValue(level) <= value);
                 // assert (level == 0 || getValue(level - 1) > value);
                 return level;
@@ -864,14 +864,14 @@ namespace Google.Common.Geometry
             {
                 if (value <= 0)
                 {
-                    return S2CellId.MAX_LEVEL;
+                    return S2CellId.MaxLevel;
                 }
 
                 // This code is equivalent to computing a floating-point "level"
                 // value and rounding down.
                 var exponent = Exp((1 << _dim)*_deriv/value);
                 var level = Math.Max(0,
-                                     Math.Min(S2CellId.MAX_LEVEL, ((exponent - 1) >> (_dim - 1))));
+                                     Math.Min(S2CellId.MaxLevel, ((exponent - 1) >> (_dim - 1))));
                 // assert (level == 0 || getValue(level) >= value);
                 // assert (level == S2CellId.MAX_LEVEL || getValue(level + 1) < value);
                 return level;

@@ -754,7 +754,7 @@ namespace Google.Common.Geometry
                 // level such that a spherical cap (i.e. "disc") of the given radius
                 // fits completely inside all cells at that level.
                 level =
-                    Math.Min(S2Projections.MIN_WIDTH.GetMaxLevel(2*searchRadius), S2CellId.MAX_LEVEL - 1);
+                    Math.Min(S2Projections.MIN_WIDTH.GetMaxLevel(2*searchRadius), S2CellId.MaxLevel - 1);
             }
 
 
@@ -776,7 +776,7 @@ namespace Google.Common.Geometry
 
             public void add(S2Point p)
             {
-                var id = S2CellId.fromPoint(p).parent(level);
+                var id = S2CellId.FromPoint(p).ParentForLevel(level);
                 var pointSet = _delegate[id];
                 foreach (var point in pointSet)
                 {
@@ -799,7 +799,7 @@ namespace Google.Common.Geometry
                 output.Clear();
 
                 var neighbors = new List<S2CellId>();
-                S2CellId.fromPoint(center).getVertexNeighbors(level, neighbors);
+                S2CellId.FromPoint(center).GetVertexNeighbors(level, neighbors);
                 foreach (var id in neighbors)
                 {
                     // Iterate over the points contained by each vertex neighbor.

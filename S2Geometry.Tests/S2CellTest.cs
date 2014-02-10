@@ -61,11 +61,11 @@ namespace S2Geometry.Tests
         }
 
         private static readonly List<LevelStats> levelStats = new List<LevelStats>(
-            S2CellId.MAX_LEVEL + 1);
+            S2CellId.MaxLevel + 1);
 
         static S2CellTest()
         {
-            for (var i = 0; i < S2CellId.MAX_LEVEL + 1; ++i)
+            for (var i = 0; i < S2CellId.MaxLevel + 1; ++i)
             {
                 levelStats.Add(new LevelStats());
             }
@@ -138,11 +138,11 @@ namespace S2Geometry.Tests
                 children[i] = new S2Cell();
             }
             Assert.True(cell.Subdivide(children));
-            var childId = cell.Id.childBegin();
+            var childId = cell.Id.ChildBegin;
             double exactArea = 0;
             double approxArea = 0;
             double averageArea = 0;
-            for (var i = 0; i < 4; ++i, childId = childId.next())
+            for (var i = 0; i < 4; ++i, childId = childId.Next)
             {
                 exactArea += children[i].ExactArea();
                 approxArea += children[i].ApproxArea();
@@ -150,7 +150,7 @@ namespace S2Geometry.Tests
 
                 // Check that the child geometry is consistent with its cell id.
                 JavaAssert.Equal(children[i].Id, childId);
-                Assert.True(children[i].Center.Aequal(childId.toPoint(), 1e-15));
+                Assert.True(children[i].Center.Aequal(childId.ToPoint(), 1e-15));
                 var direct = new S2Cell(childId);
                 JavaAssert.Equal(children[i].Face, direct.Face);
                 JavaAssert.Equal(children[i].Level, direct.Level);
@@ -346,8 +346,8 @@ namespace S2Geometry.Tests
 
         public void expandChildren2(S2Cell cell)
         {
-            var id = cell.Id.childBegin();
-            for (var pos = 0; pos < 4; ++pos, id = id.next())
+            var id = cell.Id.ChildBegin;
+            for (var pos = 0; pos < 4; ++pos, id = id.Next)
             {
                 var child = new S2Cell(id);
                 if (child.Level < MAX_LEVEL)
@@ -364,7 +364,7 @@ namespace S2Geometry.Tests
             IDictionary<S2Point, int> vertexCounts = new Dictionary<S2Point, int>();
             for (var face = 0; face < 6; ++face)
             {
-                var id = S2CellId.fromFacePosLevel(face, 0, 0);
+                var id = S2CellId.FromFacePosLevel(face, 0, 0);
                 var cell = new S2Cell(id);
                 JavaAssert.Equal(cell.Id, id);
                 JavaAssert.Equal(cell.Face, face);
@@ -432,7 +432,7 @@ namespace S2Geometry.Tests
                 .WriteLine("Level    Area      Edge          Diag          Approx       Average\n");
             Console
                 .WriteLine("        Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max\n");
-            for (var i = 0; i <= S2CellId.MAX_LEVEL; ++i)
+            for (var i = 0; i <= S2CellId.MaxLevel; ++i)
             {
                 var s = levelStats[i];
                 if (s.count > 0)
@@ -453,7 +453,7 @@ namespace S2Geometry.Tests
             }
 
             // Now check the validity of the S2 length and area metrics.
-            for (var i = 0; i <= S2CellId.MAX_LEVEL; ++i)
+            for (var i = 0; i <= S2CellId.MaxLevel; ++i)
             {
                 var s = levelStats[i];
                 if (s.count == 0)

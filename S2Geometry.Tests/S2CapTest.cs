@@ -95,14 +95,14 @@ namespace S2Geometry.Tests
                 // Check intersections with the bounding caps of the leaf cells that are
                 // adjacent to 'corner_cell' along the Hilbert curve. Because this corner
                 // is at (u=1,v=1), the curve stays locally within the same cube face.
-                var first = cornerCell.Id.prev().prev().prev();
-                var last = cornerCell.Id.next().next().next().next();
-                for (var id = first; id.lessThan(last); id = id.next())
+                var first = cornerCell.Id.Previous.Previous.Previous;
+                var last = cornerCell.Id.Next.Next.Next.Next;
+                for (var id = first; id <last; id = id.Next)
                 {
                     var cell = new S2Cell(id);
                     JavaAssert.Equal(cell.CapBound.Contains(cornerCell), id.Equals(cornerCell.Id));
                     JavaAssert.Equal(
-                        cell.CapBound.MayIntersect(cornerCell), id.parent().contains(cornerCell.Id));
+                        cell.CapBound.MayIntersect(cornerCell), id.Parent.Contains(cornerCell.Id));
                 }
 
                 var antiFace = (face + 3)%6; // Opposite face.

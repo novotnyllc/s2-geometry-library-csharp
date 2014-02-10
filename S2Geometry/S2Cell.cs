@@ -15,7 +15,7 @@ namespace Google.Common.Geometry
 
     public sealed class S2Cell : IS2Region, IEquatable<S2Cell>
     {
-        private const int MaxCellSize = 1 << S2CellId.MAX_LEVEL;
+        private const int MaxCellSize = 1 << S2CellId.MaxLevel;
         private const double MaxError = 1.0/(1L << 51);
 
         // The 4 cells around the equator extend to +/-45 degrees latitude at the
@@ -59,12 +59,12 @@ namespace Google.Common.Geometry
         // Convenience methods.
         public S2Cell(S2Point p)
         {
-            Init(S2CellId.fromPoint(p));
+            Init(S2CellId.FromPoint(p));
         }
 
         public S2Cell(S2LatLng ll)
         {
-            Init(S2CellId.fromLatLng(ll));
+            Init(S2CellId.FromLatLng(ll));
         }
 
         public S2CellId Id
@@ -89,7 +89,7 @@ namespace Google.Common.Geometry
 
         public bool IsLeaf
         {
-            get { return _level == S2CellId.MAX_LEVEL; }
+            get { return _level == S2CellId.MaxLevel; }
         }
 
         public S2Point Center
@@ -99,7 +99,7 @@ namespace Google.Common.Geometry
 
         public S2Point CenterRaw
         {
-            get { return _cellId.toPointRaw(); }
+            get { return _cellId.ToPointRaw(); }
         }
 
         /**
@@ -116,8 +116,8 @@ namespace Google.Common.Geometry
                 var i = 0;
                 var j = 0;
                 int? notUsed = null;
-                _cellId.toFaceIJOrientation(ref i, ref j, ref notUsed);
-                var cellSize = 1 << (S2CellId.MAX_LEVEL - _level);
+                _cellId.ToFaceIjOrientation(ref i, ref j, ref notUsed);
+                var cellSize = 1 << (S2CellId.MaxLevel - _level);
 
                 // TODO(dbeaumont): Figure out a better naming of the variables here (and elsewhere).
                 var si = (i & -cellSize)*2 + cellSize - MaxCellSize;
@@ -223,12 +223,12 @@ namespace Google.Common.Geometry
 
         public bool MayIntersect(S2Cell cell)
         {
-            return _cellId.intersects(cell._cellId);
+            return _cellId.Intersects(cell._cellId);
         }
 
         public bool Contains(S2Cell cell)
         {
-            return _cellId.contains(cell._cellId);
+            return _cellId.Contains(cell._cellId);
         }
 
         public override bool Equals(object obj)
@@ -263,7 +263,7 @@ namespace Google.Common.Geometry
 
         public static S2Cell FromFacePosLevel(int face, byte pos, int level)
         {
-            return new S2Cell(S2CellId.fromFacePosLevel(face, pos, level));
+            return new S2Cell(S2CellId.FromFacePosLevel(face, pos, level));
         }
 
 
@@ -324,7 +324,7 @@ namespace Google.Common.Geometry
             // This function is equivalent to just iterating over the child cell ids
             // and calling the S2Cell constructor, but it is about 2.5 times faster.
 
-            if (_cellId.isLeaf())
+            if (_cellId.IsLeaf)
             {
                 return false;
             }
@@ -333,8 +333,8 @@ namespace Google.Common.Geometry
             var uvMid = CenterUv;
 
             // Create four children with the appropriate bounds.
-            var id = _cellId.childBegin();
-            for (var pos = 0; pos < 4; ++pos, id = id.next())
+            var id = _cellId.ChildBegin;
+            for (var pos = 0; pos < 4; ++pos, id = id.Next)
             {
                 var child = children[pos];
                 child._face = _face;
@@ -468,10 +468,10 @@ namespace Google.Common.Geometry
                 ij[d] = 0;
             }
 
-            _face = (byte)id.toFaceIJOrientation(ref ij[0], ref ij[1], ref mOrientation);
+            _face = (byte)id.ToFaceIjOrientation(ref ij[0], ref ij[1], ref mOrientation);
             _orientation = (byte)mOrientation.Value; // Compress int to a byte.
-            _level = (byte)id.level();
-            var cellSize = 1 << (S2CellId.MAX_LEVEL - _level);
+            _level = (byte)id.Level;
+            var cellSize = 1 << (S2CellId.MaxLevel - _level);
             for (var d = 0; d < 2; ++d)
             {
                 // Compute the cell bounds in scaled (i,j) coordinates.

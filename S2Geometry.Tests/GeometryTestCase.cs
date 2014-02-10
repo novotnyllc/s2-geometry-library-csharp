@@ -77,15 +77,15 @@ namespace S2Geometry.Tests
 
         public S2CellId getRandomCellId(int level)
         {
-            var face = random(S2CellId.NUM_FACES);
+            var face = random(S2CellId.NumFaces);
 
-            var pos = (ulong)LongRandom() & ((1L << (2*S2CellId.MAX_LEVEL)) - 1);
-            return S2CellId.fromFacePosLevel(face, pos, level);
+            var pos = (ulong)LongRandom() & ((1L << (2*S2CellId.MaxLevel)) - 1);
+            return S2CellId.FromFacePosLevel(face, pos, level);
         }
 
         public S2CellId getRandomCellId()
         {
-            return getRandomCellId(random(S2CellId.MAX_LEVEL + 1));
+            return getRandomCellId(random(S2CellId.MaxLevel + 1));
         }
 
         protected int random(int n)
@@ -120,11 +120,11 @@ namespace S2Geometry.Tests
 
         protected void checkCovering(IS2Region region, S2CellUnion covering, bool checkTight, S2CellId id)
         {
-            if (!id.isValid())
+            if (!id.IsValid)
             {
                 for (var face = 0; face < 6; ++face)
                 {
-                    checkCovering(region, covering, checkTight, S2CellId.fromFacePosLevel(face, 0, 0));
+                    checkCovering(region, covering, checkTight, S2CellId.FromFacePosLevel(face, 0, 0));
                 }
                 return;
             }
@@ -143,10 +143,10 @@ namespace S2Geometry.Tests
                 // intersects id because we may discover that the region does not actually
                 // intersect upon further subdivision. (MayIntersect is not exact.)
                 Assert.True(!region.Contains(new S2Cell(id)));
-                var result = !id.isLeaf();
+                var result = !id.IsLeaf;
                 Assert.True(result);
-                var end = id.childEnd();
-                for (var child = id.childBegin(); !child.Equals(end); child = child.next())
+                var end = id.ChildEnd;
+                for (var child = id.ChildBegin; !child.Equals(end); child = child.Next)
                 {
                     checkCovering(region, covering, checkTight, child);
                 }

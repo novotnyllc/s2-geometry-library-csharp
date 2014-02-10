@@ -13,8 +13,8 @@ namespace S2Geometry.Tests
     {
         private S2CellId getCellId(double latDegrees, double lngDegrees)
         {
-            var id = S2CellId.fromLatLng(S2LatLng.fromDegrees(latDegrees, lngDegrees));
-            Trace.WriteLine(Convert.ToString(unchecked ((long)id.id()), 16));
+            var id = S2CellId.FromLatLng(S2LatLng.fromDegrees(latDegrees, lngDegrees));
+            Trace.WriteLine(Convert.ToString(unchecked ((long)id.Id), 16));
             return id;
         }
 
@@ -24,10 +24,10 @@ namespace S2Geometry.Tests
             // Check the conversion of random leaf cells to S2LatLngs and back.
             for (var i = 0; i < 200000; ++i)
             {
-                var id = getRandomCellId(S2CellId.MAX_LEVEL);
-                Assert.True(id.isLeaf() && id.level() == S2CellId.MAX_LEVEL);
-                var center = id.toLatLng();
-                JavaAssert.Equal(S2CellId.fromLatLng(center).id(), id.id());
+                var id = getRandomCellId(S2CellId.MaxLevel);
+                Assert.True(id.IsLeaf && id.Level == S2CellId.MaxLevel);
+                var center = id.ToLatLng();
+                JavaAssert.Equal(S2CellId.FromLatLng(center).Id, id.Id);
             }
         }
 
@@ -37,25 +37,25 @@ namespace S2Geometry.Tests
             S2CellId parent, List<S2CellId> cells, IDictionary<S2CellId, S2CellId> parentMap)
         {
             cells.Add(parent);
-            if (parent.level() == kMaxExpandLevel)
+            if (parent.Level == kMaxExpandLevel)
             {
                 return;
             }
             var i = 0;
             var j = 0;
             int? orientation = 0;
-            var face = parent.toFaceIJOrientation(ref i, ref j, ref orientation);
-            JavaAssert.Equal(face, parent.face());
+            var face = parent.ToFaceIjOrientation(ref i, ref j, ref orientation);
+            JavaAssert.Equal(face, parent.Face);
 
             var pos = 0;
-            for (var child = parent.childBegin(); !child.Equals(parent.childEnd());
-                 child = child.next())
+            for (var child = parent.ChildBegin; !child.Equals(parent.ChildEnd);
+                 child = child.Next)
             {
                 // Do some basic checks on the children
-                JavaAssert.Equal(child.level(), parent.level() + 1);
-                Assert.True(!child.isLeaf());
+                JavaAssert.Equal(child.Level, parent.Level + 1);
+                Assert.True(!child.IsLeaf);
                 int? childOrientation = 0;
-                JavaAssert.Equal(child.toFaceIJOrientation(ref i, ref j, ref childOrientation), face);
+                JavaAssert.Equal(child.ToFaceIjOrientation(ref i, ref j, ref childOrientation), face);
                 JavaAssert.Equal(
                     childOrientation.Value, orientation.Value ^ S2.PosToOrientation(pos));
 
@@ -69,7 +69,7 @@ namespace S2Geometry.Tests
 
         public void testAllNeighbors(S2CellId id, int level)
         {
-            Assert.True(level >= id.level() && level < S2CellId.MAX_LEVEL);
+            Assert.True(level >= id.Level && level < S2CellId.MaxLevel);
 
             // We compute GetAllNeighbors, and then add in all the children of "id"
             // at the given level. We then compare this against the result of finding
@@ -77,12 +77,12 @@ namespace S2Geometry.Tests
             // given level. These should give the same result.
             var all = new List<S2CellId>();
             var expected = new List<S2CellId>();
-            id.getAllNeighbors(level, all);
-            var end = id.childEnd(level + 1);
-            for (var c = id.childBegin(level + 1); !c.Equals(end); c = c.next())
+            id.GetAllNeighbors(level, all);
+            var end = id.ChildEndForLevel(level + 1);
+            for (var c = id.ChildBeginForLevel(level + 1); !c.Equals(end); c = c.Next)
             {
-                all.Add(c.parent());
-                c.getVertexNeighbors(level, expected);
+                all.Add(c.Parent);
+                c.GetVertexNeighbors(level, expected);
             }
             // Sort the results and eliminate duplicates.
             all.Sort();
@@ -103,7 +103,7 @@ namespace S2Geometry.Tests
             //Assert.True(!id.isValid());
 
             // Check basic accessor methods.
-            id = S2CellId.fromFacePosLevel(3, 0x12345678, S2CellId.MAX_LEVEL - 4);
+            id = S2CellId.FromFacePosLevel(3, 0x12345678, S2CellId.MaxLevel - 4);
             //Assert.True(id.isValid());
             //JavaAssert.Equal(id.face(), 3);
             // JavaAssert.Equal(id.pos(), 0x12345700);
@@ -138,16 +138,16 @@ namespace S2Geometry.Tests
             // Check wrapping from beginning of Hilbert curve to end and vice versa.
             // JavaAssert.Equal(S2CellId.begin(0).prevWrap(), S2CellId.end(0).prev());
 
-            JavaAssert.Equal(S2CellId.begin(S2CellId.MAX_LEVEL).prevWrap(),
-                             S2CellId.fromFacePosLevel(5, ~0UL >> S2CellId.FACE_BITS, S2CellId.MAX_LEVEL));
+            JavaAssert.Equal(S2CellId.Begin(S2CellId.MaxLevel).PreviousWithWrap,
+                             S2CellId.FromFacePosLevel(5, ~0UL >> S2CellId.FaceBits, S2CellId.MaxLevel));
 
-            JavaAssert.Equal(S2CellId.end(4).prev().nextWrap(), S2CellId.begin(4));
-            JavaAssert.Equal(S2CellId.end(S2CellId.MAX_LEVEL).prev().nextWrap(),
-                             S2CellId.fromFacePosLevel(0, 0, S2CellId.MAX_LEVEL));
+            JavaAssert.Equal(S2CellId.End(4).Previous.NextWithWrap, S2CellId.Begin(4));
+            JavaAssert.Equal(S2CellId.End(S2CellId.MaxLevel).Previous.NextWithWrap,
+                             S2CellId.FromFacePosLevel(0, 0, S2CellId.MaxLevel));
 
             // Check that cells are represented by the position of their center
             // along the Hilbert curve.
-            JavaAssert.Equal(id.rangeMin().id() + id.rangeMax().id(), 2*id.id());
+            JavaAssert.Equal(id.RangeMin.Id + id.RangeMax.Id, 2*id.Id);
         }
 
         [Test]
@@ -158,7 +158,7 @@ namespace S2Geometry.Tests
             var cells = new List<S2CellId>();
             for (var face = 0; face < 6; ++face)
             {
-                expandCell(S2CellId.fromFacePosLevel(face, 0, 0), cells, parentMap);
+                expandCell(S2CellId.FromFacePosLevel(face, 0, 0), cells, parentMap);
             }
             for (var i = 0; i < cells.Count; ++i)
             {
@@ -173,11 +173,11 @@ namespace S2Geometry.Tests
                             break;
                         }
                     }
-                    JavaAssert.Equal(cells[i].contains(cells[j]), contained);
-                    JavaAssert.Equal(cells[j].greaterOrEquals(cells[i].rangeMin())
-                                     && cells[j].lessOrEquals(cells[i].rangeMax()), contained);
-                    JavaAssert.Equal(cells[i].intersects(cells[j]),
-                                     cells[i].contains(cells[j]) || cells[j].contains(cells[i]));
+                    JavaAssert.Equal(cells[i].Contains(cells[j]), contained);
+                    JavaAssert.Equal(cells[j] >= cells[i].RangeMin
+                                     && cells[j] <= cells[i].RangeMax, contained);
+                    JavaAssert.Equal(cells[i].Intersects(cells[j]),
+                                     cells[i].Contains(cells[j]) || cells[j].Contains(cells[i]));
                 }
             }
         }
@@ -191,15 +191,15 @@ namespace S2Geometry.Tests
             // discontinuous jumps from one region to another.
 
             var maxDist = S2Projections.MAX_EDGE.GetValue(MAX_WALK_LEVEL);
-            var end = S2CellId.end(MAX_WALK_LEVEL);
-            var id = S2CellId.begin(MAX_WALK_LEVEL);
-            for (; !id.Equals(end); id = id.next())
+            var end = S2CellId.End(MAX_WALK_LEVEL);
+            var id = S2CellId.Begin(MAX_WALK_LEVEL);
+            for (; !id.Equals(end); id = id.Next)
             {
-                Assert.True(id.toPointRaw().Angle(id.nextWrap().toPointRaw()) <= maxDist);
+                Assert.True(id.ToPointRaw().Angle(id.NextWithWrap.ToPointRaw()) <= maxDist);
 
                 // Check that the ToPointRaw() returns the center of each cell
                 // in (s,t) coordinates.
-                var p = id.toPointRaw();
+                var p = id.ToPointRaw();
                 var face = S2Projections.xyzToFace(p);
                 var uv = S2Projections.validFaceXyzToUv(face, p);
                 assertDoubleNear(Math.IEEERemainder(
@@ -220,12 +220,12 @@ namespace S2Geometry.Tests
             // the cells at the corners of each face are stretched -- they have 60 and
             // 120 degree angles.)
 
-            var maxDist = 0.5*S2Projections.MAX_DIAG.GetValue(S2CellId.MAX_LEVEL);
+            var maxDist = 0.5*S2Projections.MAX_DIAG.GetValue(S2CellId.MaxLevel);
             for (var i = 0; i < 1000000; ++i)
             {
                 // randomPoint();
                 var p = new S2Point(0.37861576725894824, 0.2772406863275093, 0.8830558887338725);
-                var q = S2CellId.fromPoint(p).toPointRaw();
+                var q = S2CellId.FromPoint(p).ToPointRaw();
 
                 Assert.True(p.Angle(q) <= maxDist);
             }
@@ -246,34 +246,34 @@ namespace S2Geometry.Tests
 
             // Check the edge neighbors of face 1.
             int[] outFaces = {5, 3, 2, 0};
-            var faceNbrs = new S2CellId[4];
-            S2CellId.fromFacePosLevel(1, 0, 0).getEdgeNeighbors(faceNbrs);
+            
+            var faceNbrs = S2CellId.FromFacePosLevel(1, 0, 0).GetEdgeNeighbors();
             for (var i = 0; i < 4; ++i)
             {
-                Assert.True(faceNbrs[i].isFace());
-                JavaAssert.Equal(faceNbrs[i].face(), outFaces[i]);
+                Assert.True(faceNbrs[i].IsFace);
+                JavaAssert.Equal(faceNbrs[i].Face, outFaces[i]);
             }
 
             // Check the vertex neighbors of the center of face 2 at level 5.
             var nbrs = new List<S2CellId>();
-            S2CellId.fromPoint(new S2Point(0, 0, 1)).getVertexNeighbors(5, nbrs);
+            S2CellId.FromPoint(new S2Point(0, 0, 1)).GetVertexNeighbors(5, nbrs);
             nbrs.Sort();
             for (var i = 0; i < 4; ++i)
             {
-                JavaAssert.Equal(nbrs[i], S2CellId.fromFaceIJ(
-                    2, (1 << 29) - (i < 2 ? 1 : 0), (1 << 29) - ((i == 0 || i == 3) ? 1 : 0)).parent(5));
+                JavaAssert.Equal(nbrs[i], S2CellId.FromFaceIj(
+                    2, (1 << 29) - (i < 2 ? 1 : 0), (1 << 29) - ((i == 0 || i == 3) ? 1 : 0)).ParentForLevel(5));
             }
             nbrs.Clear();
 
             // Check the vertex neighbors of the corner of faces 0, 4, and 5.
-            var id = S2CellId.fromFacePosLevel(0, 0, S2CellId.MAX_LEVEL);
-            id.getVertexNeighbors(0, nbrs);
+            var id = S2CellId.FromFacePosLevel(0, 0, S2CellId.MaxLevel);
+            id.GetVertexNeighbors(0, nbrs);
             nbrs.Sort();
 
             JavaAssert.Equal(nbrs.Count, 3);
-            JavaAssert.Equal(nbrs[0], S2CellId.fromFacePosLevel(0, 0, 0));
-            JavaAssert.Equal(nbrs[1], S2CellId.fromFacePosLevel(4, 0, 0));
-            JavaAssert.Equal(nbrs[2], S2CellId.fromFacePosLevel(5, 0, 0));
+            JavaAssert.Equal(nbrs[0], S2CellId.FromFacePosLevel(0, 0, 0));
+            JavaAssert.Equal(nbrs[1], S2CellId.FromFacePosLevel(4, 0, 0));
+            JavaAssert.Equal(nbrs[2], S2CellId.FromFacePosLevel(5, 0, 0));
 
             // Check that GetAllNeighbors produces results that are consistent
             // with GetVertexNeighbors for a bunch of random cells.
@@ -281,15 +281,15 @@ namespace S2Geometry.Tests
             {
                 var id1 = getRandomCellId();
                 var toTest = id1;
-                if (id1.isLeaf())
+                if (id1.IsLeaf)
                 {
-                    toTest = id1.parent();
+                    toTest = id1.Parent;
                 }
 
                 // TestAllNeighbors computes approximately 2**(2*(diff+1)) cell id1s,
                 // so it's not reasonable to use large values of "diff".
-                var maxDiff = Math.Min(6, S2CellId.MAX_LEVEL - toTest.level() - 1);
-                var level = toTest.level() + random(maxDiff);
+                var maxDiff = Math.Min(6, S2CellId.MaxLevel - toTest.Level - 1);
+                var level = toTest.Level + random(maxDiff);
                 testAllNeighbors(toTest, level);
             }
         }
@@ -297,8 +297,8 @@ namespace S2Geometry.Tests
         [Test]
         public void testToToken()
         {
-            JavaAssert.Equal("000000000000010a", new S2CellId(266).toToken());
-            JavaAssert.Equal("80855c", new S2CellId(unchecked ((ulong)-9185834709882503168L)).toToken());
+            JavaAssert.Equal("000000000000010a", new S2CellId(266).ToToken());
+            JavaAssert.Equal("80855c", new S2CellId(unchecked ((ulong)-9185834709882503168L)).ToToken());
         }
 
         [Test]
@@ -310,17 +310,17 @@ namespace S2Geometry.Tests
             for (var i = 0; i < 10000; ++i)
             {
                 var id = getRandomCellId();
-                if (!id.isValid())
+                if (!id.IsValid)
                 {
                     continue;
                 }
-                var token = id.toToken();
+                var token = id.ToToken();
                 Assert.True(token.Length <= 16);
-                JavaAssert.Equal(S2CellId.fromToken(token), id);
+                JavaAssert.Equal(S2CellId.FromToken(token), id);
             }
             // Check that invalid cell ids can be encoded.
-            var token1 = S2CellId.none().toToken();
-            JavaAssert.Equal(S2CellId.fromToken(token1), S2CellId.none());
+            var token1 = S2CellId.None.ToToken();
+            JavaAssert.Equal(S2CellId.FromToken(token1), S2CellId.None);
         }
     }
 }

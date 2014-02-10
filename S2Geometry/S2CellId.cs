@@ -43,11 +43,11 @@ namespace Google.Common.Geometry
         // Although only 60 bits are needed to represent the index of a leaf
         // cell, we need an extra bit in order to represent the position of
         // the center of the leaf cell along the Hilbert curve.
-        public const int FACE_BITS = 3;
-        public const int NUM_FACES = 6;
-        public const int MAX_LEVEL = 30; // Valid levels: 0..MAX_LEVEL
-        public const int POS_BITS = 2*MAX_LEVEL + 1;
-        public const int MAX_SIZE = 1 << MAX_LEVEL;
+        internal const int FaceBits = 3;
+        internal const int NumFaces = 6;
+        internal const int MaxLevel = 30; // Valid levels: 0..MAX_LEVEL
+        internal const int PosBits = 2 * MaxLevel + 1;
+        internal const int MaxSize = 1 << MaxLevel;
 
         // Constant related to unsigned long's
 
@@ -73,15 +73,15 @@ namespace Google.Common.Geometry
         // supplied in the declaration, we don't need the values here. Failing to
         // define storage causes link errors for any code that tries to take the
         // address of one of these values.
-        private const int LOOKUP_BITS = 4;
-        private const int SWAP_MASK = 0x01;
-        private const int INVERT_MASK = 0x02;
-        private const ulong WRAP_OFFSET = (ulong)(NUM_FACES) << POS_BITS;
+        private const int LookupBits = 4;
+        private const int SwapMask = 0x01;
+        private const int InvertMask = 0x02;
+        private const ulong WrapOffset = (ulong)(NumFaces) << PosBits;
 
-        private static readonly int[] LOOKUP_POS = new int[1 << (2*LOOKUP_BITS + 2)];
-        private static readonly int[] LOOKUP_IJ = new int[1 << (2*LOOKUP_BITS + 2)];
+        private static readonly int[] LookupPos = new int[1 << (2*LookupBits + 2)];
+        private static readonly int[] LookupIj = new int[1 << (2*LookupBits + 2)];
 
-        private static readonly ulong[] maxValueDivs =
+        private static readonly ulong[] MaxValueDivs =
         {
             0, 0, // 0 and 1 are invalid
             9223372036854775807L, 6148914691236517205L, 4611686018427387903L, // 2-4
@@ -99,12 +99,21 @@ namespace Google.Common.Geometry
         }; // 35-36
 
         // calculated as 0xffffffffffffffff % radix
-        private static readonly int[] maxValueMods =
+        private static readonly int[] MaxValueMods =
         {
             0, 0, // 0 and 1 are invalid
             1, 0, 3, 0, 3, 1, 7, 6, 5, 4, 3, 2, 1, 0, 15, 0, 15, 16, 15, 15, // 2-21
             15, 5, 15, 15, 15, 24, 15, 23, 15, 15, 31, 15, 17, 15, 15
         }; // 22-36
+
+        public static readonly S2CellId None = new S2CellId();
+
+        /**
+   * Returns an invalid cell id guaranteed to be larger than any valid cell id.
+   * Useful for creating indexes.
+   */
+
+        public static readonly S2CellId Sentinel = new S2CellId(~0UL);
 
         /**
    * This is the offset required to wrap around from the beginning of the
@@ -118,15 +127,214 @@ namespace Google.Common.Geometry
 
         static S2CellId()
         {
-            initLookupCell(0, 0, 0, 0, 0, 0);
-            initLookupCell(0, 0, 0, SWAP_MASK, 0, SWAP_MASK);
-            initLookupCell(0, 0, 0, INVERT_MASK, 0, INVERT_MASK);
-            initLookupCell(0, 0, 0, SWAP_MASK | INVERT_MASK, 0, SWAP_MASK | INVERT_MASK);
+            InitLookupCell(0, 0, 0, 0, 0, 0);
+            InitLookupCell(0, 0, 0, SwapMask, 0, SwapMask);
+            InitLookupCell(0, 0, 0, InvertMask, 0, InvertMask);
+            InitLookupCell(0, 0, 0, SwapMask | InvertMask, 0, SwapMask | InvertMask);
         }
 
         public S2CellId(ulong id)
         {
             _id = id;
+        }
+
+        public ulong Id
+        {
+            get { return _id; }
+        }
+
+        /** Return true if id() represents a valid cell. */
+
+        public bool IsValid
+        {
+            get { return Face < NumFaces && ((LowestOnBit & 0x1555555555555555UL) != 0); }
+        }
+
+        /** Which cube face this cell belongs to, in the range 0..5. */
+
+        public int Face
+        {
+            get { return (int)(_id >> PosBits); }
+        }
+
+        /**
+   * The position of the cell center along the Hilbert curve over this face, in
+   * the range 0..(2**kPosBits-1).
+   */
+
+        public ulong Position
+        {
+            get { return (_id & (~0UL >> FaceBits)); }
+        }
+
+        /** Return the subdivision level of the cell (range 0..MAX_LEVEL). */
+
+        public int Level
+        {
+            get
+            {
+                // Fast path for leaf cells.
+                if (IsLeaf)
+                {
+                    return MaxLevel;
+                }
+                var x = (uint)(_id);
+                var level = -1;
+                if (x != 0)
+                {
+                    level += 16;
+                }
+                else
+                {
+                    x = (uint)(_id >> 32);
+                }
+                // We only need to look at even-numbered bits to determine the
+                // level of a valid cell id.
+                x &= (uint)-x; // Get lowest bit.
+                if ((x & 0x00005555) != 0)
+                {
+                    level += 8;
+                }
+                if ((x & 0x00550055) != 0)
+                {
+                    level += 4;
+                }
+                if ((x & 0x05050505) != 0)
+                {
+                    level += 2;
+                }
+                if ((x & 0x11111111) != 0)
+                {
+                    level += 1;
+                }
+                // assert (level >= 0 && level <= MAX_LEVEL);
+                return level;
+            }
+        }
+
+
+        /**
+   * Return true if this is a leaf cell (more efficient than checking whether
+   * level() == MAX_LEVEL).
+   */
+
+        public bool IsLeaf
+        {
+            get { return (_id & 1) != 0; }
+        }
+
+        /**
+   * Return true if this is a top-level face cell (more efficient than checking
+   * whether level() == 0).
+   */
+
+        public bool IsFace
+        {
+            get { return (_id & (LowestOnBitForLevel(0) - 1)) == 0; }
+        }
+
+        public S2CellId RangeMin
+        {
+            get { return new S2CellId(_id - (LowestOnBit - 1)); }
+        }
+
+        public S2CellId RangeMax
+        {
+            get { return new S2CellId(_id + (LowestOnBit - 1)); }
+        }
+
+        public S2CellId Parent
+        {
+            get
+            {
+                // assert (isValid() && level() > 0);
+                var newLsb = LowestOnBit << 2;
+
+                // cast to long so we can flip the bits
+                var i = (ulong)((long)_id & -(long)newLsb) | newLsb;
+
+                return new S2CellId(i);
+            }
+        }
+
+        public S2CellId ChildBegin
+        {
+            get
+            {
+                // assert (isValid() && level() < MAX_LEVEL);
+                var oldLsb = LowestOnBit;
+                return new S2CellId(_id - oldLsb + (oldLsb >> 2));
+            }
+        }
+
+        public S2CellId ChildEnd
+        {
+            get
+            {
+                // assert (isValid() && level() < MAX_LEVEL);
+                var oldLsb = LowestOnBit;
+                return new S2CellId(_id + oldLsb + (oldLsb >> 2));
+            }
+        }
+
+        public S2CellId Next
+        {
+            get { return new S2CellId(_id + (LowestOnBit << 1)); }
+        }
+
+        /**
+   * Return the previous cell at the same level along the Hilbert curve. Works
+   * correctly when advancing from one face to the next, but does *not* wrap
+   * around from the last face to the first or vice versa.
+   */
+
+        public S2CellId Previous
+        {
+            get { return new S2CellId(_id - (LowestOnBit << 1)); }
+        }
+
+
+        /**
+   * Like next(), but wraps around from the last face to the first and vice
+   * versa. Should *not* be used for iteration in conjunction with
+   * child_begin(), child_end(), Begin(), or End().
+   */
+
+        public S2CellId NextWithWrap
+        {
+            get
+            {
+                var n = Next;
+                if (n._id < WrapOffset)
+                {
+                    return n;
+                }
+                return new S2CellId(n._id - WrapOffset);
+            }
+        }
+
+        /**
+   * Like prev(), but wraps around from the last face to the first and vice
+   * versa. Should *not* be used for iteration in conjunction with
+   * child_begin(), child_end(), Begin(), or End().
+   */
+
+        public S2CellId PreviousWithWrap
+        {
+            get
+            {
+                var p = Previous;
+                if (p._id < WrapOffset)
+                {
+                    return p;
+                }
+                return new S2CellId(p._id + WrapOffset);
+            }
+        }
+
+        public ulong LowestOnBit
+        {
+            get { return (ulong)((long)_id & -(long)_id); }
         }
 
         public int CompareTo(S2CellId other)
@@ -183,21 +391,6 @@ namespace Google.Common.Geometry
 
         /** The default constructor returns an invalid cell id. */
 
-        public static S2CellId none()
-        {
-            return new S2CellId();
-        }
-
-        /**
-   * Returns an invalid cell id guaranteed to be larger than any valid cell id.
-   * Useful for creating indexes.
-   */
-
-        public static S2CellId sentinel()
-        {
-            return new S2CellId(~0UL);
-        }
-
         /**
    * Return a cell given its face (range 0..5), 61-bit Hilbert curve position
    * within that face, and level (range 0..MAX_LEVEL). The given position will
@@ -206,9 +399,9 @@ namespace Google.Common.Geometry
    * order to give names to the arguments.
    */
 
-        public static S2CellId fromFacePosLevel(int face, ulong pos, int level)
+        public static S2CellId FromFacePosLevel(int face, ulong pos, int level)
         {
-            return new S2CellId((((ulong)face) << POS_BITS) + (pos | 1)).parent(level);
+            return new S2CellId((((ulong)face) << PosBits) + (pos | 1)).ParentForLevel(level);
         }
 
         /**
@@ -216,26 +409,26 @@ namespace Google.Common.Geometry
    * necessarily unit length).
    */
 
-        public static S2CellId fromPoint(S2Point p)
+        public static S2CellId FromPoint(S2Point p)
         {
             var face = S2Projections.xyzToFace(p);
             var uv = S2Projections.validFaceXyzToUv(face, p);
-            var i = stToIJ(S2Projections.uvToST(uv.X));
-            var j = stToIJ(S2Projections.uvToST(uv.Y));
-            return fromFaceIJ(face, i, j);
+            var i = StToIj(S2Projections.uvToST(uv.X));
+            var j = StToIj(S2Projections.uvToST(uv.Y));
+            return FromFaceIj(face, i, j);
         }
 
 
         /** Return the leaf cell containing the given S2LatLng. */
 
-        public static S2CellId fromLatLng(S2LatLng ll)
+        public static S2CellId FromLatLng(S2LatLng ll)
         {
-            return fromPoint(ll.toPoint());
+            return FromPoint(ll.toPoint());
         }
 
-        public S2Point toPoint()
+        public S2Point ToPoint()
         {
-            return S2Point.Normalize(toPointRaw());
+            return S2Point.Normalize(ToPointRaw());
         }
 
         /**
@@ -243,7 +436,7 @@ namespace Google.Common.Geometry
    * The vector returned by ToPointRaw is not necessarily unit length.
    */
 
-        public S2Point toPointRaw()
+        public S2Point ToPointRaw()
         {
             // First we compute the discrete (i,j) coordinates of a leaf cell contained
             // within the given cell. Given that cells are represented by the Hilbert
@@ -267,116 +460,24 @@ namespace Google.Common.Geometry
             var i = 0;
             var j = 0;
             int? notUsed = null;
-            var face = toFaceIJOrientation(ref i, ref j, ref notUsed);
+            var face = ToFaceIjOrientation(ref i, ref j, ref notUsed);
             // System.out.println("i= " + i.intValue() + " j = " + j.intValue());
-            var delta = isLeaf() ? 1 : (((i ^ ((int)_id) >> 2) & 1) != 0)
-                                           ? 2 : 0;
-            var si = (i << 1) + delta - MAX_SIZE;
-            var ti = (j << 1) + delta - MAX_SIZE;
-            return faceSiTiToXYZ(face, si, ti);
+            var delta = IsLeaf ? 1 : (((i ^ ((int)_id) >> 2) & 1) != 0)
+                                         ? 2 : 0;
+            var si = (i << 1) + delta - MaxSize;
+            var ti = (j << 1) + delta - MaxSize;
+            return FaceSiTiToXyz(face, si, ti);
         }
 
         /** Return the S2LatLng corresponding to the center of the given cell. */
 
-        public S2LatLng toLatLng()
+        public S2LatLng ToLatLng()
         {
-            return new S2LatLng(toPointRaw());
+            return new S2LatLng(ToPointRaw());
         }
 
 
         /** The 64-bit unique identifier for this cell. */
-
-        public ulong id()
-        {
-            return _id;
-        }
-
-        /** Return true if id() represents a valid cell. */
-
-        public bool isValid()
-        {
-            return face() < NUM_FACES && ((lowestOnBit() & 0x1555555555555555UL) != 0);
-        }
-
-        /** Which cube face this cell belongs to, in the range 0..5. */
-
-        public int face()
-        {
-            return (int)(_id >> POS_BITS);
-        }
-
-        /**
-   * The position of the cell center along the Hilbert curve over this face, in
-   * the range 0..(2**kPosBits-1).
-   */
-
-        public ulong pos()
-        {
-            return (_id & (~0UL >> FACE_BITS));
-        }
-
-        /** Return the subdivision level of the cell (range 0..MAX_LEVEL). */
-
-        public int level()
-        {
-            // Fast path for leaf cells.
-            if (isLeaf())
-            {
-                return MAX_LEVEL;
-            }
-            var x = (uint)(_id);
-            var level = -1;
-            if (x != 0)
-            {
-                level += 16;
-            }
-            else
-            {
-                x = (uint)(_id >> 32);
-            }
-            // We only need to look at even-numbered bits to determine the
-            // level of a valid cell id.
-            x &= (uint)-x; // Get lowest bit.
-            if ((x & 0x00005555) != 0)
-            {
-                level += 8;
-            }
-            if ((x & 0x00550055) != 0)
-            {
-                level += 4;
-            }
-            if ((x & 0x05050505) != 0)
-            {
-                level += 2;
-            }
-            if ((x & 0x11111111) != 0)
-            {
-                level += 1;
-            }
-            // assert (level >= 0 && level <= MAX_LEVEL);
-            return level;
-        }
-
-
-        /**
-   * Return true if this is a leaf cell (more efficient than checking whether
-   * level() == MAX_LEVEL).
-   */
-
-        public bool isLeaf()
-        {
-            return (_id & 1) != 0;
-        }
-
-        /**
-   * Return true if this is a top-level face cell (more efficient than checking
-   * whether level() == 0).
-   */
-
-        public bool isFace()
-        {
-            return (_id & (lowestOnBitForLevel(0) - 1)) == 0;
-        }
 
         /**
    * Return the child position (0..3) of this cell's ancestor at the given
@@ -385,9 +486,9 @@ namespace Google.Common.Geometry
    * cell's level-1 ancestor within its top-level face cell.
    */
 
-        public int childPosition(int level)
+        public int ChildPosition(int level)
         {
-            return (int)(_id >> (2*(MAX_LEVEL - level) + 1)) & 3;
+            return (int)(_id >> (2*(MaxLevel - level) + 1)) & 3;
         }
 
         // Methods that return the range of cell ids that are contained
@@ -402,42 +503,22 @@ namespace Google.Common.Geometry
         // It would in fact be error-prone to define a range_end() method,
         // because (range_max().id() + 1) is not always a valid cell id, and the
         // iterator would need to be tested using "<" rather that the usual "!=".
-        public S2CellId rangeMin()
-        {
-            return new S2CellId(_id - (lowestOnBit() - 1));
-        }
-
-        public S2CellId rangeMax()
-        {
-            return new S2CellId(_id + (lowestOnBit() - 1));
-        }
 
 
         /** Return true if the given cell is contained within this one. */
 
-        public bool contains(S2CellId other)
+        public bool Contains(S2CellId other)
         {
             // assert (isValid() && other.isValid());
-            return other >= rangeMin() && other <= rangeMax();
+            return other >= RangeMin && other <= RangeMax;
         }
 
         /** Return true if the given cell intersects this one. */
 
-        public bool intersects(S2CellId other)
+        public bool Intersects(S2CellId other)
         {
             // assert (isValid() && other.isValid());
-            return other.rangeMin() <= rangeMax() && other.rangeMax() >= rangeMin();
-        }
-
-        public S2CellId parent()
-        {
-            // assert (isValid() && level() > 0);
-            var newLsb = lowestOnBit() << 2;
-
-            // cast to long so we can flip the bits
-            var i = (ulong)((long)_id & -(long)newLsb) | newLsb;
-
-            return new S2CellId(i);
+            return other.RangeMin <= RangeMax && other.RangeMax >= RangeMin;
         }
 
         /**
@@ -445,44 +526,30 @@ namespace Google.Common.Geometry
    * less than or equal to the current level).
    */
 
-        public S2CellId parent(int level)
+        public S2CellId ParentForLevel(int level)
         {
             // assert (isValid() && level >= 0 && level <= this.level());
-            var newLsb = lowestOnBitForLevel(level);
+            var newLsb = LowestOnBitForLevel(level);
             var i = (ulong)((long)_id & -(long)newLsb) | newLsb;
             return new S2CellId(i);
         }
 
-        public S2CellId child(int position)
+        public S2CellId Child(int position)
         {
-            var newLsb = lowestOnBit() >> 2;
+            var newLsb = LowestOnBit >> 2;
             return new S2CellId(_id + (ulong)(2*position + 1 - 4)*newLsb);
         }
 
-        public S2CellId childBegin()
-        {
-            // assert (isValid() && level() < MAX_LEVEL);
-            var oldLsb = lowestOnBit();
-            return new S2CellId(_id - oldLsb + (oldLsb >> 2));
-        }
-
-        public S2CellId childBegin(int level)
+        public S2CellId ChildBeginForLevel(int level)
         {
             // assert (isValid() && level >= this.level() && level <= MAX_LEVEL);
-            return new S2CellId(_id - lowestOnBit() + lowestOnBitForLevel(level));
+            return new S2CellId(_id - LowestOnBit + LowestOnBitForLevel(level));
         }
 
-        public S2CellId childEnd()
-        {
-            // assert (isValid() && level() < MAX_LEVEL);
-            var oldLsb = lowestOnBit();
-            return new S2CellId(_id + oldLsb + (oldLsb >> 2));
-        }
-
-        public S2CellId childEnd(int level)
+        public S2CellId ChildEndForLevel(int level)
         {
             // assert (isValid() && level >= this.level() && level <= MAX_LEVEL);
-            return new S2CellId(_id + lowestOnBit() + lowestOnBitForLevel(level));
+            return new S2CellId(_id + LowestOnBit + LowestOnBitForLevel(level));
         }
 
         // Iterator-style methods for traversing the immediate children of a cell or
@@ -504,64 +571,15 @@ namespace Google.Common.Geometry
    * around from the last face to the first or vice versa.
    */
 
-        public S2CellId next()
+
+        public static S2CellId Begin(int level)
         {
-            return new S2CellId(_id + (lowestOnBit() << 1));
+            return FromFacePosLevel(0, 0, 0).ChildBeginForLevel(level);
         }
 
-        /**
-   * Return the previous cell at the same level along the Hilbert curve. Works
-   * correctly when advancing from one face to the next, but does *not* wrap
-   * around from the last face to the first or vice versa.
-   */
-
-        public S2CellId prev()
+        public static S2CellId End(int level)
         {
-            return new S2CellId(_id - (lowestOnBit() << 1));
-        }
-
-
-        /**
-   * Like next(), but wraps around from the last face to the first and vice
-   * versa. Should *not* be used for iteration in conjunction with
-   * child_begin(), child_end(), Begin(), or End().
-   */
-
-        public S2CellId nextWrap()
-        {
-            var n = next();
-            if (n._id < WRAP_OFFSET)
-            {
-                return n;
-            }
-            return new S2CellId(n._id - WRAP_OFFSET);
-        }
-
-        /**
-   * Like prev(), but wraps around from the last face to the first and vice
-   * versa. Should *not* be used for iteration in conjunction with
-   * child_begin(), child_end(), Begin(), or End().
-   */
-
-        public S2CellId prevWrap()
-        {
-            var p = prev();
-            if (p._id < WRAP_OFFSET)
-            {
-                return p;
-            }
-            return new S2CellId(p._id + WRAP_OFFSET);
-        }
-
-
-        public static S2CellId begin(int level)
-        {
-            return fromFacePosLevel(0, 0, 0).childBegin(level);
-        }
-
-        public static S2CellId end(int level)
-        {
-            return fromFacePosLevel(5, 0, 0).childEnd(level);
+            return FromFacePosLevel(5, 0, 0).ChildEndForLevel(level);
         }
 
 
@@ -575,19 +593,14 @@ namespace Google.Common.Geometry
    * @throws NumberFormatException if the token is not formatted correctly
    */
 
-        public static S2CellId fromToken(String token)
+        public static S2CellId FromToken(string token)
         {
-            if (token == null)
+            if (string.IsNullOrWhiteSpace(token))
+                throw new ArgumentNullException("token");
+
+            if (token.Length > 16 || "X".Equals(token, StringComparison.OrdinalIgnoreCase))
             {
-                throw new ArgumentNullException("Null string in S2CellId.fromToken");
-            }
-            if (token.Length == 0)
-            {
-                throw new ArgumentNullException("Empty string in S2CellId.fromToken");
-            }
-            if (token.Length > 16 || "X".Equals(token))
-            {
-                return none();
+                return None;
             }
 
             ulong value = 0;
@@ -599,11 +612,11 @@ namespace Google.Common.Geometry
                     digit = GetIntegerValue(token[pos], 16); // Character.digit(token.charAt(pos), 16);
                     if (digit == -1)
                     {
-                        throw new ArgumentException(token);
+                        throw new ArgumentException("token");
                     }
-                    if (overflowInParse(value, digit))
+                    if (OverflowInParse(value, digit))
                     {
-                        throw new ArgumentException("Too large for unsigned long: " + token);
+                        throw new ArgumentException("Too large for unsigned long: " + token, "token");
                     }
                 }
                 value = (value*16) + (ulong)digit;
@@ -640,7 +653,7 @@ namespace Google.Common.Geometry
    * @return the encoded cell id
    */
 
-        public String toToken()
+        public string ToToken()
         {
             if (_id == 0)
             {
@@ -671,11 +684,6 @@ namespace Google.Common.Geometry
    * while parsing a string representation of a number.
    */
 
-        private static bool overflowInParse(ulong current, int digit)
-        {
-            return overflowInParse(current, digit, 10);
-        }
-
         /**
    * Returns true if (current * radix) + digit is a number too large to be
    * represented by an unsigned long.  This is useful for detecting overflow
@@ -684,24 +692,18 @@ namespace Google.Common.Geometry
    * will give undefined results or an ArrayIndexOutOfBoundsException.
    */
 
-        private static bool overflowInParse(ulong current, int digit, int radix)
+        private static bool OverflowInParse(ulong current, int digit, int radix = 10)
         {
-            if (current >= 0)
+            if (current < MaxValueDivs[radix])
             {
-                if (current < maxValueDivs[radix])
-                {
-                    return false;
-                }
-                if (current > maxValueDivs[radix])
-                {
-                    return true;
-                }
-                // current == maxValueDivs[radix]
-                return (digit > maxValueMods[radix]);
+                return false;
             }
-
-            // current < 0: high bit is set
-            return true;
+            if (current > MaxValueDivs[radix])
+            {
+                return true;
+            }
+            // current == maxValueDivs[radix]
+            return (digit > MaxValueMods[radix]);
         }
 
         // calculated as 0xffffffffffffffff / radix
@@ -712,25 +714,28 @@ namespace Google.Common.Geometry
    * neighbors are guaranteed to be distinct.
    */
 
-        public void getEdgeNeighbors(S2CellId[] neighbors)
+        public IReadOnlyList<S2CellId> GetEdgeNeighbors()
         {
+            var neighbors = new S2CellId[4];
             var i = 0;
             var j = 0;
             int? notUsed = null;
 
-            var level = this.level();
-            var size = 1 << (MAX_LEVEL - level);
-            var face = toFaceIJOrientation(ref i, ref j, ref notUsed);
+            var level = Level;
+            var size = 1 << (MaxLevel - level);
+            var face = ToFaceIjOrientation(ref i, ref j, ref notUsed);
 
             // Edges 0, 1, 2, 3 are in the S, E, N, W directions.
-            neighbors[0] = fromFaceIJSame(face, i, j - size,
-                                          j - size >= 0).parent(level);
-            neighbors[1] = fromFaceIJSame(face, i + size, j,
-                                          i + size < MAX_SIZE).parent(level);
-            neighbors[2] = fromFaceIJSame(face, i, j + size,
-                                          j + size < MAX_SIZE).parent(level);
-            neighbors[3] = fromFaceIJSame(face, i - size, j,
-                                          i - size >= 0).parent(level);
+            neighbors[0] = FromFaceIjSame(face, i, j - size,
+                                          j - size >= 0).ParentForLevel(level);
+            neighbors[1] = FromFaceIjSame(face, i + size, j,
+                                          i + size < MaxSize).ParentForLevel(level);
+            neighbors[2] = FromFaceIjSame(face, i, j + size,
+                                          j + size < MaxSize).ParentForLevel(level);
+            neighbors[3] = FromFaceIjSame(face, i - size, j,
+                                          i - size >= 0).ParentForLevel(level);
+
+            return neighbors;
         }
 
         /**
@@ -743,7 +748,7 @@ namespace Google.Common.Geometry
    * closest (in particular, level == MAX_LEVEL is not allowed).
    */
 
-        public void getVertexNeighbors(int level, List<S2CellId> output)
+        public void GetVertexNeighbors(int level, IList<S2CellId> output)
         {
             // "level" must be strictly less than this cell's level so that we can
             // determine which vertex this cell is closest to.
@@ -751,19 +756,19 @@ namespace Google.Common.Geometry
             var i = 0;
             var j = 0;
             int? notUsed = null;
-            var face = toFaceIJOrientation(ref i, ref j, ref notUsed);
+            var face = ToFaceIjOrientation(ref i, ref j, ref notUsed);
 
             // Determine the i- and j-offsets to the closest neighboring cell in each
             // direction. This involves looking at the next bit of "i" and "j" to
             // determine which quadrant of this->parent(level) this cell lies in.
-            var halfsize = 1 << (MAX_LEVEL - (level + 1));
+            var halfsize = 1 << (MaxLevel - (level + 1));
             var size = halfsize << 1;
             bool isame, jsame;
             int ioffset, joffset;
             if ((i & halfsize) != 0)
             {
                 ioffset = size;
-                isame = (i + size) < MAX_SIZE;
+                isame = (i + size) < MaxSize;
             }
             else
             {
@@ -773,7 +778,7 @@ namespace Google.Common.Geometry
             if ((j & halfsize) != 0)
             {
                 joffset = size;
-                jsame = (j + size) < MAX_SIZE;
+                jsame = (j + size) < MaxSize;
             }
             else
             {
@@ -781,19 +786,19 @@ namespace Google.Common.Geometry
                 jsame = (j - size) >= 0;
             }
 
-            output.Add(parent(level));
+            output.Add(ParentForLevel(level));
             output
-                .Add(fromFaceIJSame(face, i + ioffset, j, isame)
-                         .parent(level));
+                .Add(FromFaceIjSame(face, i + ioffset, j, isame)
+                         .ParentForLevel(level));
             output
-                .Add(fromFaceIJSame(face, i, j + joffset, jsame)
-                         .parent(level));
+                .Add(FromFaceIjSame(face, i, j + joffset, jsame)
+                         .ParentForLevel(level));
             // If i- and j- edge neighbors are *both* on a different face, then this
             // vertex only has three neighbors (it is one of the 8 cube vertices).
             if (isame || jsame)
             {
-                output.Add(fromFaceIJSame(face, i + ioffset,
-                                          j + joffset, isame && jsame).parent(level));
+                output.Add(FromFaceIjSame(face, i + ioffset,
+                                          j + joffset, isame && jsame).ParentForLevel(level));
             }
         }
 
@@ -807,21 +812,21 @@ namespace Google.Common.Geometry
    * face vertex, the same neighbor may be appended more than once.
    */
 
-        public void getAllNeighbors(int nbrLevel, List<S2CellId> output)
+        public void GetAllNeighbors(int nbrLevel, IList<S2CellId> output)
         {
             var i = 0;
             var j = 0;
             int? notUsed = null;
-            var face = toFaceIJOrientation(ref i, ref j, ref notUsed);
+            var face = ToFaceIjOrientation(ref i, ref j, ref notUsed);
 
             // Find the coordinates of the lower left-hand leaf cell. We need to
             // normalize (i,j) to a known position within the cell because nbr_level
             // may be larger than this cell's level.
-            var size = 1 << (MAX_LEVEL - level());
+            var size = 1 << (MaxLevel - Level);
             i = (i & -size);
             j = (j & -size);
 
-            var nbrSize = 1 << (MAX_LEVEL - nbrLevel);
+            var nbrSize = 1 << (MaxLevel - nbrLevel);
             // assert (nbrSize <= size);
 
             // We compute the N-S, E-W, and diagonal neighbors in one pass.
@@ -835,23 +840,23 @@ namespace Google.Common.Geometry
                 }
                 else if (k >= size)
                 {
-                    sameFace = (j + k < MAX_SIZE);
+                    sameFace = (j + k < MaxSize);
                 }
                 else
                 {
                     sameFace = true;
                     // North and South neighbors.
-                    output.Add(fromFaceIJSame(face, i + k,
-                                              j - nbrSize, j - size >= 0).parent(nbrLevel));
-                    output.Add(fromFaceIJSame(face, i + k, j + size,
-                                              j + size < MAX_SIZE).parent(nbrLevel));
+                    output.Add(FromFaceIjSame(face, i + k,
+                                              j - nbrSize, j - size >= 0).ParentForLevel(nbrLevel));
+                    output.Add(FromFaceIjSame(face, i + k, j + size,
+                                              j + size < MaxSize).ParentForLevel(nbrLevel));
                 }
                 // East, West, and Diagonal neighbors.
-                output.Add(fromFaceIJSame(face, i - nbrSize,
-                                          j + k, sameFace && i - size >= 0).parent(
+                output.Add(FromFaceIjSame(face, i - nbrSize,
+                                          j + k, sameFace && i - size >= 0).ParentForLevel(
                                               nbrLevel));
-                output.Add(fromFaceIJSame(face, i + size, j + k,
-                                          sameFace && i + size < MAX_SIZE).parent(nbrLevel));
+                output.Add(FromFaceIjSame(face, i + size, j + k,
+                                          sameFace && i + size < MaxSize).ParentForLevel(nbrLevel));
                 if (k >= size)
                 {
                     break;
@@ -867,7 +872,7 @@ namespace Google.Common.Geometry
    * j-coordinates (see s2.h).
    */
 
-        public static S2CellId fromFaceIJ(int face, int i, int j)
+        public static S2CellId FromFaceIj(int face, int i, int j)
         {
             // Optimization notes:
             // - Non-overlapping bit fields can be combined with either "+" or "|".
@@ -899,35 +904,35 @@ namespace Google.Common.Geometry
             //S2CellId s = new S2CellId((((n[1] << 32) + n[0]) << 1) + 1);
             //return s;
 
-            var n = (ulong)face << (POS_BITS - 1);
+            var n = (ulong)face << (PosBits - 1);
 
-            var bits = face & SWAP_MASK;
+            var bits = face & SwapMask;
 
             unchecked
             {
                 for (var k = 7; k >= 0; k--)
                 {
-                    var mask = (1 << LOOKUP_BITS) - 1;
-                    bits += ((i >> k*LOOKUP_BITS) & mask) << (LOOKUP_BITS + 2);
-                    bits += ((j >> k*LOOKUP_BITS) & mask) << 2;
-                    bits = LOOKUP_POS[bits];
-                    n |= (ulong)(bits >> 2) << (k*2*LOOKUP_BITS);
-                    bits &= (SWAP_MASK | INVERT_MASK);
+                    const int mask = (1 << LookupBits) - 1;
+                    bits += ((i >> k*LookupBits) & mask) << (LookupBits + 2);
+                    bits += ((j >> k*LookupBits) & mask) << 2;
+                    bits = LookupPos[bits];
+                    n |= (ulong)(bits >> 2) << (k*2*LookupBits);
+                    bits &= (SwapMask | InvertMask);
                 }
                 return new S2CellId(n*2 + 1);
             }
         }
 
-        private static int getBits(long[] n, int i, int j, int k, int bits)
-        {
-            var mask = (1 << LOOKUP_BITS) - 1;
-            bits += (((i >> (k*LOOKUP_BITS)) & mask) << (LOOKUP_BITS + 2));
-            bits += (((j >> (k*LOOKUP_BITS)) & mask) << 2);
-            bits = LOOKUP_POS[bits];
-            n[k >> 2] |= ((((long)bits) >> 2) << ((k & 3)*2*LOOKUP_BITS));
-            bits &= (SWAP_MASK | INVERT_MASK);
-            return bits;
-        }
+        //private static int GetBits(IList<long> n, int i, int j, int k, int bits)
+        //{
+        //    var mask = (1 << LookupBits) - 1;
+        //    bits += (((i >> (k*LookupBits)) & mask) << (LookupBits + 2));
+        //    bits += (((j >> (k*LookupBits)) & mask) << 2);
+        //    bits = LookupPos[bits];
+        //    n[k >> 2] |= ((((long)bits) >> 2) << ((k & 3)*2*LookupBits));
+        //    bits &= (SwapMask | InvertMask);
+        //    return bits;
+        //}
 
 
         /**
@@ -938,12 +943,12 @@ namespace Google.Common.Geometry
    * the Hilbert curve orientation for the current cell.
    */
 
-        public int toFaceIJOrientation(ref int pi, ref int pj,
+        public int ToFaceIjOrientation(ref int pi, ref int pj,
                                        ref int? orientation)
         {
             // System.out.println("Entering toFaceIjorientation");
-            var face = this.face();
-            var bits = (face & SWAP_MASK);
+            var face = Face;
+            var bits = (face & SwapMask);
 
             // System.out.println("face = " + face + " bits = " + bits);
 
@@ -957,7 +962,7 @@ namespace Google.Common.Geometry
             // representing the cube face.
             for (var k = 7; k >= 0; --k)
             {
-                bits = getBits1(ref pi, ref pj, k, bits);
+                bits = GetBits1(ref pi, ref pj, k, bits);
                 // System.out.println("pi = " + pi + " pj= " + pj + " bits = " + bits);
             }
 
@@ -972,7 +977,7 @@ namespace Google.Common.Geometry
                 // the kSwapMask bit.
                 // assert (S2.POS_TO_ORIENTATION[2] == 0);
                 // assert (S2.POS_TO_ORIENTATION[0] == S2.SWAP_MASK);
-                if ((lowestOnBit() & 0x1111111111111110L) != 0)
+                if ((LowestOnBit & 0x1111111111111110L) != 0)
                 {
                     bits ^= S2.SwapMask;
                 }
@@ -981,18 +986,18 @@ namespace Google.Common.Geometry
             return face;
         }
 
-        private int getBits1(ref int i, ref int j, int k, int bits)
+        private int GetBits1(ref int i, ref int j, int k, int bits)
         {
-            var nbits = (k == 7) ? (MAX_LEVEL - 7*LOOKUP_BITS) : LOOKUP_BITS;
+            var nbits = (k == 7) ? (MaxLevel - 7*LookupBits) : LookupBits;
 
-            bits += unchecked ((((int)(_id >> (k*2*LOOKUP_BITS + 1)) &
+            bits += unchecked ((((int)(_id >> (k*2*LookupBits + 1)) &
                                  ((1 << (2*nbits)) - 1))) << 2);
             /*
      * System.out.println("id is: " + id_); System.out.println("bits is " +
      * bits); System.out.println("lookup_ij[bits] is " + lookup_ij[bits]);
      */
-            bits = LOOKUP_IJ[bits];
-            i = i + ((bits >> (LOOKUP_BITS + 2)) << (k*LOOKUP_BITS));
+            bits = LookupIj[bits];
+            i = i + ((bits >> (LookupBits + 2)) << (k*LookupBits));
             /*
      * System.out.println("left is " + ((bits >> 2) & ((1 << kLookupBits) -
      * 1))); System.out.println("right is " + (k * kLookupBits));
@@ -1000,17 +1005,12 @@ namespace Google.Common.Geometry
      * is: " + ((((bits >> 2) & ((1 << kLookupBits) - 1))) << (k *
      * kLookupBits)));
      */
-            j = j + ((((bits >> 2) & ((1 << LOOKUP_BITS) - 1))) << (k*LOOKUP_BITS));
-            bits &= (SWAP_MASK | INVERT_MASK);
+            j = j + ((((bits >> 2) & ((1 << LookupBits) - 1))) << (k*LookupBits));
+            bits &= (SwapMask | InvertMask);
             return bits;
         }
 
         /** Return the lowest-numbered bit that is on for cells at the given level. */
-
-        public ulong lowestOnBit()
-        {
-            return (ulong)((long)_id & -(long)_id);
-        }
 
         /**
    * Return the lowest-numbered bit that is on for this cell id, which is equal
@@ -1019,9 +1019,9 @@ namespace Google.Common.Geometry
    * efficient.
    */
 
-        public static ulong lowestOnBitForLevel(int level)
+        public static ulong LowestOnBitForLevel(int level)
         {
-            return 1UL << (2*(MAX_LEVEL - level));
+            return 1UL << (2*(MaxLevel - level));
         }
 
 
@@ -1030,13 +1030,13 @@ namespace Google.Common.Geometry
    * t-value.
    */
 
-        private static int stToIJ(double s)
+        private static int StToIj(double s)
         {
             // Converting from floating-point to integers via static_cast is very slow
             // on Intel processors because it requires changing the rounding mode.
             // Rounding to the nearest integer using FastIntRound() is much faster.
 
-            var m = MAX_SIZE/2; // scaling multiplier
+            const int m = MaxSize/2; // scaling multiplier
             return (int)Math
                             .Max(0, Math.Min(2*m - 1, Math.Round(m*s + (m - 0.5))));
         }
@@ -1046,9 +1046,9 @@ namespace Google.Common.Geometry
    * necessarily unit length).
    */
 
-        private static S2Point faceSiTiToXYZ(int face, int si, int ti)
+        private static S2Point FaceSiTiToXyz(int face, int si, int ti)
         {
-            var kScale = 1.0/MAX_SIZE;
+            const double kScale = 1.0/MaxSize;
             var u = S2Projections.stToUV(kScale*si);
             var v = S2Projections.stToUV(kScale*ti);
             return S2Projections.faceUvToXyz(face, u, v);
@@ -1059,27 +1059,27 @@ namespace Google.Common.Geometry
    * returning the corresponding neighbor cell on an adjacent face.
    */
 
-        private static S2CellId fromFaceIJWrap(int face, int i, int j)
+        private static S2CellId FromFaceIjWrap(int face, int i, int j)
         {
             // Convert i and j to the coordinates of a leaf cell just beyond the
             // boundary of this face. This prevents 32-bit overflow in the case
             // of finding the neighbors of a face cell, and also means that we
             // don't need to worry about the distinction between (s,t) and (u,v).
-            i = Math.Max(-1, Math.Min(MAX_SIZE, i));
-            j = Math.Max(-1, Math.Min(MAX_SIZE, j));
+            i = Math.Max(-1, Math.Min(MaxSize, i));
+            j = Math.Max(-1, Math.Min(MaxSize, j));
 
             // Find the (s,t) coordinates corresponding to (i,j). At least one
             // of these coordinates will be just outside the range [0, 1].
-            var kScale = 1.0/MAX_SIZE;
-            var s = kScale*((i << 1) + 1 - MAX_SIZE);
-            var t = kScale*((j << 1) + 1 - MAX_SIZE);
+            const double kScale = 1.0/MaxSize;
+            var s = kScale*((i << 1) + 1 - MaxSize);
+            var t = kScale*((j << 1) + 1 - MaxSize);
 
             // Find the leaf cell coordinates on the adjacent face, and convert
             // them to a cell id at the appropriate level.
             var p = S2Projections.faceUvToXyz(face, s, t);
             face = S2Projections.xyzToFace(p);
             var st = S2Projections.validFaceXyzToUv(face, p);
-            return fromFaceIJ(face, stToIJ(st.X), stToIJ(st.Y));
+            return FromFaceIj(face, StToIj(st.X), StToIj(st.Y));
         }
 
         /**
@@ -1087,72 +1087,33 @@ namespace Google.Common.Geometry
    * FromFaceIJWrap if sameFace is false.
    */
 
-        public static S2CellId fromFaceIJSame(int face, int i, int j,
+        public static S2CellId FromFaceIjSame(int face, int i, int j,
                                               bool sameFace)
         {
             if (sameFace)
             {
-                return fromFaceIJ(face, i, j);
+                return FromFaceIj(face, i, j);
             }
             else
             {
-                return fromFaceIJWrap(face, i, j);
+                return FromFaceIjWrap(face, i, j);
             }
         }
 
-        /**
-   * Returns true if x1 < x2, when both values are treated as unsigned.
-   */
-
-        public static bool unsignedLongLessThan(ulong x1, ulong x2)
-        {
-            return x1 < x2;
-        }
-
-        /**
-   * Returns true if x1 > x2, when both values are treated as unsigned.
-   */
-
-        public static bool unsignedLongGreaterThan(ulong x1, ulong x2)
-        {
-            return x1 > x2;
-        }
-
-        public bool lessThan(S2CellId x)
-        {
-            return unsignedLongLessThan(_id, x._id);
-        }
-
-        public bool greaterThan(S2CellId x)
-        {
-            return unsignedLongGreaterThan(_id, x._id);
-        }
-
-        public bool lessOrEquals(S2CellId x)
-        {
-            return unsignedLongLessThan(_id, x._id) || _id == x._id;
-        }
-
-        public bool greaterOrEquals(S2CellId x)
-        {
-            return unsignedLongGreaterThan(_id, x._id) || _id == x._id;
-        }
-
-
         public override string ToString()
         {
-            return "(face=" + face() + ", pos=" + pos().ToString("x") + ", level="
-                   + level() + ")";
+            return "(face=" + Face + ", pos=" + Position.ToString("x") + ", level="
+                   + Level + ")";
         }
 
-        private static void initLookupCell(int level, int i, int j,
+        private static void InitLookupCell(int level, int i, int j,
                                            int origOrientation, int pos, int orientation)
         {
-            if (level == LOOKUP_BITS)
+            if (level == LookupBits)
             {
-                var ij = (i << LOOKUP_BITS) + j;
-                LOOKUP_POS[(ij << 2) + origOrientation] = (pos << 2) + orientation;
-                LOOKUP_IJ[(pos << 2) + origOrientation] = (ij << 2) + orientation;
+                var ij = (i << LookupBits) + j;
+                LookupPos[(ij << 2) + origOrientation] = (pos << 2) + orientation;
+                LookupIj[(pos << 2) + origOrientation] = (ij << 2) + orientation;
             }
             else
             {
@@ -1165,7 +1126,7 @@ namespace Google.Common.Geometry
                 {
                     var ij = S2.PosToIj(orientation, subPos);
                     var orientationMask = S2.PosToOrientation(subPos);
-                    initLookupCell(level, i + (ij >> 1), j + (ij & 1), origOrientation, pos + subPos, orientation ^ orientationMask);
+                    InitLookupCell(level, i + (ij >> 1), j + (ij & 1), origOrientation, pos + subPos, orientation ^ orientationMask);
                 }
             }
         }

@@ -91,7 +91,7 @@ namespace Google.Common.Geometry
         public S2RegionCoverer()
         {
             _minLevel = 0;
-            _maxLevel = S2CellId.MAX_LEVEL;
+            _maxLevel = S2CellId.MaxLevel;
             _levelMod = 1;
             _maxCells = DEFAULT_MAX_CELLS;
             region = null;
@@ -122,7 +122,7 @@ namespace Google.Common.Geometry
         public void setMinLevel(int minLevel)
         {
             // assert (minLevel >= 0 && minLevel <= S2CellId.MAX_LEVEL);
-            _minLevel = Math.Max(0, Math.Min(S2CellId.MAX_LEVEL, minLevel));
+            _minLevel = Math.Max(0, Math.Min(S2CellId.MaxLevel, minLevel));
         }
 
         /**
@@ -132,7 +132,7 @@ namespace Google.Common.Geometry
         public void setMaxLevel(int maxLevel)
         {
             // assert (maxLevel >= 0 && maxLevel <= S2CellId.MAX_LEVEL);
-            _maxLevel = Math.Max(0, Math.Min(S2CellId.MAX_LEVEL, maxLevel));
+            _maxLevel = Math.Max(0, Math.Min(S2CellId.MaxLevel, maxLevel));
         }
 
         public int minLevel()
@@ -292,7 +292,7 @@ namespace Google.Common.Geometry
         public static void getSimpleCovering(
             IS2Region region, S2Point start, int level, List<S2CellId> output)
         {
-            floodFill(region, S2CellId.fromPoint(start).parent(level), output);
+            floodFill(region, S2CellId.FromPoint(start).ParentForLevel(level), output);
         }
 
         /**
@@ -456,7 +456,7 @@ namespace Google.Common.Geometry
                 // cell vertex at that level.
                 var cap = region.CapBound;
                 var level = Math.Min(S2Projections.MIN_WIDTH.GetMaxLevel(2*cap.Angle.Radians),
-                                     Math.Min(maxLevel(), S2CellId.MAX_LEVEL - 1));
+                                     Math.Min(maxLevel(), S2CellId.MaxLevel - 1));
                 if (levelMod() > 1 && level > minLevel())
                 {
                     level -= (level - minLevel())%levelMod();
@@ -468,8 +468,8 @@ namespace Google.Common.Geometry
                     // Find the leaf cell containing the cap axis, and determine which
                     // subcell of the parent cell contains it.
                     var @base = new List<S2CellId>(4);
-                    var id = S2CellId.fromPoint(cap.Axis);
-                    id.getVertexNeighbors(level, @base);
+                    var id = S2CellId.FromPoint(cap.Axis);
+                    id.GetVertexNeighbors(level, @base);
                     for (var i = 0; i < @base.Count; ++i)
                     {
                         addCandidate(newCandidate(new S2Cell(@base[i])));
@@ -562,8 +562,7 @@ namespace Google.Common.Geometry
                 }
                 output.Add(id);
 
-                var neighbors = new S2CellId[4];
-                id.getEdgeNeighbors(neighbors);
+                var neighbors = id.GetEdgeNeighbors();
                 for (var edge = 0; edge < 4; ++edge)
                 {
                     var nbr = neighbors[edge];
