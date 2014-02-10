@@ -134,10 +134,10 @@ namespace S2Geometry.Tests
                 // If region does not intersect id, then neither should the covering.
                 if (checkTight)
                 {
-                    Assert.True(!covering.intersects(id));
+                    Assert.True(!covering.Intersects(id));
                 }
             }
-            else if (!covering.contains(id))
+            else if (!covering.Contains(id))
             {
                 // The region may intersect id, but we can't assert that the covering
                 // intersects id because we may discover that the region does not actually

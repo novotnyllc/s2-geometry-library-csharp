@@ -51,7 +51,7 @@ namespace S2Geometry.Tests
             else
             {
                 var cellUnion = new S2CellUnion();
-                cellUnion.initFromCellIds(covering);
+                cellUnion.InitFromCellIds(covering);
                 checkCovering(region, cellUnion, true, new S2CellId());
             }
         }
@@ -95,9 +95,9 @@ namespace S2Geometry.Tests
                 // S2RegionCoverer does not guarantee that it will not output all four
                 // children of the same parent.
                 var cells = new S2CellUnion();
-                cells.initFromCellIds(covering);
+                cells.InitFromCellIds(covering);
                 var denormalized = new List<S2CellId>();
-                cells.denormalize(coverer.minLevel(), coverer.levelMod(), denormalized);
+                cells.Denormalize(coverer.minLevel(), coverer.levelMod(), denormalized);
                 checkCovering(coverer, cap, denormalized, false);
             }
         }
@@ -115,9 +115,9 @@ namespace S2Geometry.Tests
             {
                 var id = getRandomCellId();
                 var covering = new S2CellUnion();
-                coverer.getCovering(new S2Cell(id), covering.cellIds());
-                assertEquals(covering.size(), 1);
-                assertEquals(covering.cellId(0), id);
+                coverer.getCovering(new S2Cell(id), covering.CellIds);
+                assertEquals(covering.Count, 1);
+                assertEquals(covering.CellId(0), id);
             }
         }
 

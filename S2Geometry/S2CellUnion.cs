@@ -20,12 +20,96 @@ namespace Google.Common.Geometry
   *         false if the union was already normalized
   */
 
-    public class S2CellUnion : IS2Region, IEnumerable<S2CellId>, IEquatable<S2CellUnion>
+    public sealed class S2CellUnion : IS2Region, IEnumerable<S2CellId>, IEquatable<S2CellUnion>
     {
         private List<S2CellId> _cellIds = new List<S2CellId>();
 
         public S2CellUnion()
         {
+        }
+
+        public int Count
+        {
+            get { return _cellIds.Count; }
+        }
+
+        public IList<S2CellId> CellIds
+        {
+            get { return _cellIds; }
+        }
+
+        public ulong LeafCellsCovered
+        {
+            get
+            {
+                ulong numLeaves = 0;
+                foreach (var cellId in _cellIds)
+                {
+                    var invertedLevel = S2CellId.MaxLevel - cellId.Level;
+                    numLeaves += (ulong)(1L << (invertedLevel << 1));
+                }
+                return numLeaves;
+            }
+        }
+
+
+        /**
+   * Approximate this cell union's area by summing the average area of
+   * each contained cell's average area, using {@link S2Cell#averageArea()}.
+   * This is equivalent to the number of leaves covered, multiplied by
+   * the average area of a leaf.
+   * Note that {@link S2Cell#averageArea()} does not take into account
+   * distortion of cell, and thus may be off by up to a factor of 1.7.
+   * NOTE: Since this is proportional to LeafCellsCovered(), it is
+   * always better to use the other function if all you care about is
+   * the relative average area between objects.
+   *
+   * @return the sum of the average area of each contained cell's average area
+   */
+
+        public double AverageBasedArea
+        {
+            get { return S2Cell.AverageArea(S2CellId.MaxLevel)*LeafCellsCovered; }
+        }
+
+        /**
+   * Calculates this cell union's area by summing the approximate area for each
+   * contained cell, using {@link S2Cell#approxArea()}.
+   *
+   * @return approximate area of the cell union
+   */
+
+        public double ApproxArea
+        {
+            get
+            {
+                double area = 0;
+                foreach (var cellId in _cellIds)
+                {
+                    area += new S2Cell(cellId).ApproxArea();
+                }
+                return area;
+            }
+        }
+
+        /**
+   * Calculates this cell union's area by summing the exact area for each
+   * contained cell, using the {@link S2Cell#exactArea()}.
+   *
+   * @return the exact area of the cell union
+   */
+
+        public double ExactArea
+        {
+            get
+            {
+                double area = 0;
+                foreach (var cellId in _cellIds)
+                {
+                    area += new S2Cell(cellId).ExactArea();
+                }
+                return area;
+            }
         }
 
         public IEnumerator<S2CellId> GetEnumerator()
@@ -47,7 +131,7 @@ namespace Google.Common.Geometry
 
         public bool Contains(S2Cell cell)
         {
-            return contains(cell.Id);
+            return Contains(cell.Id);
         }
 
         public S2Cap CapBound
@@ -64,7 +148,7 @@ namespace Google.Common.Geometry
                 foreach (var id in this)
                 {
                     var area = S2Cell.AverageArea(id.Level);
-                    centroid = centroid + (id.ToPoint() * area);
+                    centroid = centroid + (id.ToPoint()*area);
                 }
                 if (centroid.Equals(new S2Point(0, 0, 0)))
                 {
@@ -106,7 +190,7 @@ namespace Google.Common.Geometry
 
         public bool MayIntersect(S2Cell cell)
         {
-            return intersects(cell.Id);
+            return Intersects(cell.Id);
         }
 
         public override bool Equals(object obj)
@@ -139,10 +223,10 @@ namespace Google.Common.Geometry
 
         /** The CellIds that form the Union */
 
-        public void initFromCellIds(List<S2CellId> cellIds)
+        public void InitFromCellIds(IEnumerable<S2CellId> cellIds)
         {
-            initRawCellIds(cellIds);
-            normalize();
+            InitRawCellIds(cellIds);
+            Normalize();
         }
 
         /**
@@ -152,31 +236,28 @@ namespace Google.Common.Geometry
    * be called multiple times.
    */
 
-        public void initFromIds(List<ulong> cellIds)
+        public void InitFromIds(IEnumerable<ulong> cellIds)
         {
-            initRawIds(cellIds);
-            normalize();
+            InitRawIds(cellIds);
+            Normalize();
         }
 
-        public void initSwap(List<S2CellId> cellIds)
+        public void InitSwap(ICollection<S2CellId> cellIds)
         {
-            initRawSwap(cellIds);
-            normalize();
+            InitRawSwap(cellIds);
+            Normalize();
         }
 
-        public void initRawCellIds(List<S2CellId> cellIds)
+        public void InitRawCellIds(IEnumerable<S2CellId> cellIds)
         {
-            _cellIds = cellIds;
+            _cellIds = new List<S2CellId>(cellIds);
         }
 
-        public void initRawIds(List<ulong> cellIds)
+        public void InitRawIds(IEnumerable<ulong> cellIds)
         {
-            var size = cellIds.Count;
-            _cellIds = new List<S2CellId>(size);
-            foreach (var id in cellIds)
-            {
-                _cellIds.Add(new S2CellId(id));
-            }
+            _cellIds = cellIds
+                .Select(id => new S2CellId(id))
+                .ToList();
         }
 
         /**
@@ -187,30 +268,20 @@ namespace Google.Common.Geometry
    * These methods may be called multiple times.
    */
 
-        public void initRawSwap(List<S2CellId> cellIds)
+        public void InitRawSwap(ICollection<S2CellId> cellIds)
         {
             _cellIds = new List<S2CellId>(cellIds);
             cellIds.Clear();
         }
 
-        public int size()
-        {
-            return _cellIds.Count;
-        }
-
         /** Convenience methods for accessing the individual cell ids. */
 
-        public S2CellId cellId(int i)
+        public S2CellId CellId(int i)
         {
             return _cellIds[i];
         }
 
         /** Direct access to the underlying vector for iteration . */
-
-        public List<S2CellId> cellIds()
-        {
-            return _cellIds;
-        }
 
         /**
    * Replaces "output" with an expanded version of the cell union where any
@@ -225,7 +296,7 @@ namespace Google.Common.Geometry
    * constraints.
    */
 
-        public void denormalize(int minLevel, int levelMod, List<S2CellId> output)
+        public void Denormalize(int minLevel, int levelMod, ICollection<S2CellId> output)
         {
             // assert (minLevel >= 0 && minLevel <= S2CellId.MAX_LEVEL);
             // assert (levelMod >= 1 && levelMod <= 3);
@@ -264,7 +335,7 @@ namespace Google.Common.Geometry
    * at once.
    */
 
-        public void pack()
+        public void Pack()
         {
             _cellIds.TrimExcess();
         }
@@ -276,7 +347,7 @@ namespace Google.Common.Geometry
    * is a fast operation (logarithmic in the size of the cell union).
    */
 
-        public bool contains(S2CellId id)
+        public bool Contains(S2CellId id)
         {
             // This function requires that Normalize has been called first.
             //
@@ -292,7 +363,7 @@ namespace Google.Common.Geometry
             {
                 pos = -pos - 1;
             }
-            if (pos < _cellIds.Count && _cellIds[pos].RangeMin <=id)
+            if (pos < _cellIds.Count && _cellIds[pos].RangeMin <= id)
             {
                 return true;
             }
@@ -304,7 +375,7 @@ namespace Google.Common.Geometry
    * operation (logarithmic in the size of the cell union).
    */
 
-        public bool intersects(S2CellId id)
+        public bool Intersects(S2CellId id)
         {
             // This function requires that Normalize has been called first.
             // This is an exact test; see the comments for Contains() above.
@@ -323,13 +394,13 @@ namespace Google.Common.Geometry
             return pos != 0 && _cellIds[pos - 1].RangeMax >= id.RangeMin;
         }
 
-        public bool contains(S2CellUnion that)
+        public bool Contains(S2CellUnion that)
         {
             // TODO(kirilll?): A divide-and-conquer or alternating-skip-search approach
             // may be significantly faster in both the average and worst case.
             foreach (var id in that)
             {
-                if (!contains(id))
+                if (!Contains(id))
                 {
                     return false;
                 }
@@ -344,13 +415,13 @@ namespace Google.Common.Geometry
    * union.
    */
 
-        public bool intersects(S2CellUnion union)
+        public bool Intersects(S2CellUnion union)
         {
             // TODO(kirilll?): A divide-and-conquer or alternating-skip-search approach
             // may be significantly faster in both the average and worst case.
             foreach (var id in union)
             {
-                if (intersects(id))
+                if (Intersects(id))
                 {
                     return true;
                 }
@@ -358,14 +429,14 @@ namespace Google.Common.Geometry
             return false;
         }
 
-        public void getUnion(S2CellUnion x, S2CellUnion y)
+        public void GetUnion(S2CellUnion x, S2CellUnion y)
         {
             // assert (x != this && y != this);
             _cellIds.Clear();
 
             _cellIds.AddRange(x._cellIds);
             _cellIds.AddRange(y._cellIds);
-            normalize();
+            Normalize();
         }
 
         /**
@@ -374,11 +445,11 @@ namespace Google.Common.Geometry
    * cell union into chunks.
    */
 
-        public void getIntersection(S2CellUnion x, S2CellId id)
+        public void GetIntersection(S2CellUnion x, S2CellId id)
         {
             // assert (x != this);
             _cellIds.Clear();
-            if (x.contains(id))
+            if (x.Contains(id))
             {
                 _cellIds.Add(id);
             }
@@ -393,7 +464,7 @@ namespace Google.Common.Geometry
 
                 var idmax = id.RangeMax;
                 var size = x._cellIds.Count;
-                while (pos < size && x._cellIds[pos] <=idmax)
+                while (pos < size && x._cellIds[pos] <= idmax)
                 {
                     _cellIds.Add(x._cellIds[pos++]);
                 }
@@ -405,7 +476,7 @@ namespace Google.Common.Geometry
    * cell unions. Requires: x != this and y != this.
    */
 
-        public void getIntersection(S2CellUnion x, S2CellUnion y)
+        public void GetIntersection(S2CellUnion x, S2CellUnion y)
         {
             // assert (x != this && y != this);
 
@@ -420,21 +491,21 @@ namespace Google.Common.Geometry
 
             while (i < x._cellIds.Count && j < y._cellIds.Count)
             {
-                var imin = x.cellId(i).RangeMin;
-                var jmin = y.cellId(j).RangeMin;
+                var imin = x.CellId(i).RangeMin;
+                var jmin = y.CellId(j).RangeMin;
                 if (imin > jmin)
                 {
                     // Either j->contains(*i) or the two cells are disjoint.
-                    if (x.cellId(i) <= y.cellId(j).RangeMax)
+                    if (x.CellId(i) <= y.CellId(j).RangeMax)
                     {
-                        _cellIds.Add(x.cellId(i++));
+                        _cellIds.Add(x.CellId(i++));
                     }
                     else
                     {
                         // Advance "j" to the first cell possibly contained by *i.
-                        j = indexedBinarySearch(y._cellIds, imin, j + 1);
+                        j = IndexedBinarySearch(y._cellIds, imin, j + 1);
                         // The previous cell *(j-1) may now contain *i.
-                        if (x.cellId(i) <= y.cellId(j - 1).RangeMax)
+                        if (x.CellId(i) <= y.CellId(j - 1).RangeMax)
                         {
                             --j;
                         }
@@ -443,14 +514,14 @@ namespace Google.Common.Geometry
                 else if (jmin >= imin)
                 {
                     // Identical to the code above with "i" and "j" reversed.
-                    if (y.cellId(j) <= x.cellId(i).RangeMax)
+                    if (y.CellId(j) <= x.CellId(i).RangeMax)
                     {
-                        _cellIds.Add(y.cellId(j++));
+                        _cellIds.Add(y.CellId(j++));
                     }
                     else
                     {
-                        i = indexedBinarySearch(x._cellIds, jmin, i + 1);
-                        if (y.cellId(j) <= x.cellId(i - 1).RangeMax)
+                        i = IndexedBinarySearch(x._cellIds, jmin, i + 1);
+                        if (y.CellId(j) <= x.CellId(i - 1).RangeMax)
                         {
                             --i;
                         }
@@ -459,13 +530,13 @@ namespace Google.Common.Geometry
                 else
                 {
                     // "i" and "j" have the same range_min(), so one contains the other.
-                    if (x.cellId(i) < y.cellId(j))
+                    if (x.CellId(i) < y.CellId(j))
                     {
-                        _cellIds.Add(x.cellId(i++));
+                        _cellIds.Add(x.CellId(i++));
                     }
                     else
                     {
-                        _cellIds.Add(y.cellId(j++));
+                        _cellIds.Add(y.CellId(j++));
                     }
                 }
             }
@@ -483,14 +554,14 @@ namespace Google.Common.Geometry
    *         order.
    */
 
-        private int indexedBinarySearch(List<S2CellId> l, S2CellId key, int low)
+        private static int IndexedBinarySearch(IReadOnlyList<S2CellId> list, S2CellId key, int low)
         {
-            var high = l.Count - 1;
+            var high = list.Count - 1;
 
             while (low <= high)
             {
                 var mid = (low + high) >> 1;
-                var midVal = l[mid];
+                var midVal = list[mid];
                 var cmp = midVal.CompareTo(key);
 
                 if (cmp < 0)
@@ -521,20 +592,20 @@ namespace Google.Common.Geometry
    * Expand(min_fraction, min_distance) method below is easier to use.
    */
 
-        public void expand(int level)
+        public void Expand(int level)
         {
             var output = new List<S2CellId>();
             var levelLsb = S2CellId.LowestOnBitForLevel(level);
-            var i = size() - 1;
+            var i = Count - 1;
             do
             {
-                var id = cellId(i);
+                var id = CellId(i);
                 if (id.LowestOnBit < levelLsb)
                 {
                     id = id.ParentForLevel(level);
                     // Optimization: skip over any cells contained by this one. This is
                     // especially important when very small regions are being expanded.
-                    while (i > 0 && id.Contains(cellId(i - 1)))
+                    while (i > 0 && id.Contains(CellId(i - 1)))
                     {
                         --i;
                     }
@@ -542,7 +613,7 @@ namespace Google.Common.Geometry
                 output.Add(id);
                 id.GetAllNeighbors(level, output);
             } while (--i >= 0);
-            initSwap(output);
+            InitSwap(output);
         }
 
         /**
@@ -559,7 +630,7 @@ namespace Google.Common.Geometry
    * maxLevelDiff) times larger than the number of cells in the input.
    */
 
-        public void expand(S1Angle minRadius, int maxLevelDiff)
+        public void Expand(S1Angle minRadius, int maxLevelDiff)
         {
             var minLevel = S2CellId.MaxLevel;
             foreach (var id in this)
@@ -573,16 +644,16 @@ namespace Google.Common.Geometry
             {
                 // The requested expansion is greater than the width of a face cell.
                 // The easiest way to handle this is to expand twice.
-                expand(0);
+                Expand(0);
             }
-            expand(Math.Min(minLevel + maxLevelDiff, radiusLevel));
+            Expand(Math.Min(minLevel + maxLevelDiff, radiusLevel));
         }
 
 
-        public IS2Region clone()
+        public IS2Region Clone()
         {
             var copy = new S2CellUnion();
-            copy.initRawCellIds(new List<S2CellId>(_cellIds));
+            copy.InitRawCellIds(_cellIds);
             return copy;
         }
 
@@ -591,9 +662,9 @@ namespace Google.Common.Geometry
    * (logarithmic in the size of the cell union).
    */
 
-        public bool contains(S2Point p)
+        public bool Contains(S2Point p)
         {
-            return contains(S2CellId.FromPoint(p));
+            return Contains(S2CellId.FromPoint(p));
         }
 
         /**
@@ -602,71 +673,6 @@ namespace Google.Common.Geometry
    *
    * @return the number of leaf cells covered by the union
    */
-
-        public long leafCellsCovered()
-        {
-            long numLeaves = 0;
-            foreach (var cellId in _cellIds)
-            {
-                var invertedLevel = S2CellId.MaxLevel - cellId.Level;
-                numLeaves += (1L << (invertedLevel << 1));
-            }
-            return numLeaves;
-        }
-
-
-        /**
-   * Approximate this cell union's area by summing the average area of
-   * each contained cell's average area, using {@link S2Cell#averageArea()}.
-   * This is equivalent to the number of leaves covered, multiplied by
-   * the average area of a leaf.
-   * Note that {@link S2Cell#averageArea()} does not take into account
-   * distortion of cell, and thus may be off by up to a factor of 1.7.
-   * NOTE: Since this is proportional to LeafCellsCovered(), it is
-   * always better to use the other function if all you care about is
-   * the relative average area between objects.
-   *
-   * @return the sum of the average area of each contained cell's average area
-   */
-
-        public double averageBasedArea()
-        {
-            return S2Cell.AverageArea(S2CellId.MaxLevel)*leafCellsCovered();
-        }
-
-        /**
-   * Calculates this cell union's area by summing the approximate area for each
-   * contained cell, using {@link S2Cell#approxArea()}.
-   *
-   * @return approximate area of the cell union
-   */
-
-        public double approxArea()
-        {
-            double area = 0;
-            foreach (var cellId in _cellIds)
-            {
-                area += new S2Cell(cellId).ApproxArea();
-            }
-            return area;
-        }
-
-        /**
-   * Calculates this cell union's area by summing the exact area for each
-   * contained cell, using the {@link S2Cell#exactArea()}.
-   *
-   * @return the exact area of the cell union
-   */
-
-        public double exactArea()
-        {
-            double area = 0;
-            foreach (var cellId in _cellIds)
-            {
-                area += new S2Cell(cellId).ExactArea();
-            }
-            return area;
-        }
 
 
         /**
@@ -682,7 +688,7 @@ namespace Google.Common.Geometry
    *         false if the union was already normalized
    */
 
-        public bool normalize()
+        public bool Normalize()
         {
             // Optimize the representation by looking for cases where all subcells
             // of a parent cell are present.
@@ -742,9 +748,9 @@ namespace Google.Common.Geometry
                 }
                 output.Add(id);
             }
-            if (output.Count < size())
+            if (output.Count < Count)
             {
-                initRawSwap(output);
+                InitRawSwap(output);
                 return true;
             }
             return false;
