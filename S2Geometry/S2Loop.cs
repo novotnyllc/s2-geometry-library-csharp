@@ -712,10 +712,11 @@ namespace Google.Common.Geometry
             else
             {
                 var it = getEdgeIterator(_numVertices);
+                it.GetCandidates(origin, p);
                 var previousIndex = -2;
-                for (it.getCandidates(origin, p); it.hasNext(); it.next())
+                foreach (var ai in it)// it.GetCandidates(origin, p); it.HasNext; it.Next())
                 {
-                    var ai = it.index();
+                    //var ai = it.Index;
                     if (previousIndex != ai - 1)
                     {
                         crosser.restartAt(vertices[ai]);
@@ -763,7 +764,8 @@ namespace Google.Common.Geometry
             {
                 index = new AnonS2EdgeIndex(this);
             }
-            index.predictAdditionalCalls(expectedQueries);
+            index.PredictAdditionalCalls(expectedQueries);
+            
             return new S2EdgeIndex.DataEdgeIterator(index);
         }
 
@@ -807,16 +809,17 @@ namespace Google.Common.Geometry
 
 
             // Non-adjacent edges are not allowed to intersect.
-            var crosses = false;
+           // var crosses = false;
             var it = getEdgeIterator(_numVertices);
             for (var a1 = 0; a1 < _numVertices; a1++)
             {
                 var a2 = (a1 + 1)%_numVertices;
                 var crosser = new S2EdgeUtil.EdgeCrosser(vertex(a1), vertex(a2), vertex(0));
                 var previousIndex = -2;
-                for (it.getCandidates(vertex(a1), vertex(a2)); it.hasNext(); it.next())
+                it.GetCandidates(vertex(a1), vertex(a2));
+                foreach(var b1 in it)// it.GetCandidates(vertex(a1), vertex(a2)); it.HasNext; it.Next())
                 {
-                    var b1 = it.index();
+                    //var b1 = it.Index;
                     var b2 = (b1 + 1)%_numVertices;
                     // If either 'a' index equals either 'b' index, then these two edges
                     // share a vertex. If a1==b1 then it must be the case that a2==b2, e.g.
@@ -853,7 +856,7 @@ namespace Google.Common.Geometry
                         // Beware, this may return the loop is valid if there is a
                         // "vertex crossing".
                         // TODO(user): Fix that.
-                        crosses = crosser.robustCrossing(vertex(b2)) > 0;
+                        var crosses = crosser.robustCrossing(vertex(b2)) > 0;
                         previousIndex = b2;
                         if (crosses)
                         {
@@ -1009,9 +1012,11 @@ namespace Google.Common.Geometry
                 var crosser =
                     new S2EdgeUtil.EdgeCrosser(b.vertex(j), b.vertex(j + 1), vertex(0));
                 var previousIndex = -2;
-                for (it.getCandidates(b.vertex(j), b.vertex(j + 1)); it.hasNext(); it.next())
+
+                it.GetCandidates(b.vertex(j), b.vertex(j + 1));
+                foreach (var i in it)// it.GetCandidates(b.vertex(j), b.vertex(j + 1)); it.HasNext; it.Next())
                 {
-                    var i = it.index();
+                //    var i = it.Index;
                     if (previousIndex != i - 1)
                     {
                         crosser.restartAt(vertex(i));
@@ -1049,17 +1054,17 @@ namespace Google.Common.Geometry
                 _this = This;
             }
 
-            protected override int getNumEdges()
+            protected override int NumEdges
             {
-                return _this._numVertices;
+                get { return _this._numVertices; }
             }
 
-            protected override S2Point edgeFrom(int index)
+            protected override S2Point EdgeFrom(int index)
             {
                 return _this.vertex(index);
             }
 
-            protected override S2Point edgeTo(int index)
+            protected override S2Point EdgeTo(int index)
             {
                 return _this.vertex(index + 1);
             }

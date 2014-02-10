@@ -20,19 +20,19 @@ namespace S2Geometry.Tests
             }
 
 
-            protected override int getNumEdges()
+            protected override int NumEdges
             {
-                return edges.Count;
+                get { return edges.Count; }
             }
 
 
-            protected override S2Point edgeFrom(int index)
+            protected override S2Point EdgeFrom(int index)
             {
                 return edges[index].Start;
             }
 
 
-            protected override S2Point edgeTo(int index)
+            protected override S2Point EdgeTo(int index)
             {
                 return edges[index].End;
             }
@@ -75,8 +75,8 @@ namespace S2Geometry.Tests
             List<S2Edge> allEdges, int minCrossings, int maxChecksCrossingsRatio)
         {
             var index = new EdgeVectorIndex(allEdges);
-            index.computeIndex();
-            var it = new S2EdgeIndex.DataEdgeIterator(index);
+            index.ComputeIndex();
+             var it = new S2EdgeIndex.DataEdgeIterator(index);
             double totalCrossings = 0;
             double totalIndexChecks = 0;
 
@@ -87,10 +87,11 @@ namespace S2Geometry.Tests
                 var candidateSet = new HashSet<int>();
 
                 var sb = new StringBuilder();
-                for (it.getCandidates(e.Start, e.End); it.hasNext(); it.next())
+                it.GetCandidates(e.Start, e.End); 
+                foreach (var i in it)// it.GetCandidates(e.Start, e.End); it.HasNext; it.Next())
                 {
-                    candidateSet.Add(it.index());
-                    sb.Append(it.index()).Append("/");
+                    candidateSet.Add(i);
+                    sb.Append(i).Append("/");
                     ++totalIndexChecks;
                 }
 

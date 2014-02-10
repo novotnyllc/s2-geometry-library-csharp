@@ -607,15 +607,16 @@ namespace Google.Common.Geometry
                                      bool addSharedEdges, List<ParametrizedS2Point> intersections)
         {
             var it = new S2EdgeIndex.DataEdgeIterator(bIndex);
-            it.getCandidates(a0, a1);
+            it.GetCandidates(a0, a1);
             var crosser = new S2EdgeUtil.EdgeCrosser(a0, a1, a0);
-            S2Point from;
+            //S2Point from;
             var to = default (S2Point);
-            for (; it.hasNext(); it.next())
+            
+            foreach (var index in it)
             {
                 var previousTo = to;
-                var fromTo = bIndex.edgeFromTo(it.index());
-                from = fromTo.Start;
+                var fromTo = bIndex.edgeFromTo(index);
+                var from = fromTo.Start;
                 to = fromTo.End;
                 if (previousTo != from)
                 {
@@ -650,7 +651,7 @@ namespace Google.Common.Geometry
                                          S2PolygonBuilder builder)
         {
             var bIndex = new S2PolygonIndex(b, reverseB);
-            bIndex.predictAdditionalCalls(a.getNumVertices());
+            bIndex.PredictAdditionalCalls(a.getNumVertices());
 
             var intersections = new List<ParametrizedS2Point>();
             foreach (var aLoop in a.loops)
@@ -1264,19 +1265,19 @@ namespace Google.Common.Geometry
             public abstract S2Edge edgeFromTo(int index);
 
 
-            protected override int getNumEdges()
+            protected override int NumEdges
             {
-                return indexToLoop.Length;
+                get { return indexToLoop.Length; }
             }
 
-            protected override S2Point edgeFrom(int index)
+            protected override S2Point EdgeFrom(int index)
             {
                 var fromTo = edgeFromTo(index);
                 var from = fromTo.Start;
                 return from;
             }
 
-            protected override S2Point edgeTo(int index)
+            protected override S2Point EdgeTo(int index)
             {
                 var fromTo = edgeFromTo(index);
                 var to = fromTo.End;
