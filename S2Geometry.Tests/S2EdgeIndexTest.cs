@@ -28,13 +28,13 @@ namespace S2Geometry.Tests
 
             protected override S2Point edgeFrom(int index)
             {
-                return edges[index].getStart();
+                return edges[index].Start;
             }
 
 
             protected override S2Point edgeTo(int index)
             {
-                return edges[index].getEnd();
+                return edges[index].End;
             }
         }
 
@@ -87,7 +87,7 @@ namespace S2Geometry.Tests
                 var candidateSet = new HashSet<int>();
 
                 var sb = new StringBuilder();
-                for (it.getCandidates(e.getStart(), e.getEnd()); it.hasNext(); it.next())
+                for (it.getCandidates(e.Start, e.End); it.hasNext(); it.next())
                 {
                     candidateSet.Add(it.index());
                     sb.Append(it.index()).Append("/");
@@ -97,7 +97,7 @@ namespace S2Geometry.Tests
                 for (var i = 0; i < allEdges.Count; ++i)
                 {
                     var crossing = S2EdgeUtil.robustCrossing(
-                        e.getStart(), e.getEnd(), allEdges[i].getStart(), allEdges[i].getEnd());
+                        e.Start, e.End, allEdges[i].Start, allEdges[i].End);
                     if (crossing >= 0)
                     {
                         var sbError = new StringBuilder();

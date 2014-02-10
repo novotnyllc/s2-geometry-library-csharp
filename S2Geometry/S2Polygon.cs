@@ -615,8 +615,8 @@ namespace Google.Common.Geometry
             {
                 var previousTo = to;
                 var fromTo = bIndex.edgeFromTo(it.index());
-                from = fromTo.getStart();
-                to = fromTo.getEnd();
+                from = fromTo.Start;
+                to = fromTo.End;
                 if (previousTo != from)
                 {
                     crosser.restartAt(from);
@@ -1272,14 +1272,14 @@ namespace Google.Common.Geometry
             protected override S2Point edgeFrom(int index)
             {
                 var fromTo = edgeFromTo(index);
-                var from = fromTo.getStart();
+                var from = fromTo.Start;
                 return from;
             }
 
             protected override S2Point edgeTo(int index)
             {
                 var fromTo = edgeFromTo(index);
-                var to = fromTo.getEnd();
+                var to = fromTo.End;
                 return to;
             }
         }

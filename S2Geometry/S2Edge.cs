@@ -12,28 +12,35 @@ namespace Google.Common.Geometry
  * @author kirilll@google.com (Kirill Levin)
  */
 
-    public sealed class S2Edge : IEquatable<S2Edge>
+    public struct S2Edge : IEquatable<S2Edge>
     {
-        private readonly S2Point end;
-        private readonly S2Point start;
+        private readonly S2Point _end;
+        private readonly S2Point _start;
 
         public S2Edge(S2Point start, S2Point end)
         {
-            this.start = start;
-            this.end = end;
+            _start = start;
+            _end = end;
+        }
+
+        public S2Point Start
+        {
+            get { return _start; }
+        }
+
+        public S2Point End
+        {
+            get { return _end; }
         }
 
         public bool Equals(S2Edge other)
         {
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return start.Equals(other.start) && end.Equals(other.end);
+            return _end.Equals(other._end) && _start.Equals(other._start);
         }
 
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
             return obj is S2Edge && Equals((S2Edge)obj);
         }
 
@@ -41,9 +48,10 @@ namespace Google.Common.Geometry
         {
             unchecked
             {
-                return (start.GetHashCode()*397) ^ end.GetHashCode();
+                return (_end.GetHashCode()*397) ^ _start.GetHashCode();
             }
         }
+
 
         public static bool operator ==(S2Edge left, S2Edge right)
         {
@@ -55,20 +63,10 @@ namespace Google.Common.Geometry
             return !Equals(left, right);
         }
 
-        public S2Point getStart()
+        public override string ToString()
         {
-            return start;
-        }
-
-        public S2Point getEnd()
-        {
-            return end;
-        }
-
-        public override String ToString()
-        {
-            return String.Format("Edge: ({0} -> {1})\n   or [{2} -> {3}]",
-                                 start.ToDegreesString(), end.ToDegreesString(), start, end);
+            return string.Format("Edge: ({0} -> {1})\n   or [{2} -> {3}]",
+                                 _start.ToDegreesString(), _end.ToDegreesString(), _start, _end);
         }
     }
 }

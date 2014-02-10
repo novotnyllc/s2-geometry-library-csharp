@@ -464,8 +464,8 @@ namespace Google.Common.Geometry
             // EraseEdge also erases the sibiling of undirected edges.
             for (var i = 0; i < edgesCopy.Count; ++i)
             {
-                var v0 = edgesCopy[i].getStart();
-                var v1 = edgesCopy[i].getEnd();
+                var v0 = edgesCopy[i].Start;
+                var v1 = edgesCopy[i].End;
                 eraseEdge(v0, v1);
                 if (mergeMap.ContainsKey(v0))
                 {
