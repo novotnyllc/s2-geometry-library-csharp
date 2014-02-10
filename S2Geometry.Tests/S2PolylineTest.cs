@@ -125,9 +125,9 @@ namespace S2Geometry.Tests
                 line.Interpolate(0.1), S2Point.Normalize(new S2Point(1, Math.Tan(0.2*S2.Pi/2), 0))));
             assertTrue(S2.ApproxEquals(line.Interpolate(0.25), S2Point.Normalize(new S2Point(1, 1, 0))));
 
-            assertEquals(line.Interpolate(0.5), vertices[1]);
-            assertEquals(line.Interpolate(0.75), vertices[2]);
-            assertEquals(line.Interpolate(1.1), vertices[3]);
+            assertTrue(S2.ApproxEquals(line.Interpolate(0.5), vertices[1]));
+            assertTrue(S2.ApproxEquals(line.Interpolate(0.75), vertices[2]));
+            assertTrue(S2.ApproxEquals(line.Interpolate(1.1), vertices[3]));
         }
 
         [Test]
