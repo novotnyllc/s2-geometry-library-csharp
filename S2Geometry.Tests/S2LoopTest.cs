@@ -355,9 +355,9 @@ namespace S2Geometry.Tests
         public void testBounds()
         {
             assertTrue(candyCane.RectBound.Lng.IsFull);
-            assertTrue(candyCane.RectBound.latLo().Degrees < -20);
-            assertTrue(candyCane.RectBound.latHi().Degrees > 10);
-            assertTrue(smallNeCw.RectBound.isFull());
+            assertTrue(candyCane.RectBound.LatLo.Degrees < -20);
+            assertTrue(candyCane.RectBound.LatHi.Degrees > 10);
+            assertTrue(smallNeCw.RectBound.IsFull);
             assertEquals(arctic80.RectBound,
                          new S2LatLngRect(S2LatLng.FromDegrees(80, -180), S2LatLng.FromDegrees(90, 180)));
             assertEquals(antarctic80.RectBound,
@@ -366,7 +366,7 @@ namespace S2Geometry.Tests
             arctic80.invert();
             // The highest latitude of each edge is attained at its midpoint.
             var mid = (arctic80.vertex(0) + arctic80.vertex(1)) * 0.5;
-            assertDoubleNear(arctic80.RectBound.latHi().Radians, new S2LatLng(mid).Lat.Radians);
+            assertDoubleNear(arctic80.RectBound.LatHi.Radians, new S2LatLng(mid).Lat.Radians);
             arctic80.invert();
 
             assertTrue(southHemi.RectBound.Lng.IsFull);

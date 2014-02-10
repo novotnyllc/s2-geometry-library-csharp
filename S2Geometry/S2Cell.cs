@@ -185,7 +185,7 @@ namespace Google.Common.Geometry
 
 
                     var lat = R1Interval.FromPointPair(GetLatitude(i, j), GetLatitude(1 - i, 1 - j));
-                    lat = lat.Expanded(MaxError).Intersection(S2LatLngRect.fullLat());
+                    lat = lat.Expanded(MaxError).Intersection(S2LatLngRect.FullLat);
                     if (lat.Lo == -S2.PiOver2 || lat.Hi == S2.PiOver2)
                     {
                         return new S2LatLngRect(lat, S1Interval.Full);

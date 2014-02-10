@@ -49,7 +49,7 @@ namespace Google.Common.Geometry
         public S2Polygon()
         {
             loops = new List<S2Loop>();
-            bound = S2LatLngRect.empty();
+            bound = S2LatLngRect.Empty;
             hasHoles = false;
             numVertices = 0;
         }
@@ -62,7 +62,7 @@ namespace Google.Common.Geometry
         public S2Polygon(List<S2Loop> loops)
         {
             this.loops = new List<S2Loop>();
-            bound = S2LatLngRect.empty();
+            bound = S2LatLngRect.Empty;
 
             init(loops);
         }
@@ -150,7 +150,7 @@ namespace Google.Common.Geometry
                 return loop(0).Contains(cell);
             }
             var cellBound = cell.RectBound;
-            if (!bound.contains(cellBound))
+            if (!bound.Contains(cellBound))
             {
                 return false;
             }
@@ -173,7 +173,7 @@ namespace Google.Common.Geometry
                 return loop(0).MayIntersect(cell);
             }
             var cellBound = cell.RectBound;
-            if (!bound.intersects(cellBound))
+            if (!bound.Intersects(cellBound))
             {
                 return false;
             }
@@ -231,7 +231,7 @@ namespace Google.Common.Geometry
 
             // Compute the bounding rectangle of the entire polygon.
             hasHoles = false;
-            bound = S2LatLngRect.empty();
+            bound = S2LatLngRect.Empty;
             for (var i = 0; i < numLoops(); ++i)
             {
                 if (loop(i).sign() < 0)
@@ -240,7 +240,7 @@ namespace Google.Common.Geometry
                 }
                 else
                 {
-                    bound = bound.union(loop(i).RectBound);
+                    bound = bound.Union(loop(i).RectBound);
                 }
             }
         }
@@ -254,7 +254,7 @@ namespace Google.Common.Geometry
         {
             loops.AddRange(this.loops);
             this.loops.Clear();
-            bound = S2LatLngRect.empty();
+            bound = S2LatLngRect.Empty;
             hasHoles = false;
             numVertices = 0;
         }
@@ -471,7 +471,7 @@ namespace Google.Common.Geometry
             // Otherwise if neither polygon has holes, we can still use the more
             // efficient S2Loop::Contains method (rather than ContainsOrCrosses),
             // but it's worthwhile to do our own bounds check first.
-            if (!bound.contains(b.RectBound))
+            if (!bound.Contains(b.RectBound))
             {
                 // If the union of the bounding boxes spans the full longitude range,
                 // it is still possible that polygon A contains B. (This is only
@@ -526,7 +526,7 @@ namespace Google.Common.Geometry
             // Otherwise if neither polygon has holes, we can still use the more
             // efficient S2Loop.intersects method. The polygons intersect if and
             // only if some pair of loop regions intersect.
-            if (!bound.intersects(b.RectBound))
+            if (!bound.Intersects(b.RectBound))
             {
                 return false;
             }
@@ -721,7 +721,7 @@ namespace Google.Common.Geometry
             S2Polygon a, S2Polygon b, S1Angle vertexMergeRadius)
         {
             Preconditions.CheckState(numLoops() == 0);
-            if (!a.bound.intersects(b.bound))
+            if (!a.bound.Intersects(b.bound))
             {
                 return;
             }
@@ -944,7 +944,7 @@ namespace Google.Common.Geometry
             {
                 return loop(0).contains(p); // Optimization.
             }
-            if (!bound.contains(p))
+            if (!bound.Contains(p))
             {
                 return false;
             }

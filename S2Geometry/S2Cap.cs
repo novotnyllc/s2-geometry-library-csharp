@@ -147,7 +147,7 @@ namespace Google.Common.Geometry
             {
                 if (IsEmpty)
                 {
-                    return S2LatLngRect.empty();
+                    return S2LatLngRect.Empty;
                 }
 
                 // Convert the axis to a (lat,lng) pair, and compute the cap angle.

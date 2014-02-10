@@ -188,16 +188,16 @@ namespace S2Geometry.Tests
                 var childCap = children[i].CapBound;
                 var childRect = children[i].RectBound;
                 Assert.True(childCap.Contains(children[i].Center));
-                Assert.True(childRect.contains(children[i].CenterRaw));
+                Assert.True(childRect.Contains(children[i].CenterRaw));
                 Assert.True(parentCap.Contains(children[i].Center));
-                Assert.True(parentRect.contains(children[i].CenterRaw));
+                Assert.True(parentRect.Contains(children[i].CenterRaw));
                 for (var j = 0; j < 4; ++j)
                 {
                     Assert.True(childCap.Contains(children[i].GetVertex(j)));
-                    Assert.True(childRect.contains(children[i].GetVertex(j)));
-                    Assert.True(childRect.contains(children[i].GetVertexRaw(j)));
+                    Assert.True(childRect.Contains(children[i].GetVertex(j)));
+                    Assert.True(childRect.Contains(children[i].GetVertexRaw(j)));
                     Assert.True(parentCap.Contains(children[i].GetVertex(j)));
-                    if (!parentRect.contains(children[i].GetVertex(j)))
+                    if (!parentRect.Contains(children[i].GetVertex(j)))
                     {
                         Console.WriteLine("cell: " + cell + " i: " + i + " j: " + j);
                         Console.WriteLine("Children " + i + ": " + children[i]);
@@ -206,8 +206,8 @@ namespace S2Geometry.Tests
                         Console.WriteLine("Latlng of vertex: " + new S2LatLng(children[i].GetVertex(j)));
                         Console.WriteLine("RectBound: " + cell.RectBound);
                     }
-                    Assert.True(parentRect.contains(children[i].GetVertex(j)));
-                    if (!parentRect.contains(children[i].GetVertexRaw(j)))
+                    Assert.True(parentRect.Contains(children[i].GetVertex(j)));
+                    if (!parentRect.Contains(children[i].GetVertexRaw(j)))
                     {
                         Console.WriteLine("cell: " + cell + " i: " + i + " j: " + j);
                         Console.WriteLine("Children " + i + ": " + children[i]);
@@ -216,7 +216,7 @@ namespace S2Geometry.Tests
                         Console.WriteLine("Latlng of vertex: " + new S2LatLng(children[i].GetVertexRaw(j)));
                         Console.WriteLine("RectBound: " + cell.RectBound);
                     }
-                    Assert.True(parentRect.contains(children[i].GetVertexRaw(j)));
+                    Assert.True(parentRect.Contains(children[i].GetVertexRaw(j)));
                     if (j != i)
                     {
                         // The bounding caps and rectangles should be tight enough so that
@@ -229,14 +229,14 @@ namespace S2Geometry.Tests
                             {
                                 ++capCount;
                             }
-                            if (childRect.contains(children[j].GetVertexRaw(k)))
+                            if (childRect.Contains(children[j].GetVertexRaw(k)))
                             {
                                 ++rectCount;
                             }
                         }
                         Assert.True(capCount <= 2);
-                        if (childRect.latLo().Radians > -S2.PiOver2
-                            && childRect.latHi().Radians < S2.PiOver2)
+                        if (childRect.LatLo.Radians > -S2.PiOver2
+                            && childRect.LatHi.Radians < S2.PiOver2)
                         {
                             // Bounding rectangles may be too large at the poles because the
                             // pole itself has an arbitrary fixed longitude.

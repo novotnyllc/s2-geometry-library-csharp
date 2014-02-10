@@ -70,7 +70,7 @@ namespace Google.Common.Geometry
         {
             _numVertices = vertices.Count;
             this.vertices = new S2Point[_numVertices];
-            bound = S2LatLngRect.full();
+            bound = S2LatLngRect.Full;
             _depth = 0;
 
             // if (debugMode) {
@@ -183,7 +183,7 @@ namespace Google.Common.Geometry
             // the fact than an S2Cell is convex.
 
             var cellBound = cell.RectBound;
-            if (!bound.contains(cellBound))
+            if (!bound.Contains(cellBound))
             {
                 return false;
             }
@@ -204,7 +204,7 @@ namespace Google.Common.Geometry
             // the fact than an S2Cell is convex.
 
             var cellBound = cell.RectBound;
-            if (!bound.intersects(cellBound))
+            if (!bound.Intersects(cellBound))
             {
                 return false;
             }
@@ -337,7 +337,7 @@ namespace Google.Common.Geometry
             if (bound.Lat.Lo > -S2.PiOver2 && bound.Lat.Hi < S2.PiOver2)
             {
                 // The complement of this loop contains both poles.
-                bound = S2LatLngRect.full();
+                bound = S2LatLngRect.Full;
             }
             else
             {
@@ -488,7 +488,7 @@ namespace Google.Common.Geometry
             // union is the entire sphere, i.e. two loops that contains each other's
             // boundaries but not each other's interiors.
 
-            if (!bound.contains(b.RectBound))
+            if (!bound.Contains(b.RectBound))
             {
                 return false;
             }
@@ -512,7 +512,7 @@ namespace Google.Common.Geometry
             // and that A contains a vertex of B. However we still need to check for
             // the case mentioned above, where (A union B) is the entire sphere.
             // Normally this check is very cheap due to the bounding box precondition.
-            if (bound.union(b.RectBound).isFull())
+            if (bound.Union(b.RectBound).IsFull)
             {
                 if (b.contains(vertex(0)) && b.findVertex(vertex(0)) < 0)
                 {
@@ -533,7 +533,7 @@ namespace Google.Common.Geometry
             // This code is similar to Contains(), but is optimized for the case
             // where both loops enclose less than half of the sphere.
 
-            if (!bound.intersects(b.RectBound))
+            if (!bound.Intersects(b.RectBound))
             {
                 return false;
             }
@@ -567,7 +567,7 @@ namespace Google.Common.Geometry
             // arbitrary non-shared vertex of A. Note that this check is cheap because
             // of the bounding box precondition and the fact that we normalized the
             // arguments so that A's longitude span is at least as long as B's.
-            if (b.RectBound.contains(bound))
+            if (b.RectBound.Contains(bound))
             {
                 if (b.contains(vertex(0)) && b.findVertex(vertex(0)) < 0)
                 {
@@ -586,7 +586,7 @@ namespace Google.Common.Geometry
 
         public bool containsNested(S2Loop b)
         {
-            if (!bound.contains(b.RectBound))
+            if (!bound.Contains(b.RectBound))
             {
                 return false;
             }
@@ -616,7 +616,7 @@ namespace Google.Common.Geometry
         public int containsOrCrosses(S2Loop b)
         {
             // There can be containment or crossing only if the bounds intersect.
-            if (!bound.intersects(b.RectBound))
+            if (!bound.Intersects(b.RectBound))
             {
                 return 0;
             }
@@ -641,7 +641,7 @@ namespace Google.Common.Geometry
             // either A contains B, or there are no shared vertices (due to the check
             // above). So now we just need to distinguish the case where A contains B
             // from the case where B contains A or the two loops are disjoint.
-            if (!bound.contains(b.RectBound))
+            if (!bound.Contains(b.RectBound))
             {
                 return 0;
             }
@@ -690,7 +690,7 @@ namespace Google.Common.Geometry
 
         public bool contains(S2Point p)
         {
-            if (!bound.contains(p))
+            if (!bound.Contains(p))
             {
                 return false;
             }
@@ -908,7 +908,7 @@ namespace Google.Common.Geometry
             // The bounding box does not need to be correct before calling this
             // function, but it must at least contain vertex(1) since we need to
             // do a Contains() test on this point below.
-            Preconditions.CheckState(bound.contains(vertex(1)));
+            Preconditions.CheckState(bound.Contains(vertex(1)));
 
             // To ensure that every point is contained in exactly one face of a
             // subdivision of the sphere, all containment tests are done by counting the
@@ -946,7 +946,7 @@ namespace Google.Common.Geometry
             var b = bounder.Bound;
             // Note that we need to initialize bound with a temporary value since
             // contains() does a bounding rectangle check before doing anything else.
-            bound = S2LatLngRect.full();
+            bound = S2LatLngRect.Full;
             if (contains(new S2Point(0, 0, 1)))
             {
                 b = new S2LatLngRect(new R1Interval(b.Lat.Lo, S2.PiOver2), S1Interval.Full);

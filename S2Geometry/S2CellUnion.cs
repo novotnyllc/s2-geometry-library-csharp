@@ -176,10 +176,10 @@ namespace Google.Common.Geometry
         {
             get
             {
-                var bound = S2LatLngRect.empty();
+                var bound = S2LatLngRect.Empty;
                 foreach (var id in this)
                 {
-                    bound = bound.union(new S2Cell(id).RectBound);
+                    bound = bound.Union(new S2Cell(id).RectBound);
                 }
                 return bound;
             }

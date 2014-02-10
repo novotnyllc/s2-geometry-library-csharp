@@ -50,7 +50,7 @@ namespace S2Geometry.Tests
         {
             var vertices = new List<S2Point>();
             var empty = new S2Polyline(vertices);
-            assertEquals(empty.RectBound, S2LatLngRect.empty());
+            assertEquals(empty.RectBound, S2LatLngRect.Empty);
         }
 
         [Test]

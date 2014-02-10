@@ -637,7 +637,7 @@ namespace Google.Common.Geometry
 
         public RectBounder()
         {
-            bound = S2LatLngRect.empty();
+            bound = S2LatLngRect.Empty;
         }
 
         /**
@@ -661,15 +661,15 @@ namespace Google.Common.Geometry
 
             var bLatLng = new S2LatLng(b);
 
-            if (bound.isEmpty())
+            if (bound.IsEmpty)
             {
-                bound = bound.addPoint(bLatLng);
+                bound = bound.AddPoint(bLatLng);
             }
             else
             {
                 // We can't just call bound.addPoint(bLatLng) here, since we need to
                 // ensure that all the longitudes between "a" and "b" are included.
-                bound = bound.union(S2LatLngRect.fromPointPair(aLatLng, bLatLng));
+                bound = bound.Union(S2LatLngRect.FromPointPair(aLatLng, bLatLng));
 
                 // Check whether the Min/Max latitude occurs in the edge interior.
                 // We find the normal to the plane containing AB, and then a vector

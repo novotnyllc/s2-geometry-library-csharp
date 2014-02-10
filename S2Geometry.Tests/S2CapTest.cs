@@ -21,8 +21,8 @@ namespace S2Geometry.Tests
         public void testRectBound()
         {
             // Empty and full caps.
-            Assert.True(S2Cap.Empty.RectBound.isEmpty());
-            Assert.True(S2Cap.Full.RectBound.isFull());
+            Assert.True(S2Cap.Empty.RectBound.IsEmpty);
+            Assert.True(S2Cap.Full.RectBound.IsFull);
 
             var kDegreeEps = 1e-13;
             // Maximum allowable error for latitudes and longitudes measured in
@@ -31,8 +31,8 @@ namespace S2Geometry.Tests
             // Cap that includes the south pole.
             var rect =
                 S2Cap.FromAxisAngle(getLatLngPoint(-45, 57), S1Angle.FromDegrees(50)).RectBound;
-            assertDoubleNear(rect.latLo().Degrees, -90, kDegreeEps);
-            assertDoubleNear(rect.latHi().Degrees, 5, kDegreeEps);
+            assertDoubleNear(rect.LatLo.Degrees, -90, kDegreeEps);
+            assertDoubleNear(rect.LatHi.Degrees, 5, kDegreeEps);
             Assert.True(rect.Lng.IsFull);
 
             // Cap that is tangent to the north pole.
@@ -43,28 +43,28 @@ namespace S2Geometry.Tests
 
             rect = S2Cap
                 .FromAxisAngle(S2Point.Normalize(new S2Point(1, 0, 1)), S1Angle.FromDegrees(45)).RectBound;
-            assertDoubleNear(rect.latLo().Degrees, 0, kDegreeEps);
-            assertDoubleNear(rect.latHi().Degrees, 90, kDegreeEps);
+            assertDoubleNear(rect.LatLo.Degrees, 0, kDegreeEps);
+            assertDoubleNear(rect.LatHi.Degrees, 90, kDegreeEps);
             Assert.True(rect.Lng.IsFull);
 
             // The eastern hemisphere.
             rect = S2Cap
                 .FromAxisAngle(new S2Point(0, 1, 0), S1Angle.FromRadians(S2.PiOver2 + 5e-16)).RectBound;
-            assertDoubleNear(rect.latLo().Degrees, -90, kDegreeEps);
-            assertDoubleNear(rect.latHi().Degrees, 90, kDegreeEps);
+            assertDoubleNear(rect.LatLo.Degrees, -90, kDegreeEps);
+            assertDoubleNear(rect.LatHi.Degrees, 90, kDegreeEps);
             Assert.True(rect.Lng.IsFull);
 
             // A cap centered on the equator.
             rect = S2Cap.FromAxisAngle(getLatLngPoint(0, 50), S1Angle.FromDegrees(20)).RectBound;
-            assertDoubleNear(rect.latLo().Degrees, -20, kDegreeEps);
-            assertDoubleNear(rect.latHi().Degrees, 20, kDegreeEps);
-            assertDoubleNear(rect.lngLo().Degrees, 30, kDegreeEps);
-            assertDoubleNear(rect.lngHi().Degrees, 70, kDegreeEps);
+            assertDoubleNear(rect.LatLo.Degrees, -20, kDegreeEps);
+            assertDoubleNear(rect.LatHi.Degrees, 20, kDegreeEps);
+            assertDoubleNear(rect.LngLo.Degrees, 30, kDegreeEps);
+            assertDoubleNear(rect.LngHi.Degrees, 70, kDegreeEps);
 
             // A cap centered on the north pole.
             rect = S2Cap.FromAxisAngle(getLatLngPoint(90, 123), S1Angle.FromDegrees(10)).RectBound;
-            assertDoubleNear(rect.latLo().Degrees, 80, kDegreeEps);
-            assertDoubleNear(rect.latHi().Degrees, 90, kDegreeEps);
+            assertDoubleNear(rect.LatLo.Degrees, 80, kDegreeEps);
+            assertDoubleNear(rect.LatHi.Degrees, 90, kDegreeEps);
             Assert.True(rect.Lng.IsFull);
         }
 
