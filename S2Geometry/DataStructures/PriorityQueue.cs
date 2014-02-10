@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Google.Common.Geometry.DataStructures
 {
-    class PriorityQueue<T> where T : IComparable<T>
+    internal class PriorityQueue<T> where T : IComparable<T>
     {
         private List<T> data;
 

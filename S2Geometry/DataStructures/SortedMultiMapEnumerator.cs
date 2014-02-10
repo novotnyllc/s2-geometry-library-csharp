@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Google.Common.Geometry.MultiMap
 {
-    class SortedMultiMapEnumerable<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>, IEnumerator<KeyValuePair<TKey, TValue>>
+    internal class SortedMultiMapEnumerable<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>, IEnumerator<KeyValuePair<TKey, TValue>>
     {
         MultiMap<TKey, TValue> _map;
         IEnumerator<TKey> _keyEnumerator;

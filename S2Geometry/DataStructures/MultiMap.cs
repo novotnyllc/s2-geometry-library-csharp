@@ -8,7 +8,7 @@ using Google.Common.Geometry.MultiMap;
 
 namespace System.Collections.Generic
 {
-    public class MultiMap<TKey, TValue> : IMultiMap<TKey,TValue>, IDictionary<TKey,TValue>
+    internal class MultiMap<TKey, TValue> : IMultiMap<TKey,TValue>, IDictionary<TKey,TValue>
     {
         private Dictionary<TKey, List<TValue>> _interalStorage = new Dictionary<TKey, List<TValue>>();
 

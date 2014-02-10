@@ -5,7 +5,7 @@ using System.Text;
 
 namespace System.Collections.Generic
 {
-    public interface IMultiMap<TKey, TValue>
+    internal interface IMultiMap<TKey, TValue>
     {
         void Add(TKey key, IEnumerable<TValue> valueList);
         List<TValue> this[TKey key] { get; set;}

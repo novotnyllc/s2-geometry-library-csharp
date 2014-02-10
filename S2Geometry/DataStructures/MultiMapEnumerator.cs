@@ -5,7 +5,7 @@ using System.Text;
 
 namespace System.Collections.Generic
 {
-    class MultiMapEnumerator<TKey,TValue> : IEnumerator<KeyValuePair<TKey,TValue>>
+    internal class MultiMapEnumerator<TKey,TValue> : IEnumerator<KeyValuePair<TKey,TValue>>
     {
         MultiMap<TKey,TValue> _map;
         IEnumerator<TKey> _keyEnumerator;
