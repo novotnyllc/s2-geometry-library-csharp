@@ -5,16 +5,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Google.Common.Geometry.DataStructures
+namespace Google.Common.Geometry
 {
-    public struct NullObject<T>
+    internal struct NullObject<T> : IEquatable<T>
     {
-        [DefaultValue(true)]
-        private bool isnull;// default property initializers are not supported for structs
+        [DefaultValue(false)]
+        private bool isNotNull;// default property initializers are not supported for structs
 
         private NullObject(T item, bool isnull) : this()
         {
-            this.isnull = isnull;
+            this.isNotNull = isNotNull;
             this.Item = item;
         }
 
@@ -31,7 +31,12 @@ namespace Google.Common.Geometry.DataStructures
 
         public bool IsNull()
         {
-            return this.isnull;
+            return !this.isNotNull;
+        }
+
+        public bool IsNotNull()
+        {
+            return this.isNotNull;
         }
 
         public static implicit operator T(NullObject<T> nullObject)
@@ -49,12 +54,28 @@ namespace Google.Common.Geometry.DataStructures
             return (Item != null) ? Item.ToString() : "NULL";
         }
 
-        public override bool Equals(object obj)
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                if (this.IsNull())
+                return 0;
+
+                var result = Item.GetHashCode();
+
+                if (result >= 0)
+                    result++;
+            
+                return result;
+            }
+        }
+
+        public bool Equals(T obj)
         {
             if (obj == null)
                 return this.IsNull();
 
-            if (!(obj is NullObject<T>))
+            if (!(obj is T))
                 return false;
 
             var no = (NullObject<T>)obj;
@@ -66,19 +87,6 @@ namespace Google.Common.Geometry.DataStructures
                 return false;
 
             return this.Item.Equals(no.Item);
-        }
-
-        public override int GetHashCode()
-        {
-            if (this.isnull)
-                return 0;
-
-            var result = Item.GetHashCode();
-
-            if (result >= 0)
-                result++;
-
-            return result;
         }
     }
 }
