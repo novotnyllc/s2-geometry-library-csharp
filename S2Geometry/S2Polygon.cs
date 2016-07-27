@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Google.Common.Geometry.DataStructures;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using C5;
 
 namespace Google.Common.Geometry
 {
@@ -138,7 +138,7 @@ namespace Google.Common.Geometry
         {
             get
             {
-                var vertices = new HashBag<S2Point>();
+                var vertices = new HashSet<S2Point>();
 
 
                 S2Loop lastParent = null;
@@ -276,9 +276,8 @@ namespace Google.Common.Geometry
             // assert (this.loops.isEmpty());
 
             //Dictionary<S2Loop, List<S2Loop>> loopMap =new Dictionary<S2Loop, List<S2Loop>>();
-            // Note: We're using C5's HashDictionary because SCG's Dictionary<,> does not allow
-            // NULL keys
-            var loopMap = new HashDictionary<S2Loop, List<S2Loop>>();
+            // Note: We use a special NullObject to supply null keys.
+            var loopMap = new Dictionary<NullObject<S2Loop>, List<S2Loop>>();
             // Yes, a null key is valid. It is used here to refer to the root of the
             // loopMap
             loopMap[null] = new List<S2Loop>();
@@ -964,7 +963,7 @@ namespace Google.Common.Geometry
         }
 
         // For each map entry, sorts the value list.
-        private static void SortValueLoops(C5.IDictionary<S2Loop, List<S2Loop>> loopMap)
+        private static void SortValueLoops(IDictionary<NullObject<S2Loop>, List<S2Loop>> loopMap)
         {
             foreach (var key in loopMap.Keys)
             {
@@ -972,10 +971,10 @@ namespace Google.Common.Geometry
             }
         }
 
-        private static void InsertLoop(S2Loop newLoop, S2Loop parent, C5.IDictionary<S2Loop, List<S2Loop>> loopMap)
+        private static void InsertLoop(S2Loop newLoop, S2Loop parent, Dictionary<NullObject<S2Loop>, List<S2Loop>> loopMap)
         {
             List<S2Loop> children = null;
-            if (loopMap.Contains(parent))
+            if (loopMap.ContainsKey(parent))
                 children = loopMap[parent];
 
             if (children == null)
@@ -1000,7 +999,7 @@ namespace Google.Common.Geometry
             // Some of the children of the parent loop may now be children of
             // the new loop.
             List<S2Loop> newChildren = null;
-            if (loopMap.Contains(newLoop))
+            if (loopMap.ContainsKey(newLoop))
                 newChildren = loopMap[newLoop];
             for (var i = 0; i < children.Count;)
             {
@@ -1023,7 +1022,7 @@ namespace Google.Common.Geometry
             children.Add(newLoop);
         }
 
-        private void InitLoop(S2Loop loop, int depth, C5.IDictionary<S2Loop, List<S2Loop>> loopMap)
+        private void InitLoop(S2Loop loop, int depth, IDictionary<NullObject<S2Loop>, List<S2Loop>> loopMap)
         {
             if (loop != null)
             {
@@ -1031,7 +1030,7 @@ namespace Google.Common.Geometry
                 _loops.Add(loop);
             }
             List<S2Loop> children = null;
-            if (loopMap.Contains(loop))
+            if (loopMap.ContainsKey(loop))
                 children = loopMap[loop];
             if (children != null)
             {
