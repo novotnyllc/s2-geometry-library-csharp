@@ -8,9 +8,9 @@ namespace Google.Common.Geometry
         [DefaultValue(false)]
         private bool isNotNull;// default property initializers are not supported for structs
 
-        private NullObject(T item, bool isnull) : this()
+        private NullObject(T item, bool isNull) : this()
         {
-            this.isNotNull = isNotNull;
+            this.isNotNull = !isNull;
             this.Item = item;
         }
 
