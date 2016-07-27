@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using C5;
 
 namespace Google.Common.Geometry
 {
@@ -42,7 +41,7 @@ namespace Google.Common.Geometry
    * The current set of edges, grouped by origin. The set of destination
    * vertices is a multiset so that the same edge can be present more than once.
    */
-        private readonly System.Collections.Generic.IDictionary<S2Point, HashBag<S2Point>> _edges;
+        private readonly System.Collections.Generic.IDictionary<S2Point, HashSet<S2Point>> _edges;
         private readonly S2PolygonBuilderOptions _options;
 
         /**
@@ -57,7 +56,7 @@ namespace Google.Common.Geometry
         public S2PolygonBuilder(S2PolygonBuilderOptions options)
         {
             _options = options;
-            _edges = new Dictionary<S2Point, HashBag<S2Point>>();
+            _edges = new Dictionary<S2Point, HashSet<S2Point>>();
         }
 
         public S2PolygonBuilderOptions Options
@@ -84,7 +83,7 @@ namespace Google.Common.Geometry
 
             if (_options.XorEdges)
             {
-                HashBag<S2Point> candidates;
+                HashSet<S2Point> candidates;
                 _edges.TryGetValue(v1, out candidates);
                 if (candidates != null && candidates.Any(c => c.Equals(v0)))
                 {
@@ -95,7 +94,7 @@ namespace Google.Common.Geometry
 
             if (!_edges.ContainsKey(v0))
             {
-                _edges[v0] = new HashBag<S2Point>();
+                _edges[v0] = new HashSet<S2Point>();
             }
 
             _edges[v0].Add(v1);
@@ -103,7 +102,7 @@ namespace Google.Common.Geometry
             {
                 if (!_edges.ContainsKey(v1))
                 {
-                    _edges[v1] = new HashBag<S2Point>();
+                    _edges[v1] = new HashSet<S2Point>();
                 }
                 _edges[v1].Add(v0);
             }
@@ -296,7 +295,7 @@ namespace Google.Common.Geometry
             var vset = _edges[v0];
             // assert (vset.count(v1) > 0);
             vset.Remove(v1);
-            if (vset.IsEmpty)
+            if (!vset.Any())
             {
                 _edges.Remove(v0);
             }
@@ -306,7 +305,7 @@ namespace Google.Common.Geometry
                 vset = _edges[v1];
                 // assert (vset.count(v0) > 0);
                 vset.Remove(v0);
-                if (vset.IsEmpty)
+                if (!vset.Any())
                 {
                     _edges.Remove(v1);
                 }
@@ -356,7 +355,7 @@ namespace Google.Common.Geometry
 
                 var v2 = default (S2Point);
                 var v2Found = false;
-                HashBag<S2Point> vset;
+                HashSet<S2Point> vset;
                 _edges.TryGetValue(v1, out vset);
                 if (vset != null)
                 {
