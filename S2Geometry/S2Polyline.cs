@@ -2,19 +2,21 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Google.Common.Geometry
 {
-    /**
-     * An S2Polyline represents a sequence of zero or more vertices connected by
-     * straight edges (geodesics). Edges of length 0 and 180 degrees are not
-     * allowed, i.e. adjacent vertices should not be identical or antipodal.
-     *
-     * <p>Note: Polylines do not have a Contains(S2Point) method, because
-     * "containment" is not numerically well-defined except at the polyline
-     * vertices.
-     *
-     */
+/**
+ * An S2Polyline represents a sequence of zero or more vertices connected by
+ * straight edges (geodesics). Edges of length 0 and 180 degrees are not
+ * allowed, i.e. adjacent vertices should not be identical or antipodal.
+ *
+ * <p>Note: Polylines do not have a Contains(S2Point) method, because
+ * "containment" is not numerically well-defined except at the polyline
+ * vertices.
+ *
+ */
 
     public struct S2Polyline : IS2Region, IEquatable<S2Polyline>
     {
