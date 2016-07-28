@@ -1,28 +1,35 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
+
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
-    <metadata>
-        <id>S2Geometry</id>
-        <version>1.0.1</version>
-        <title>S2 Geometry Library</title>
-        <authors>Oren Novotny</authors>
-        <owners>onovotny</owners>
-        <licenseUrl>https://raw.github.com/onovotny/s2-geometry-library-csharp/master/LICENSE</licenseUrl>
-        <projectUrl>https://github.com/onovotny/s2-geometry-library-csharp</projectUrl>
-        <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>
-          The Google S2 Geometry Library is a spherical geometry library, very useful for manipulating regions on the sphere (commonly on Earth) and indexing geographic data.
-          This version targets .NET 4.5, Windows Store apps, Windows Phone 8, Xamarin.iOS and Xamarin.Android</description>
-        <summary />
-        <releaseNotes />
-        <tags>Google S2 Geo GeoSpatial geometry Hilbert portable pcl wp wp8</tags>
-      <dependencies>
-        <dependency id="C5" version="2.2.5073.27396 " />
-      </dependencies>
-    </metadata>
-    <files>
-        <file src="S2Geometry\bin\Release\S2Geometry.dll" target="lib\portable-net45+wp8+win8\S2Geometry.dll" />
-        <file src="S2Geometry\bin\Release\S2Geometry.pdb" target="lib\portable-net45+wp8+win8\S2Geometry.pdb" />      
-        <file src="S2Geometry\bin\Release\S2Geometry.xml" target="lib\portable-net45+wp8+win8\S2Geometry.xml" />      
-        <file src="**\*.cs" target="src" exclude="_ReSharper.*\**\*.*;packages\**\*.*;**\Debug\**\*.*;" />
-    </files>
+  <metadata>
+    <id>S2Geometry</id>
+    <version>1.0.2</version>
+    <title>S2 Geometry Library</title>
+    <authors>Oren Novotny</authors>
+    <owners>onovotny</owners>
+    <licenseUrl>https://raw.github.com/onovotny/s2-geometry-library-csharp/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/onovotny/s2-geometry-library-csharp</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>
+      The Google S2 Geometry Library is a spherical geometry library, very useful for manipulating regions on the sphere (commonly on Earth) and indexing geographic data.
+      This version targets NET Standard 1.0
+    </description>
+    <summary />
+    <releaseNotes />
+    <tags>Google S2 Geo GeoSpatial geometry Hilbert portable pcl wp wp8 netstandard</tags>
+    <dependencies>
+      <group targetFramework="netstandard1.0">
+        <dependency id="NETStandard.Library" version="1.6.0" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="S2Geometry\bin\Release\S2Geometry.dll" target="lib\portable-net45+wp8+win8\S2Geometry.dll" />
+    <file src="S2Geometry\bin\Release\S2Geometry.pdb" target="lib\portable-net45+wp8+win8\S2Geometry.pdb" />
+    <file src="S2Geometry\bin\Release\S2Geometry.xml" target="lib\portable-net45+wp8+win8\S2Geometry.xml" />
+    <file src="S2Geometry\bin\Release\S2Geometry.dll" target="lib\netstandard1.0\S2Geometry.dll" />
+    <file src="S2Geometry\bin\Release\S2Geometry.pdb" target="lib\netstandard1.0\S2Geometry.pdb" />
+    <file src="S2Geometry\bin\Release\S2Geometry.xml" target="lib\netstandard1.0\S2Geometry.xml" />
+    <file src="**\*.cs" target="src" exclude="_ReSharper.*\**\*.*;packages\**\*.*;**\Debug\**\*.*;" />
+  </files>
 </package>
