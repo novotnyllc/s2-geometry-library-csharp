@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using C5;
+using Google.Common.Geometry.DataStructures;
 
 namespace Google.Common.Geometry
 {

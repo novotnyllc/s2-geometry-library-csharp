@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using C5;
+using Google.Common.Geometry.DataStructures;
 
 namespace Google.Common.Geometry
 {
@@ -296,7 +296,7 @@ namespace Google.Common.Geometry
             var vset = _edges[v0];
             // assert (vset.count(v1) > 0);
             vset.Remove(v1);
-            if (vset.IsEmpty)
+            if (vset.Count == 0)
             {
                 _edges.Remove(v0);
             }
@@ -306,7 +306,7 @@ namespace Google.Common.Geometry
                 vset = _edges[v1];
                 // assert (vset.count(v0) > 0);
                 vset.Remove(v0);
-                if (vset.IsEmpty)
+                if (vset.Count == 0)
                 {
                     _edges.Remove(v1);
                 }

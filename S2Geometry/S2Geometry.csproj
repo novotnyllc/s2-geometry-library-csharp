@@ -40,6 +40,7 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataStructures\HashBag.cs" />
     <Compile Include="DataStructures\PriorityQueue.cs" />
     <Compile Include="FpUtils.cs" />
     <Compile Include="IS2Region.cs" />
