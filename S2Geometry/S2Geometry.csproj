@@ -47,6 +47,7 @@
     <Compile Include="DataStructures\MultiMap.cs" />
     <Compile Include="DataStructures\MultiMapEnumerator.cs" />
     <Compile Include="DataStructures\SortedMultiMapEnumerator.cs" />
+    <Compile Include="NullObject.cs" />
     <Compile Include="Preconditions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="R1Interval.cs" />
