@@ -199,8 +199,8 @@ namespace S2Geometry.Tests
                     throw new ArgumentException(
                         "Illegal string:" + token + ". Should look like '35:20'");
                 }
-                var lat = Double.Parse(token.Substring(0, colon));
-                var lng = Double.Parse(token.Substring(colon + 1));
+                var lat = Double.Parse(token.Substring(0, colon), System.Globalization.CultureInfo.InvariantCulture);
+                var lng = Double.Parse(token.Substring(colon + 1), System.Globalization.CultureInfo.InvariantCulture);
                 vertices.Add(S2LatLng.FromDegrees(lat, lng).ToPoint());
             }
         }
